@@ -16,6 +16,45 @@ RelacionesMediSalud/
             └── Demo.java
 ```
 
+## 🗺️ Diagrama de clases
+
+```mermaid
+classDiagram
+    class Especialidad {
+        -String nombre
+        +getNombre() String
+    }
+    class HistoriaClinica {
+        -int numeroHistoria
+        -String observaciones
+        +getNumeroHistoria() int
+        +getObservaciones() String
+    }
+    class Medico {
+        -String nombre
+        -Especialidad especialidad
+        -List~Paciente~ pacientes
+        +agregarPaciente(Paciente) void
+        +getEspecialidad() Especialidad
+        +getPacientes() List~Paciente~
+    }
+    class Paciente {
+        -String nombre
+        -Medico medico
+        -HistoriaClinica historiaClinica
+        +setMedico(Medico) void
+        +getMedico() Medico
+        +getHistoriaClinica() HistoriaClinica
+    }
+    Medico o-- Especialidad
+    Medico "1" -- "0..*" Paciente
+    Paciente *-- HistoriaClinica
+```
+
+Las tres relaciones del módulo conviven en el mismo diseño: `Medico o-- Especialidad` (agregación, el
+diamante hueco), `Medico "1" -- "0..*" Paciente` (asociación bidireccional, con su multiplicidad) y
+`Paciente *-- HistoriaClinica` (composición, el diamante relleno).
+
 ## 💻 Archivo: Especialidad.java
 
 ```java
