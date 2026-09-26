@@ -116,8 +116,8 @@ copia: Jorge Paz: [Ibuprofeno 400mg, Paracetamol 500mg, Amoxicilina 500mg]
 ```text
 prototype-despues/
 └── com/medisalud/
-    ├── PlanDeTratamiento.java
-    └── Demo.java
+    ├── PlanDeTratamiento.java   (cambió: clonado profundo)
+    └── Demo.java                (sin cambios)
 ```
 
 ## 💻 Archivo: PlanDeTratamiento.java — cambió

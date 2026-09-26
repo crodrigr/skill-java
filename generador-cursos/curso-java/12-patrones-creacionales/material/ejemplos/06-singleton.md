@@ -148,10 +148,10 @@ eventos en citas=2
 ```text
 singleton-despues/
 └── com/medisalud/
-    ├── RegistroDeAuditoria.java
-    ├── ModuloFacturacion.java
-    ├── ModuloCitas.java
-    └── Demo.java
+    ├── RegistroDeAuditoria.java   (cambió: constructor privado, instancia estática)
+    ├── ModuloFacturacion.java     (cambió: usa getInstancia())
+    ├── ModuloCitas.java           (cambió: usa getInstancia())
+    └── Demo.java                  (cambió)
 ```
 
 ## 💻 Archivo: RegistroDeAuditoria.java

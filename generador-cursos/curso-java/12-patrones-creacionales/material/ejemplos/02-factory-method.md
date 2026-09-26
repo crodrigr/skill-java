@@ -137,11 +137,11 @@ Historial en papel, archivado fisicamente
 ```text
 factory-despues/
 └── com/medisalud/
-    ├── Historial.java
-    ├── HistorialPapel.java
-    ├── FabricaDeHistoriales.java
-    ├── RegistroClinico.java
-    └── Demo.java
+    ├── Historial.java              (sin cambios)
+    ├── HistorialPapel.java         (sin cambios)
+    ├── FabricaDeHistoriales.java   (nuevo)
+    ├── RegistroClinico.java        (cambió)
+    └── Demo.java                   (sin cambios)
 ```
 
 Sin cambios respecto de "antes": `Historial.java`, `HistorialPapel.java` y `Demo.java` — su código ya se

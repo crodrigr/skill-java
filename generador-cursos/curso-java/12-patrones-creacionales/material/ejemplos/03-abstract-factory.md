@@ -185,17 +185,17 @@ combo2 (mezclado por error)=Guante linea PREMIUM + Mascarilla linea ESTANDAR
 ```text
 abstractfactory-despues/
 └── com/medisalud/
-    ├── Guante.java
-    ├── GuanteEstandar.java
-    ├── GuantePremium.java
-    ├── Mascarilla.java
-    ├── MascarillaEstandar.java
-    ├── MascarillaPremium.java
-    ├── FabricaDeInsumos.java
-    ├── FabricaEstandar.java
-    ├── FabricaPremium.java
-    ├── ArmadorDeCombos.java
-    └── Demo.java
+    ├── Guante.java              (sin cambios)
+    ├── GuanteEstandar.java      (sin cambios)
+    ├── GuantePremium.java       (sin cambios)
+    ├── Mascarilla.java          (sin cambios)
+    ├── MascarillaEstandar.java  (sin cambios)
+    ├── MascarillaPremium.java   (sin cambios)
+    ├── FabricaDeInsumos.java    (nuevo)
+    ├── FabricaEstandar.java     (nuevo)
+    ├── FabricaPremium.java      (nuevo)
+    ├── ArmadorDeCombos.java     (cambió)
+    └── Demo.java                (cambió)
 ```
 
 Sin cambios respecto de "antes": `Guante.java`, `GuanteEstandar.java`, `GuantePremium.java`,

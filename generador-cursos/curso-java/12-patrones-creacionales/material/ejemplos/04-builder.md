@@ -120,9 +120,9 @@ confundida: Pablo Sosa (41 anios), obra social: Swiss Medical, alergias: Ana Sos
 ```text
 builder-despues/
 └── com/medisalud/
-    ├── FichaPaciente.java
-    ├── FichaPacienteBuilder.java
-    └── Demo.java
+    ├── FichaPaciente.java          (cambió: constructor de paquete)
+    ├── FichaPacienteBuilder.java   (nuevo)
+    └── Demo.java                   (cambió)
 ```
 
 ## 💻 Archivo: FichaPaciente.java
