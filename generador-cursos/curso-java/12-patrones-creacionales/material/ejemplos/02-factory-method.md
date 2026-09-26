@@ -240,7 +240,68 @@ agregar un tipo nuevo, `HistorialDigital`, a cada una:
 
 En la versión "antes", agregar un tipo nuevo exige reabrir y modificar el cliente en dos lugares. En la
 versión "después", el cliente (`RegistroClinico`) queda exactamente igual — la extensión se hace
-agregando una clase y modificando solo la fábrica, nunca el código que la usa:
+agregando una clase y modificando solo la fábrica, nunca el código que la usa. Así queda el proyecto
+completo con el tipo nuevo ya agregado:
+
+## 🌳 Árbol de archivos — después (ampliado con HistorialDigital)
+
+```text
+factory-despues-ampliado/
+└── com/medisalud/
+    ├── Historial.java
+    ├── HistorialPapel.java
+    ├── HistorialDigital.java         (nuevo)
+    ├── FabricaDeHistoriales.java     (cambió: una rama más)
+    ├── RegistroClinico.java          (sin cambios)
+    └── Demo.java                     (cambió: pide el tipo nuevo)
+```
+
+Sin cambios respecto de "después": `Historial.java`, `HistorialPapel.java` y `RegistroClinico.java` —
+exactamente el mismo código ya mostrado arriba.
+
+<details>
+<summary>💻 Ver de nuevo el código sin cambios (Historial.java, HistorialPapel.java,
+RegistroClinico.java)</summary>
+
+## 💻 Archivo: Historial.java
+
+```java
+package com.medisalud;
+
+public interface Historial {
+    String describir();
+}
+```
+
+## 💻 Archivo: HistorialPapel.java
+
+```java
+package com.medisalud;
+
+public class HistorialPapel implements Historial {
+    public String describir() {
+        return "Historial en papel, archivado fisicamente";
+    }
+}
+```
+
+## 💻 Archivo: RegistroClinico.java
+
+```java
+package com.medisalud;
+
+public class RegistroClinico {
+    public Historial abrirHistorialConsulta(String tipo) {
+        return FabricaDeHistoriales.crear(tipo);
+    }
+
+    public Historial abrirHistorialInternacion(String tipo) {
+        return FabricaDeHistoriales.crear(tipo);
+    }
+}
+```
+
+</details>
 
 ## 💻 Archivo nuevo: HistorialDigital.java
 
@@ -250,6 +311,47 @@ package com.medisalud;
 public class HistorialDigital implements Historial {
     public String describir() {
         return "Historial digital, accesible desde cualquier consultorio";
+    }
+}
+```
+
+## 💻 Archivo: FabricaDeHistoriales.java — cambió (una rama más)
+
+```java
+package com.medisalud;
+
+public class FabricaDeHistoriales {
+    public static Historial crear(String tipo) {
+        if (tipo.equals("PAPEL")) {
+            return new HistorialPapel();
+        } else if (tipo.equals("DIGITAL")) {
+            return new HistorialDigital();
+        }
+        throw new IllegalArgumentException("Tipo de historial desconocido: " + tipo);
+    }
+}
+```
+
+Para pedir el tipo nuevo hace falta, además, alguien que lo solicite — eso es `Demo`, no
+`RegistroClinico`. `Demo` es el punto de entrada que decide *qué* pedir en cada llamada
+(`"PAPEL"` o `"DIGITAL"`); `RegistroClinico` es el código intermedio reutilizable que no necesita saber
+qué tipos existen. Por eso `Demo.java` sí agrega dos líneas nuevas, mientras que `RegistroClinico.java`
+no cambia ni una:
+
+## 💻 Archivo: Demo.java — agrega dos llamadas nuevas
+
+```java
+package com.medisalud;
+
+public class Demo {
+    public static void main(String[] args) {
+        // Datos de entrada
+        RegistroClinico registro = new RegistroClinico();
+
+        System.out.println(registro.abrirHistorialConsulta("PAPEL").describir());
+        System.out.println(registro.abrirHistorialInternacion("PAPEL").describir());
+        System.out.println(registro.abrirHistorialConsulta("DIGITAL").describir());
+        System.out.println(registro.abrirHistorialInternacion("DIGITAL").describir());
     }
 }
 ```
