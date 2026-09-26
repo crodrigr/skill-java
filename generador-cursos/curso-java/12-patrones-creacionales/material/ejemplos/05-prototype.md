@@ -120,7 +120,7 @@ prototype-despues/
     └── Demo.java
 ```
 
-## 💻 Archivo: PlanDeTratamiento.java
+## 💻 Archivo: PlanDeTratamiento.java — cambió
 
 ```java
 package com.medisalud;
@@ -152,6 +152,12 @@ public class PlanDeTratamiento {
 }
 ```
 
+Sin cambios respecto de "antes": `Demo.java` — su código ya se mostró arriba y es exactamente el mismo,
+byte a byte.
+
+<details>
+<summary>💻 Ver de nuevo el código sin cambios (Demo.java)</summary>
+
 ## 💻 Archivo: Demo.java
 
 ```java
@@ -176,6 +182,8 @@ public class Demo {
     }
 }
 ```
+
+</details>
 
 ## ✅ Resultado esperado — después
 

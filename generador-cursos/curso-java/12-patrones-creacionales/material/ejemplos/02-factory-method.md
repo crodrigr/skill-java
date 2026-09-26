@@ -144,6 +144,12 @@ factory-despues/
     └── Demo.java
 ```
 
+Sin cambios respecto de "antes": `Historial.java`, `HistorialPapel.java` y `Demo.java` — su código ya se
+mostró arriba y es exactamente el mismo, byte a byte (puedes expandirlo de nuevo si quieres compararlo).
+
+<details>
+<summary>💻 Ver de nuevo el código sin cambios (Historial.java, HistorialPapel.java, Demo.java)</summary>
+
 ## 💻 Archivo: Historial.java
 
 ```java
@@ -166,7 +172,25 @@ public class HistorialPapel implements Historial {
 }
 ```
 
-## 💻 Archivo: FabricaDeHistoriales.java
+## 💻 Archivo: Demo.java
+
+```java
+package com.medisalud;
+
+public class Demo {
+    public static void main(String[] args) {
+        // Datos de entrada
+        RegistroClinico registro = new RegistroClinico();
+
+        System.out.println(registro.abrirHistorialConsulta("PAPEL").describir());
+        System.out.println(registro.abrirHistorialInternacion("PAPEL").describir());
+    }
+}
+```
+
+</details>
+
+## 💻 Archivo: FabricaDeHistoriales.java — nuevo
 
 ```java
 package com.medisalud;
@@ -181,7 +205,7 @@ public class FabricaDeHistoriales {
 }
 ```
 
-## 💻 Archivo: RegistroClinico.java
+## 💻 Archivo: RegistroClinico.java — cambió
 
 ```java
 package com.medisalud;
@@ -193,22 +217,6 @@ public class RegistroClinico {
 
     public Historial abrirHistorialInternacion(String tipo) {
         return FabricaDeHistoriales.crear(tipo);
-    }
-}
-```
-
-## 💻 Archivo: Demo.java
-
-```java
-package com.medisalud;
-
-public class Demo {
-    public static void main(String[] args) {
-        // Datos de entrada
-        RegistroClinico registro = new RegistroClinico();
-
-        System.out.println(registro.abrirHistorialConsulta("PAPEL").describir());
-        System.out.println(registro.abrirHistorialInternacion("PAPEL").describir());
     }
 }
 ```

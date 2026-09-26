@@ -198,6 +198,14 @@ abstractfactory-despues/
     └── Demo.java
 ```
 
+Sin cambios respecto de "antes": `Guante.java`, `GuanteEstandar.java`, `GuantePremium.java`,
+`Mascarilla.java`, `MascarillaEstandar.java` y `MascarillaPremium.java` — su código ya se mostró arriba
+y es exactamente el mismo, byte a byte.
+
+<details>
+<summary>💻 Ver de nuevo el código sin cambios (Guante, GuanteEstandar, GuantePremium, Mascarilla,
+MascarillaEstandar, MascarillaPremium)</summary>
+
 ## 💻 Archivo: Guante.java
 
 ```java
@@ -266,7 +274,9 @@ public class MascarillaPremium implements Mascarilla {
 }
 ```
 
-## 💻 Archivo: FabricaDeInsumos.java
+</details>
+
+## 💻 Archivo: FabricaDeInsumos.java — nuevo
 
 ```java
 package com.medisalud;
@@ -277,7 +287,7 @@ public interface FabricaDeInsumos {
 }
 ```
 
-## 💻 Archivo: FabricaEstandar.java
+## 💻 Archivo: FabricaEstandar.java — nuevo
 
 ```java
 package com.medisalud;
@@ -293,7 +303,7 @@ public class FabricaEstandar implements FabricaDeInsumos {
 }
 ```
 
-## 💻 Archivo: FabricaPremium.java
+## 💻 Archivo: FabricaPremium.java — nuevo
 
 ```java
 package com.medisalud;
@@ -309,7 +319,7 @@ public class FabricaPremium implements FabricaDeInsumos {
 }
 ```
 
-## 💻 Archivo: ArmadorDeCombos.java
+## 💻 Archivo: ArmadorDeCombos.java — cambió
 
 ```java
 package com.medisalud;
@@ -323,7 +333,7 @@ public class ArmadorDeCombos {
 }
 ```
 
-## 💻 Archivo: Demo.java
+## 💻 Archivo: Demo.java — cambió
 
 ```java
 package com.medisalud;
