@@ -2,7 +2,7 @@
 
 Este quiz simula las preguntas que podrías recibir en una entrevista técnica para un puesto de
 programador Java junior. Cada pregunta indica su tipo (**Selección**, **Selección múltiple** o
-**Abierta**). Respondela primero por tu cuenta y después abre "Ver respuesta" para comparar.
+**Abierta**). Respóndela primero por tu cuenta y después abre "Ver respuesta" para comparar.
 
 ---
 
