@@ -1,39 +1,23 @@
-# 🟢 Básico 05 — Identificar violación de Template Method
+# 🟢 Básico 05 — Identificar violación de Memento
 
 ## 🧩 Problema
 
-La Biblioteca Universitaria genera fichas de catálogo con estas clases:
+La Biblioteca Universitaria edita fichas de catálogo con esta clase:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class FichaDeLibro {
-    public String generar(String titulo) {
-        StringBuilder ficha = new StringBuilder();
-        ficha.append("Catalogando ").append(titulo).append("\n");
-        String datoPropio = "Genero: Novela";
-        ficha.append("=== Ficha de Libro ===\n");
-        ficha.append("Titulo: ").append(titulo).append("\n");
-        ficha.append(datoPropio);
-        return ficha.toString();
+public class BorradorDeFicha {
+    private String descripcion;
+
+    public void escribir(String descripcion) {
+        this.descripcion = descripcion;
     }
-}
-```
 
-```java
-package com.biblioteca;
-
-public class FichaDeRevista {
-    public String generar(String titulo) {
-        StringBuilder ficha = new StringBuilder();
-        ficha.append("Catalogando ").append(titulo).append("\n");
-        String datoPropio = "Periodicidad: Mensual";
-        // Copiado y pegado de FichaDeLibro: aca se olvido el encabezado "=== Ficha de X ===".
-        ficha.append("Titulo: ").append(titulo).append("\n");
-        ficha.append(datoPropio);
-        return ficha.toString();
+    public String getDescripcion() {
+        return descripcion;
     }
 }
 ```
@@ -43,36 +27,23 @@ package com.biblioteca;
 
 public class Demo {
     public static void main(String[] args) {
-        System.out.println(new FichaDeLibro().generar("Rayuela"));
-        System.out.println("---");
-        System.out.println(new FichaDeRevista().generar("National Geographic"));
+        BorradorDeFicha borrador = new BorradorDeFicha();
+        borrador.escribir("Novela de realismo magico");
+        System.out.println(borrador.getDescripcion());
+
+        borrador.escribir("Novela de ciencia ficcion");
+        System.out.println(borrador.getDescripcion());
     }
 }
 ```
 
-Ejecutando el `Demo` de arriba, esta es la salida real:
-
-```text
-Catalogando Rayuela
-=== Ficha de Libro ===
-Titulo: Rayuela
-Genero: Novela
----
-Catalogando National Geographic
-Titulo: National Geographic
-Periodicidad: Mensual
-```
-
-Sin escribir código, responde: ¿qué diferencia real hay entre la salida de `FichaDeLibro` y la de
-`FichaDeRevista`, y por qué ocurrió?
+Sin escribir código, responde: si se escribe una descripción por error y se quiere volver a la
+descripción anterior, ¿qué forma tiene de hacerlo con el código de arriba?
 
 ## 📏 Criterios de evaluación de la solución
 
-- Identifica que a `FichaDeRevista` le falta la línea `=== Ficha de Revista ===`, mientras que
-  `FichaDeLibro` sí la tiene.
-- Explica que ocurrió porque `FichaDeRevista.generar()` fue copiada y pegada de `FichaDeLibro`, y ese
-  paso del esqueleto se omitió por error — nada en el lenguaje impide que un método copiado y pegado
-  omita un paso.
+- Identifica que `escribir()` sobrescribe la descripción sin dejar ningún registro anterior.
+- Explica que no existe ninguna forma de volver a la descripción anterior una vez sobrescrita.
 
 ## 🚧 Restricciones
 
@@ -84,5 +55,5 @@ Básico
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-14**: reconocer qué resuelve Template Method.
-- **RA-15**: reconocer un esqueleto copiado y pegado con riesgo de omitir un paso.
+- **RA-14**: reconocer qué resuelve Memento.
+- **RA-15**: reconocer un objeto editable sin ninguna forma de deshacer cambios.

@@ -1,43 +1,59 @@
-# 🟢 Básico 01 — Identificar violación de Strategy
+# 🟢 Básico 01 — Identificar violación de Chain of Responsibility
 
 ## 🧩 Problema
 
-La Biblioteca Universitaria calcula el costo de reservar una sala de estudio grupal con esta clase:
+La Biblioteca Universitaria aprueba préstamos especiales de ejemplares con esta clase:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class SolicitudDeSala {
-    private String horario;
+public class SolicitudDePrestamoEspecial {
+    private String tituloEjemplar;
+    private String excepcionalidad;
 
-    public SolicitudDeSala(String horario) {
-        this.horario = horario;
+    public SolicitudDePrestamoEspecial(String tituloEjemplar, String excepcionalidad) {
+        this.tituloEjemplar = tituloEjemplar;
+        this.excepcionalidad = excepcionalidad;
     }
 
-    public double calcularCosto() {
-        if (horario.equals("DIURNO")) {
-            return 500.0;
-        } else if (horario.equals("NOCTURNO")) {
-            return 700.0;
-        } else if (horario.equals("FIN_DE_SEMANA")) {
-            return 900.0;
-        }
-        throw new IllegalArgumentException("Horario desconocido: " + horario);
+    public String getTituloEjemplar() {
+        return tituloEjemplar;
+    }
+
+    public String getExcepcionalidad() {
+        return excepcionalidad;
     }
 }
 ```
 
-Sin escribir código, responde: si se agrega un horario nuevo (por ejemplo, "FERIADO"), ¿qué método hay
-que modificar y qué parte exacta de ese método?
+```java
+package com.biblioteca;
+
+public class GestorDePrestamos {
+    public String aprobar(SolicitudDePrestamoEspecial solicitud) {
+        if (solicitud.getExcepcionalidad().equals("BAJA")) {
+            return "Aprobado por la sala: " + solicitud.getTituloEjemplar();
+        } else if (solicitud.getExcepcionalidad().equals("MEDIA")) {
+            return "Aprobado por la seccion: " + solicitud.getTituloEjemplar();
+        } else if (solicitud.getExcepcionalidad().equals("ALTA")) {
+            return "Aprobado por la direccion: " + solicitud.getTituloEjemplar();
+        }
+        throw new IllegalArgumentException("Excepcionalidad desconocida: " + solicitud.getExcepcionalidad());
+    }
+}
+```
+
+Sin escribir código, responde: si se agrega un nivel de excepcionalidad nuevo (por ejemplo, "CRITICA"),
+¿qué método hay que modificar y qué parte exacta de ese método?
 
 ## 📏 Criterios de evaluación de la solución
 
-- Identifica que hay que modificar `SolicitudDeSala.calcularCosto()`, agregando una rama más al
+- Identifica que hay que modificar `GestorDePrestamos.aprobar()`, agregando una rama más al
   condicional.
-- Explica por qué eso es una violación de Strategy: el código cliente (o la propia clase) está
-  acoplado a un condicional que crece con cada horario nuevo.
+- Explica por qué eso es una violación de Chain of Responsibility: un único método concentra la
+  decisión de todos los niveles de aprobación posibles.
 
 ## 🚧 Restricciones
 
@@ -49,5 +65,5 @@ Básico
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-2**: reconocer qué resuelve Strategy.
-- **RA-3**: identificar el condicional que elige un algoritmo en un fragmento dado.
+- **RA-2**: reconocer qué resuelve Chain of Responsibility.
+- **RA-3**: identificar el condicional único que decide quién resuelve una solicitud.

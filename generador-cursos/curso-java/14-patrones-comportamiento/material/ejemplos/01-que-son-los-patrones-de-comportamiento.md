@@ -14,13 +14,16 @@ en condicionales, o repetida en varios lugares.
 flowchart TB
     GOF["Catálogo GoF"] --> C["Creacionales (Módulo 12)"]
     GOF --> E["Estructurales (Módulo 13)"]
-    GOF --> B["De comportamiento (este módulo, primera mitad)"]
-    B --> ST["Strategy"]
-    B --> OB["Observer"]
+    GOF --> B["De comportamiento (este módulo)"]
+    B --> CH["Chain of Responsibility"]
     B --> CO["Command"]
-    B --> SE["State"]
+    B --> IT["Iterator"]
+    B --> ME["Mediator"]
+    B --> MM["Memento"]
+    B --> OB["Observer"]
+    B --> ST["State"]
+    B --> SG["Strategy"]
     B --> TM["Template Method"]
-    B -.-> M15["Otros seis patrones\n(Módulo 15)"]
 ```
 
 ## 🧭 Explicación paso a paso
@@ -28,22 +31,24 @@ flowchart TB
 1. Un patrón de comportamiento no crea objetos (eso es un patrón creacional) ni los compone en
    estructuras más grandes (eso es un patrón estructural): resuelve cómo un objeto reparte su
    comportamiento, o cómo varios objetos ya existentes se comunican entre sí.
-2. Este módulo cubre cinco de los once patrones de comportamiento del catálogo GoF, los de uso más
-   frecuente en código Java real: Strategy, Observer, Command, State y Template Method. Los seis
-   restantes (Chain of Responsibility, Iterator, Mediator, Memento, Visitor, Interpreter) quedan para
-   el Módulo 15.
+2. Este módulo cubre los nueve patrones de comportamiento del catálogo GoF, en el orden del temario:
+   Chain of Responsibility, Command, Iterator, Mediator, Memento, Observer, State, Strategy y Template
+   Method.
 3. Un caso particular: en el Módulo 11 (SOLID) ya construiste, para resolver el Principio Abierto/
    Cerrado, un diseño con una interfaz y una implementación por caso, intercambiable en tiempo de
    ejecución — sin llamarlo por su nombre en ese momento. Ese diseño es, exactamente, la intención de
-   Strategy, el primer patrón de este módulo.
-4. Cada uno de los cinco patrones aparece primero como un problema real (un condicional que elige un
+   Strategy, uno de los nueve patrones de este módulo.
+4. Cada uno de los nueve patrones aparece primero como un problema real (un condicional que elige un
    algoritmo, una notificación manual a cada interesado, una acción sin poder deshacerse, un
    comportamiento disperso en condicionales sobre un campo de estado, un esqueleto de pasos copiado y
-   pegado), y después como su solución aplicando el patrón correspondiente.
+   pegado, un único método que concentra la decisión de a quién delegar una solicitud, código acoplado a
+   la estructura interna de una colección, varios objetos comunicándose directamente entre sí, un objeto
+   editable sin forma de deshacer cambios), y después como su solución aplicando el patrón
+   correspondiente.
 
 ## ✅ Resultado esperado
 
-Al terminar este módulo vas a poder mirar un diseño Java real y reconocer cuál de estos cinco patrones
+Al terminar este módulo vas a poder mirar un diseño Java real y reconocer cuál de estos nueve patrones
 de comportamiento (o ninguno) resuelve el problema de comunicación o reparto de responsabilidades que
 tiene delante.
 
@@ -66,20 +71,18 @@ responsabilidades.
 
 </details>
 
-**2. [Selección]** ¿Cuántos patrones de comportamiento cubre este módulo, y cuántos quedan para el
-Módulo 15?
+**2. [Selección]** ¿Cuántos patrones de comportamiento cubre este módulo?
 
-- A. Los once, en un solo módulo.
-- B. Cinco en este módulo, seis en el Módulo 15.
-- C. Ninguno: los patrones de comportamiento no se dividen en dos módulos.
-- D. Seis en este módulo, cinco en el Módulo 15.
+- A. Cinco.
+- B. Cuatro.
+- C. Nueve.
+- D. Once.
 
 <details>
 <summary>🔑 Ver respuesta</summary>
 
-**Respuesta correcta: B.** Este módulo cubre Strategy, Observer, Command, State y Template Method; el
-Módulo 15 cubre los seis restantes (Chain of Responsibility, Iterator, Mediator, Memento, Visitor,
-Interpreter).
+**Respuesta correcta: C.** Este módulo cubre los nueve patrones de comportamiento del temario: Chain of
+Responsibility, Command, Iterator, Mediator, Memento, Observer, State, Strategy y Template Method.
 
 </details>
 

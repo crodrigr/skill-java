@@ -1,4 +1,4 @@
-# 💡 Ejemplo 06 — Template Method
+# 💡 Ejemplo 10 — Template Method
 
 ## 🌍 Contexto
 

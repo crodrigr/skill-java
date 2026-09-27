@@ -1,4 +1,4 @@
-# 💡 Ejemplo 04 — Mediator
+# 💡 Ejemplo 05 — Mediator
 
 ## 🌍 Contexto
 

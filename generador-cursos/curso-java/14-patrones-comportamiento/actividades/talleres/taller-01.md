@@ -1,69 +1,72 @@
-# 🛠️ Taller 01 — Sistema de Gestión de Turnos de MediSalud
+# 🛠️ Taller 01 — Sistema de Gestión de Solicitudes Clínicas de MediSalud
 
 ## 🎯 Objetivo
 
-Diseñar, desde cero, un sistema de gestión de turnos que combine cuatro de los cinco patrones de
-comportamiento: Strategy, Observer, Command y State (RA-4, RA-7, RA-10, RA-13).
+Diseñar, desde cero, un sistema de gestión de solicitudes clínicas que combine tres de los cuatro
+patrones de comportamiento: Chain of Responsibility, Mediator y Memento (RA-4, RA-13, RA-16).
 
 ## 🌍 Contexto
 
-MediSalud quiere renovar la gestión de sus turnos médicos. El sistema debe: calcular la tarifa de un
-turno según su modalidad de atención, sin ningún condicional; notificar a varios interesados (el
-paciente por SMS, la pantalla de recepción) cada vez que un turno cambia de estado; permitir confirmar
-y cancelar turnos como acciones registradas en una bitácora; y hacer que el propio turno decida qué
-transiciones son válidas según su estado actual, sin condicionales dispersos.
+MediSalud quiere renovar la aprobación de solicitudes de procedimiento. El sistema debe: aprobar cada
+solicitud según su complejidad, a través de una cadena de niveles de aprobación; coordinar, una vez
+aprobada, la reserva de insumos y la notificación correspondiente, sin que estas dos tareas se conozcan
+entre sí directamente; y permitir editar el texto de una solicitud antes de aprobarla, con la
+posibilidad de deshacer un cambio y volver a una versión anterior.
 
 ## 🪜 Pasos
 
-1. **Strategy**: Declara la interfaz `ReglaDeTarifa` (con un método `calcular(montoBase)`) y sus dos
-   implementaciones (`TarifaTurnoPresencial`, `TarifaTurnoVirtual`).
-2. **State**: Declara la interfaz `EstadoDeTurnoMedico` y sus cuatro implementaciones (`Reservado`,
-   `Confirmado`, `Atendido`, `Cancelado`), cada una decidiendo sus propias transiciones válidas.
-3. **Observer**: Declara la interfaz `ObservadorDeTurnoMedico` y sus dos implementaciones
-   (`NotificadorPacienteSms`, `PantallaDeRecepcion`), notificadas cuando un `TurnoMedico` cambia de
-   estado.
-4. **Command**: Declara la interfaz `AccionSobreTurnoMedico` y sus dos implementaciones
-   (`AccionConfirmarTurnoMedico`, `AccionCancelarTurnoMedico`), ejecutadas a través de una
-   `BitacoraDeAcciones` que registra cada acción.
-5. **Integración**: Con las cuatro piezas anteriores, arma al menos dos `TurnoMedico` con modalidades
-   distintas, registra observadores en cada uno, ejecuta acciones de confirmación y cancelación a
-   través de la bitácora, y verifica que los resultados coincidan con los `## 🧪 Casos de prueba`.
+1. **Chain of Responsibility**: Declara la interfaz `ManejadorDeProcedimiento` y sus tres
+   implementaciones (`AprobadorClinicoNivel1`, `AprobadorClinicoNivel2`, `AprobadorClinicoNivel3`),
+   cada una decidiendo si aprueba una `SolicitudDeProcedimiento` según su complejidad, o la pasa al
+   siguiente nivel.
+2. **Mediator**: Declara `MediadorClinico`, que coordina `AreaInventarioClinico` y
+   `AreaNotificacionesClinicas` cuando una solicitud es aprobada, sin que estas dos áreas se conozcan
+   entre sí.
+3. **Memento**: Declara `BorradorDeProcedimiento`, que permite guardar (`guardarInstante()`) y
+   restaurar (`restaurar(instante)`) instantes (`InstanteDeProcedimiento`) del texto de una solicitud en
+   edición, a través de un `HistorialDeInstantes`.
+4. **Integración**: Con las tres piezas anteriores, arma al menos dos `SolicitudDeProcedimiento` de
+   complejidad distinta; edita el borrador de una de ellas, deshace un cambio antes de aprobarla;
+   aprueba ambas a través de la cadena de manejadores; y coordina, para cada una, la notificación
+   resultante a través del mediador. Ejecuta con los casos de prueba.
 
 ## 💡 Ejemplo resuelto
 
-Así se ve el estado `Reservado`, una vez resuelto el paso 2: decide sus propias transiciones válidas,
-sin que `TurnoMedico` necesite ningún condicional:
+Así se ve el primer nivel de la cadena de aprobación, una vez resuelto el paso 1: decide si aprueba la
+solicitud o la pasa al siguiente nivel, sin conocer a los niveles posteriores:
 
 ```java
-// dentro de Reservado implements EstadoDeTurnoMedico
-public String confirmar(TurnoMedico turno) {
-    turno.setEstado(new Confirmado());
-    return "Turno confirmado";
+// dentro de AprobadorClinicoNivel1 implements ManejadorDeProcedimiento
+private ManejadorDeProcedimiento siguiente;
+
+public AprobadorClinicoNivel1(ManejadorDeProcedimiento siguiente) {
+    this.siguiente = siguiente;
 }
 
-public String atender(TurnoMedico turno) {
-    return "No se puede atender: el turno no esta confirmado";
+public String aprobar(SolicitudDeProcedimiento solicitud) {
+    if (solicitud.getComplejidad().equals("BASICA")) {
+        return "Aprobado nivel 1: " + solicitud.getNombreProcedimiento();
+    }
+    return siguiente.aprobar(solicitud);
 }
 ```
 
-El resto del diseño (la regla de tarifa, los observadores, las acciones de la bitácora) queda para ti.
+El resto del diseño (el mediador clínico, el borrador con instantes) queda para ti.
 
 ## 📦 Entregable
 
 ```text
-GestionDeTurnos/
+GestionDeSolicitudesClinicas/
 └── com/medisalud/
-    ├── ReglaDeTarifa.java              (interfaz, Strategy)
-    ├── TarifaTurnoPresencial.java      (Strategy)
-    ├── TarifaTurnoVirtual.java         (Strategy)
-    ├── EstadoDeTurnoMedico.java        (interfaz, State)
-    ├── Reservado.java, Confirmado.java, Atendido.java, Cancelado.java  (State)
-    ├── ObservadorDeTurnoMedico.java    (interfaz, Observer)
-    ├── NotificadorPacienteSms.java, PantallaDeRecepcion.java          (Observer)
-    ├── AccionSobreTurnoMedico.java     (interfaz, Command)
-    ├── AccionConfirmarTurnoMedico.java, AccionCancelarTurnoMedico.java (Command)
-    ├── BitacoraDeAcciones.java         (Command)
-    ├── TurnoMedico.java                (orquesta los cuatro patrones)
+    ├── SolicitudDeProcedimiento.java       (contexto compartido)
+    ├── ManejadorDeProcedimiento.java       (interfaz, Chain of Responsibility)
+    ├── AprobadorClinicoNivel1/2/3.java     (Chain of Responsibility)
+    ├── AreaInventarioClinico.java          (Mediator)
+    ├── AreaNotificacionesClinicas.java     (Mediator)
+    ├── MediadorClinico.java                (Mediator)
+    ├── InstanteDeProcedimiento.java        (Memento)
+    ├── HistorialDeInstantes.java           (Memento)
+    ├── BorradorDeProcedimiento.java        (Memento)
     └── Demo.java
 ```
 
@@ -71,16 +74,17 @@ GestionDeTurnos/
 
 | Entrada | Operación | Resultado esperado |
 |---|---|---|
-| Turno presencial confirmado a través de la bitácora | `turnoPresencial.calcularTarifa()` | `5000.0` |
-| Turno virtual confirmado a través de la bitácora | `turnoVirtual.calcularTarifa()` | `3500.0` (70% del monto base) |
-| Turno virtual cancelado después de confirmado | `turnoVirtual.getEstado()` | `"CANCELADO"` |
-| Tres acciones ejecutadas a través de la bitácora | `bitacora.totalAcciones()` | `3` |
+| Editar el borrador de una solicitud, guardar un instante, editar de nuevo y restaurar | Texto de la solicitud | Exactamente el texto guardado en el instante, no el segundo |
+| Solicitud de complejidad `"BASICA"` | Aprobación a través de la cadena | `"Aprobado nivel 1: <nombre>"` |
+| Solicitud de complejidad `"AVANZADA"` | Aprobación a través de la cadena | `"Aprobado nivel 3: <nombre>"` |
+| Cualquier solicitud aprobada | Coordinación a través del mediador | Reserva de insumos y notificación, en ese orden |
 
 ## 📏 Criterios de evaluación
 
-- `TurnoMedico.calcularTarifa()` no contiene ningún condicional sobre la modalidad.
-- Ninguna clase de estado (`Reservado`, `Confirmado`, `Atendido`, `Cancelado`) permite una transición
-  inválida sin rechazarla explícitamente.
-- Agregar un observador nuevo no exige modificar `TurnoMedico`.
-- `BitacoraDeAcciones` registra cada acción ejecutada, verificable con `totalAcciones()`.
+- `AprobadorClinicoNivel1`/`2`/`3` implementan la misma interfaz, y cada uno solo conoce al siguiente
+  de la cadena (cuando corresponde).
+- `AreaInventarioClinico` y `AreaNotificacionesClinicas` no se conocen entre sí directamente; toda su
+  coordinación pasa por `MediadorClinico`.
+- `InstanteDeProcedimiento` no expone su texto con un método público accesible desde fuera de su
+  paquete.
 - El programa compila, se ejecuta y produce los resultados de la tabla de casos de prueba.

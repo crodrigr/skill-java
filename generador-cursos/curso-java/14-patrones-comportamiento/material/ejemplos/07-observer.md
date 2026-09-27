@@ -1,4 +1,4 @@
-# 💡 Ejemplo 03 — Observer
+# 💡 Ejemplo 07 — Observer
 
 ## 🌍 Contexto
 

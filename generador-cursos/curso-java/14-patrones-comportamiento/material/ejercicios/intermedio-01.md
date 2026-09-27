@@ -1,30 +1,46 @@
-# 🟡 Intermedio 01 — Aplicar Strategy
+# 🟡 Intermedio 01 — Aplicar Chain of Responsibility
 
 ## 🧩 Problema
 
-Tienes la misma clase de la Biblioteca Universitaria del ejercicio Básico 01:
+Tienes las mismas clases de la Biblioteca Universitaria del ejercicio Básico 01:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class SolicitudDeSala {
-    private String horario;
+public class SolicitudDePrestamoEspecial {
+    private String tituloEjemplar;
+    private String excepcionalidad;
 
-    public SolicitudDeSala(String horario) {
-        this.horario = horario;
+    public SolicitudDePrestamoEspecial(String tituloEjemplar, String excepcionalidad) {
+        this.tituloEjemplar = tituloEjemplar;
+        this.excepcionalidad = excepcionalidad;
     }
 
-    public double calcularCosto() {
-        if (horario.equals("DIURNO")) {
-            return 500.0;
-        } else if (horario.equals("NOCTURNO")) {
-            return 700.0;
-        } else if (horario.equals("FIN_DE_SEMANA")) {
-            return 900.0;
+    public String getTituloEjemplar() {
+        return tituloEjemplar;
+    }
+
+    public String getExcepcionalidad() {
+        return excepcionalidad;
+    }
+}
+```
+
+```java
+package com.biblioteca;
+
+public class GestorDePrestamos {
+    public String aprobar(SolicitudDePrestamoEspecial solicitud) {
+        if (solicitud.getExcepcionalidad().equals("BAJA")) {
+            return "Aprobado por la sala: " + solicitud.getTituloEjemplar();
+        } else if (solicitud.getExcepcionalidad().equals("MEDIA")) {
+            return "Aprobado por la seccion: " + solicitud.getTituloEjemplar();
+        } else if (solicitud.getExcepcionalidad().equals("ALTA")) {
+            return "Aprobado por la direccion: " + solicitud.getTituloEjemplar();
         }
-        throw new IllegalArgumentException("Horario desconocido: " + horario);
+        throw new IllegalArgumentException("Excepcionalidad desconocida: " + solicitud.getExcepcionalidad());
     }
 }
 ```
@@ -34,35 +50,60 @@ package com.biblioteca;
 
 public class Demo {
     public static void main(String[] args) {
-        SolicitudDeSala solicitudDiurna = new SolicitudDeSala("DIURNO");
-        SolicitudDeSala solicitudNocturna = new SolicitudDeSala("NOCTURNO");
-        System.out.println(solicitudDiurna.calcularCosto());
-        System.out.println(solicitudNocturna.calcularCosto());
+        GestorDePrestamos gestor = new GestorDePrestamos();
+
+        SolicitudDePrestamoEspecial s1 = new SolicitudDePrestamoEspecial("Manuscrito comun", "BAJA");
+        SolicitudDePrestamoEspecial s2 = new SolicitudDePrestamoEspecial("Primera edicion", "MEDIA");
+        SolicitudDePrestamoEspecial s3 = new SolicitudDePrestamoEspecial("Manuscrito unico", "ALTA");
+
+        System.out.println(gestor.aprobar(s1));
+        System.out.println(gestor.aprobar(s2));
+        System.out.println(gestor.aprobar(s3));
     }
 }
 ```
 
-Rediséñala para que respete Strategy: declara una interfaz que encapsule el cálculo del costo, con una
-implementación por horario, elegida en tiempo de ejecución sin ningún condicional en `SolicitudDeSala`.
+Rediséñalas para que respeten Chain of Responsibility: declara una cadena de manejadores, cada uno
+decidiendo si aprueba la solicitud o la pasa al siguiente.
+
+## 🗺️ Diagrama
+
+```mermaid
+classDiagram
+    class ManejadorDePrestamo {
+        <<interface>>
+        +aprobar(solicitud) String
+    }
+    class AprobadorDeSala
+    class AprobadorDeSeccion
+    class AprobadorDeDireccion
+    ManejadorDePrestamo <|.. AprobadorDeSala
+    ManejadorDePrestamo <|.. AprobadorDeSeccion
+    ManejadorDePrestamo <|.. AprobadorDeDireccion
+    AprobadorDeSala --> AprobadorDeSeccion : pasa al siguiente
+    AprobadorDeSeccion --> AprobadorDeDireccion : pasa al siguiente
+```
 
 ## 🧪 Casos de prueba
 
 | Entrada | Verificación | Resultado esperado |
 |---|---|---|
-| Una solicitud diurna y una nocturna | Salida completa del programa antes y después de refactorizar | Idéntica, carácter por carácter |
-| Se agrega un horario nuevo (`"FERIADO"`) como una clase que implementa la interfaz de estrategia | Archivo `SolicitudDeSala.java` | Sin ninguna modificación |
+| Solicitudes de excepcionalidad `"BAJA"`, `"MEDIA"` y `"ALTA"` | Salida completa del programa antes y después de refactorizar | Idéntica, carácter por carácter |
+| Se agrega un nivel nuevo (`"CRITICA"`) como una clase que implementa `ManejadorDePrestamo` | Archivo `AprobadorDeSala.java` | Sin ninguna modificación |
 
 ## 📏 Criterios de evaluación de la solución
 
-- Declara una interfaz (por ejemplo, `EstrategiaDeCosto`) con un método `calcular()`.
-- `SolicitudDeSala` recibe la estrategia por composición (constructor) y delega en ella, sin ningún
-  condicional.
+- Declara una interfaz (por ejemplo, `ManejadorDePrestamo`) con un método `aprobar(solicitud)`.
+- Declara tres manejadores (`AprobadorDeSala`, `AprobadorDeSeccion`, `AprobadorDeDireccion`), cada uno
+  recibiendo al siguiente de la cadena por composición.
 - La salida por consola no cambia respecto de la versión original.
-- Un horario nuevo se agrega con una clase nueva, sin modificar `SolicitudDeSala.java`.
+- Un nivel nuevo se agrega con una clase nueva, insertada en la cadena, sin modificar los manejadores
+  existentes.
 
 ## 🚧 Restricciones
 
-- No se usan `Set`, `Map` ni excepciones como parte del diseño.
+- No se usan `Set`, `Map` ni excepciones como parte del diseño (más allá de señalar, sin capturarla, que
+  ningún nivel pudo aprobar).
 
 ## 📊 Dificultad
 
@@ -70,4 +111,4 @@ Intermedio
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-4**: implementar Strategy para un caso dado.
+- **RA-4**: implementar Chain of Responsibility para un caso dado.

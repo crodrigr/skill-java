@@ -1,4 +1,4 @@
-# 💡 Ejemplo 05 — Memento
+# 💡 Ejemplo 06 — Memento
 
 ## 🌍 Contexto
 
@@ -252,7 +252,7 @@ instantes opacos, sin necesitar leer su contenido.
 
 </details>
 
-**3. [Abierta]** Un compañero dice: "Memento es lo mismo que Command (Módulo 14), porque los dos
+**3. [Abierta]** Un compañero dice: "Memento es lo mismo que Command, porque los dos
 permiten deshacer algo". ¿Estás de acuerdo? Justifica tu respuesta.
 
 <details>

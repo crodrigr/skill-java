@@ -1,56 +1,73 @@
-# 🟢 Básico 04 — Identificar violación de State
+# 🟢 Básico 04 — Identificar violación de Mediator
 
 ## 🧩 Problema
 
-La Biblioteca Universitaria controla el estado de un ítem del catálogo con esta clase:
+La Biblioteca Universitaria coordina la devolución de un ejemplar con este código:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class ItemDeCatalogo {
-    private String estado = "DISPONIBLE";
+public class AreaPrestamos {
+    private AreaReservas areaReservas;
+    private AreaMultas areaMultas;
 
-    public String prestar() {
-        if (estado.equals("DISPONIBLE")) {
-            estado = "PRESTADO";
-            return "Prestamo registrado, pasa a PRESTADO";
-        }
-        return "No se puede prestar: el item no esta disponible";
+    public AreaPrestamos(AreaReservas areaReservas, AreaMultas areaMultas) {
+        this.areaReservas = areaReservas;
+        this.areaMultas = areaMultas;
     }
 
-    public String devolver() {
-        if (estado.equals("PRESTADO")) {
-            estado = "DISPONIBLE";
-            return "Devolucion registrada, pasa a DISPONIBLE";
-        }
-        return "No se puede devolver: el item no esta prestado";
-    }
-
-    public String enviarAReparacion() {
-        if (estado.equals("DISPONIBLE")) {
-            estado = "EN_REPARACION";
-            return "Enviado a reparacion";
-        }
-        return "No se puede enviar a reparacion: el item no esta disponible";
-    }
-
-    public String getEstado() {
-        return estado;
+    public void registrarDevolucion(String ejemplar) {
+        System.out.println("Prestamos: registrando devolucion de " + ejemplar);
+        areaReservas.recibirAvisoDeDevolucion(ejemplar);
+        areaMultas.recibirAvisoDeDevolucion(ejemplar);
     }
 }
 ```
 
-Sin escribir código, responde: si se agrega un estado nuevo (por ejemplo, "RESERVADO"), ¿cuántos
-métodos hay que revisar y modificar?
+```java
+package com.biblioteca;
+
+public class AreaReservas {
+    public void recibirAvisoDeDevolucion(String ejemplar) {
+        System.out.println("Reservas: notificando al proximo interesado en " + ejemplar);
+    }
+}
+```
+
+```java
+package com.biblioteca;
+
+public class AreaMultas {
+    public void recibirAvisoDeDevolucion(String ejemplar) {
+        System.out.println("Multas: verificando atraso de " + ejemplar);
+    }
+}
+```
+
+```java
+package com.biblioteca;
+
+public class Demo {
+    public static void main(String[] args) {
+        AreaReservas areaReservas = new AreaReservas();
+        AreaMultas areaMultas = new AreaMultas();
+        AreaPrestamos areaPrestamos = new AreaPrestamos(areaReservas, areaMultas);
+
+        areaPrestamos.registrarDevolucion("Cien anios de soledad");
+    }
+}
+```
+
+Sin escribir código, responde: ¿a cuántas otras áreas conoce y llama directamente `AreaPrestamos`, y qué
+pasaría si mañana se agrega un área nueva que también debe enterarse?
 
 ## 📏 Criterios de evaluación de la solución
 
-- Identifica que hay que revisar los tres métodos (`prestar()`, `devolver()`,
-  `enviarAReparacion()`), porque cada uno repite su propio condicional sobre el campo `estado`.
-- Explica que eso es una violación de State: el comportamiento válido en cada momento depende de un
-  campo disperso en varios condicionales, repetidos en cada método.
+- Identifica que `AreaPrestamos` conoce y llama directamente a `AreaReservas` y a `AreaMultas`.
+- Explica que agregar un área nueva exigiría modificar `AreaPrestamos` (el constructor y el método que
+  coordina la devolución), en vez de agregar el área nueva sin tocar las existentes.
 
 ## 🚧 Restricciones
 
@@ -62,5 +79,5 @@ Básico
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-11**: reconocer qué resuelve State.
-- **RA-12**: identificar condicionales dispersos sobre un campo de estado en un fragmento dado.
+- **RA-11**: reconocer qué resuelve Mediator.
+- **RA-12**: reconocer acoplamiento de todos con todos entre varios objetos.

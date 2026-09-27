@@ -1,4 +1,4 @@
-# 💡 Ejemplo 02 — Strategy
+# 💡 Ejemplo 09 — Strategy
 
 ## 🌍 Contexto
 

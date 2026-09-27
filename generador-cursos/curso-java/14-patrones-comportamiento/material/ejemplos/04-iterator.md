@@ -1,4 +1,4 @@
-# 💡 Ejemplo 03 — Iterator
+# 💡 Ejemplo 04 — Iterator
 
 ## 🌍 Contexto
 

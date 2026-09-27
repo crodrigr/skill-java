@@ -1,39 +1,23 @@
-# 🟡 Intermedio 05 — Aplicar Template Method
+# 🟡 Intermedio 05 — Aplicar Memento
 
 ## 🧩 Problema
 
-Tienes las mismas clases de la Biblioteca Universitaria del ejercicio Básico 05:
+Tienes la misma clase de la Biblioteca Universitaria del ejercicio Básico 05:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class FichaDeLibro {
-    public String generar(String titulo) {
-        StringBuilder ficha = new StringBuilder();
-        ficha.append("Catalogando ").append(titulo).append("\n");
-        String datoPropio = "Genero: Novela";
-        ficha.append("=== Ficha de Libro ===\n");
-        ficha.append("Titulo: ").append(titulo).append("\n");
-        ficha.append(datoPropio);
-        return ficha.toString();
+public class BorradorDeFicha {
+    private String descripcion;
+
+    public void escribir(String descripcion) {
+        this.descripcion = descripcion;
     }
-}
-```
 
-```java
-package com.biblioteca;
-
-public class FichaDeRevista {
-    public String generar(String titulo) {
-        StringBuilder ficha = new StringBuilder();
-        ficha.append("Catalogando ").append(titulo).append("\n");
-        String datoPropio = "Periodicidad: Mensual";
-        // Copiado y pegado de FichaDeLibro: aca se olvido el encabezado "=== Ficha de X ===".
-        ficha.append("Titulo: ").append(titulo).append("\n");
-        ficha.append(datoPropio);
-        return ficha.toString();
+    public String getDescripcion() {
+        return descripcion;
     }
 }
 ```
@@ -43,29 +27,34 @@ package com.biblioteca;
 
 public class Demo {
     public static void main(String[] args) {
-        System.out.println(new FichaDeLibro().generar("Rayuela"));
-        System.out.println("---");
-        System.out.println(new FichaDeRevista().generar("National Geographic"));
+        BorradorDeFicha borrador = new BorradorDeFicha();
+        borrador.escribir("Novela de realismo magico");
+        System.out.println(borrador.getDescripcion());
+
+        borrador.escribir("Novela de ciencia ficcion");
+        System.out.println(borrador.getDescripcion());
     }
 }
 ```
 
-Rediséñalas para que respeten Template Method: fija el esqueleto de cuatro pasos en una clase abstracta
-con un método `final`, delegando en subclases solo los pasos que varían.
+Rediséñala para que respete Memento: agrega la posibilidad de guardar y restaurar instantes del
+borrador, sin exponer su estructura interna a quien los guarda.
 
 ## 🧪 Casos de prueba
 
 | Entrada | Verificación | Resultado esperado |
 |---|---|---|
-| Ficha de un libro y de una revista | Presencia del encabezado (`=== Ficha de ... ===`) en ambas salidas | Presente en las dos, sin excepción |
-| Se agrega una tercera variante nueva extendiendo la clase abstracta | Posibilidad de omitir el encabezado | Ninguna: el método `generar()` es `final` |
+| Escribir una descripción, guardar un instante, escribir una segunda descripción, y restaurar el instante guardado | Descripción final del borrador | Exactamente la primera descripción, no la segunda |
+| `InstanteDeFicha` | Métodos públicos que expongan la descripción a cualquier clase | Ninguno (constructor y lectura sin modificador de acceso) |
 
 ## 📏 Criterios de evaluación de la solución
 
-- Declara una clase abstracta (por ejemplo, `GeneradorDeFicha`) con un método `generar()` marcado
-  `final`, que fija el esqueleto de cuatro pasos.
-- `FichaDeLibro` y `FichaDeRevista` extienden esa clase, implementando solo los dos pasos que varían.
-- Ninguna subclase puede omitir ni reordenar el esqueleto.
+- Declara una clase (por ejemplo, `InstanteDeFicha`) que captura la descripción en un momento dado, con
+  constructor y lectura de visibilidad de paquete (no públicos).
+- Declara un historial (por ejemplo, `HistorialDeEdiciones`) que guarda instantes y puede devolver el
+  último.
+- `BorradorDeFicha.restaurar(instante)` reemplaza su descripción por la del instante recibido.
+- El texto se restaura exactamente al de un instante guardado anteriormente.
 
 ## 🚧 Restricciones
 
@@ -77,4 +66,4 @@ Intermedio
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-16**: implementar Template Method para un caso dado.
+- **RA-16**: implementar Memento para un caso dado.

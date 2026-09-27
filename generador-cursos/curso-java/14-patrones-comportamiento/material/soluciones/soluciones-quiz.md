@@ -11,13 +11,25 @@
 | 5 | Selección | B | RA-5 |
 | 6 | Selección múltiple | A, B, C | RA-6 |
 | 7 | Abierta | Ver quiz-01.md | RA-7 |
-| 8 | Selección | B | RA-8 |
+| 8 | Selección | A | RA-8 |
 | 9 | Selección múltiple | A, B, C | RA-9 |
 | 10 | Abierta | Ver quiz-01.md | RA-10 |
-| 11 | Selección | A | RA-11 |
+| 11 | Selección | B | RA-11 |
 | 12 | Selección múltiple | A, B, C | RA-12 |
 | 13 | Abierta | Ver quiz-01.md | RA-13 |
 | 14 | Selección | B | RA-14 |
 | 15 | Selección múltiple | A, B, C | RA-15 |
 | 16 | Abierta | Ver quiz-01.md | RA-16 |
-| 17 | Abierta | Ver quiz-01.md | RA-17 |
+| 17 | Selección | B | RA-17 |
+| 18 | Selección múltiple | A, B, C | RA-18 |
+| 19 | Abierta | Ver quiz-01.md | RA-19 |
+| 20 | Selección | A | RA-20 |
+| 21 | Selección múltiple | A, B, C | RA-21 |
+| 22 | Abierta | Ver quiz-01.md | RA-22 |
+| 23 | Selección | B | RA-23 |
+| 24 | Selección múltiple | A, B, C | RA-24 |
+| 25 | Abierta | Ver quiz-01.md | RA-25 |
+| 26 | Selección | B | RA-26 |
+| 27 | Selección múltiple | A, B, C | RA-27 |
+| 28 | Abierta | Ver quiz-01.md | RA-28 |
+| 29 | Abierta | Ver quiz-01.md | RA-29 |

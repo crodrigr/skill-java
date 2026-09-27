@@ -1,43 +1,47 @@
-# 🟡 Intermedio 04 — Aplicar State
+# 🟡 Intermedio 04 — Aplicar Mediator
 
 ## 🧩 Problema
 
-Tienes la misma clase de la Biblioteca Universitaria del ejercicio Básico 04:
+Tienes las mismas clases de la Biblioteca Universitaria del ejercicio Básico 04:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class ItemDeCatalogo {
-    private String estado = "DISPONIBLE";
+public class AreaPrestamos {
+    private AreaReservas areaReservas;
+    private AreaMultas areaMultas;
 
-    public String prestar() {
-        if (estado.equals("DISPONIBLE")) {
-            estado = "PRESTADO";
-            return "Prestamo registrado, pasa a PRESTADO";
-        }
-        return "No se puede prestar: el item no esta disponible";
+    public AreaPrestamos(AreaReservas areaReservas, AreaMultas areaMultas) {
+        this.areaReservas = areaReservas;
+        this.areaMultas = areaMultas;
     }
 
-    public String devolver() {
-        if (estado.equals("PRESTADO")) {
-            estado = "DISPONIBLE";
-            return "Devolucion registrada, pasa a DISPONIBLE";
-        }
-        return "No se puede devolver: el item no esta prestado";
+    public void registrarDevolucion(String ejemplar) {
+        System.out.println("Prestamos: registrando devolucion de " + ejemplar);
+        areaReservas.recibirAvisoDeDevolucion(ejemplar);
+        areaMultas.recibirAvisoDeDevolucion(ejemplar);
     }
+}
+```
 
-    public String enviarAReparacion() {
-        if (estado.equals("DISPONIBLE")) {
-            estado = "EN_REPARACION";
-            return "Enviado a reparacion";
-        }
-        return "No se puede enviar a reparacion: el item no esta disponible";
+```java
+package com.biblioteca;
+
+public class AreaReservas {
+    public void recibirAvisoDeDevolucion(String ejemplar) {
+        System.out.println("Reservas: notificando al proximo interesado en " + ejemplar);
     }
+}
+```
 
-    public String getEstado() {
-        return estado;
+```java
+package com.biblioteca;
+
+public class AreaMultas {
+    public void recibirAvisoDeDevolucion(String ejemplar) {
+        System.out.println("Multas: verificando atraso de " + ejemplar);
     }
 }
 ```
@@ -47,31 +51,32 @@ package com.biblioteca;
 
 public class Demo {
     public static void main(String[] args) {
-        ItemDeCatalogo item = new ItemDeCatalogo();
-        System.out.println(item.devolver());
-        System.out.println(item.prestar());
-        System.out.println(item.devolver());
-        System.out.println("estado final=" + item.getEstado());
+        AreaReservas areaReservas = new AreaReservas();
+        AreaMultas areaMultas = new AreaMultas();
+        AreaPrestamos areaPrestamos = new AreaPrestamos(areaReservas, areaMultas);
+
+        areaPrestamos.registrarDevolucion("Cien anios de soledad");
     }
 }
 ```
 
-Rediséñalo para que respete State: declara una clase por estado, que decida sus propias transiciones
-válidas, sin ningún condicional en `ItemDeCatalogo`.
+Rediséñalas para que respeten Mediator: declara un mediador que centralice la comunicación entre las
+tres áreas, de forma que `AreaPrestamos` no conozca directamente a las otras dos.
 
 ## 🧪 Casos de prueba
 
 | Entrada | Verificación | Resultado esperado |
 |---|---|---|
-| Un alta inválida, un préstamo válido, una devolución válida (misma secuencia que la versión original) | Salida completa del programa antes y después de refactorizar | Idéntica, carácter por carácter, incluida la línea de `estado final` |
-| El código de `ItemDeCatalogo` después de refactorizar | Presencia de condicionales sobre un campo de estado | Ninguna |
+| Registrar la devolución de un ejemplar | Salida completa del programa antes y después de refactorizar | Idéntica, carácter por carácter |
+| Se agrega un área nueva, registrada en el mediador | Archivos `AreaPrestamos.java`, `AreaReservas.java` y `AreaMultas.java` | Sin ninguna modificación (solo cambia el mediador) |
 
 ## 📏 Criterios de evaluación de la solución
 
-- Declara una interfaz (por ejemplo, `EstadoDeItem`) con un método por operación, implementada por
-  `Disponible`, `Prestado` y `EnReparacion`.
-- `ItemDeCatalogo` delega cada operación en su estado actual, sin ningún condicional.
+- Declara una clase (por ejemplo, `MediadorDeBiblioteca`) que registra las áreas y coordina la
+  comunicación entre ellas.
+- `AreaPrestamos` conoce solo al mediador, no a `AreaReservas` ni a `AreaMultas` directamente.
 - La salida por consola no cambia respecto de la versión original.
+- Un área nueva se agrega registrándola en el mediador, sin modificar las áreas existentes.
 
 ## 🚧 Restricciones
 
@@ -83,4 +88,4 @@ Intermedio
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-13**: implementar State para un caso dado.
+- **RA-13**: implementar Mediator para un caso dado.

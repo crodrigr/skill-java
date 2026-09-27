@@ -1,34 +1,34 @@
-# 🟢 Básico 03 — Identificar violación de Command
+# 🟢 Básico 03 — Identificar violación de Iterator
 
 ## 🧩 Problema
 
-La Biblioteca Universitaria ocupa y libera puestos de lectura con este código:
+La Biblioteca Universitaria guarda fichas de catálogo en esta colección propia:
 
 ## 💻 Código o contexto de partida
 
 ```java
 package com.biblioteca;
 
-public class PuestoDeLectura {
-    private String numero;
-    private String usuarioAsignado;
+public class ColeccionDeFichas {
+    private String[] fichas;
+    private int cantidad;
 
-    public PuestoDeLectura(String numero) {
-        this.numero = numero;
+    public ColeccionDeFichas(int capacidad) {
+        this.fichas = new String[capacidad];
+        this.cantidad = 0;
     }
 
-    public void ocupar(String usuario) {
-        this.usuarioAsignado = usuario;
-        System.out.println("Puesto " + numero + " ocupado por " + usuario);
+    public void agregar(String ficha) {
+        fichas[cantidad] = ficha;
+        cantidad = cantidad + 1;
     }
 
-    public void liberar() {
-        System.out.println("Puesto " + numero + " liberado (estaba " + usuarioAsignado + ")");
-        this.usuarioAsignado = null;
+    public String[] getFichas() {
+        return fichas;
     }
 
-    public String getUsuarioAsignado() {
-        return usuarioAsignado;
+    public int getCantidad() {
+        return cantidad;
     }
 }
 ```
@@ -38,22 +38,27 @@ package com.biblioteca;
 
 public class Demo {
     public static void main(String[] args) {
-        PuestoDeLectura puesto = new PuestoDeLectura("12");
-        puesto.ocupar("Ana Torres");
-        System.out.println("ocupado por=" + puesto.getUsuarioAsignado());
+        ColeccionDeFichas coleccion = new ColeccionDeFichas(3);
+        coleccion.agregar("Rayuela");
+        coleccion.agregar("El Aleph");
+        coleccion.agregar("Ficciones");
+
+        for (int i = 0; i < coleccion.getCantidad(); i = i + 1) {
+            System.out.println(coleccion.getFichas()[i]);
+        }
     }
 }
 ```
 
-Sin escribir código, responde: si el bibliotecario ocupa un puesto por error y quiere revertir esa
-acción exacta, ¿qué forma tiene de hacerlo con el código de arriba?
+Sin escribir código, responde: si `ColeccionDeFichas` cambiara su representación interna (por ejemplo,
+de un arreglo a otra estructura), ¿qué le pasaría al código de `Demo` que la recorre?
 
 ## 📏 Criterios de evaluación de la solución
 
-- Identifica que no existe ninguna forma uniforme de deshacer la última acción: el bibliotecario solo
-  podría llamar manualmente a `liberar()`, y solo si recuerda cuál fue la acción anterior.
-- Explica que eso es una violación de Command: no hay ningún objeto que represente la acción ejecutada,
-  así que no se puede registrar ni deshacer de forma genérica.
+- Identifica que `Demo` accede directamente a `coleccion.getFichas()[i]`, acoplado a que la colección
+  use un arreglo.
+- Explica que, si la representación interna cambiara, `Demo` también tendría que cambiar, porque
+  depende de esa estructura.
 
 ## 🚧 Restricciones
 
@@ -65,5 +70,5 @@ Básico
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-8**: reconocer qué resuelve Command.
-- **RA-9**: identificar una llamada directa al receptor sin poder deshacer en un fragmento dado.
+- **RA-8**: reconocer qué resuelve Iterator.
+- **RA-9**: identificar acoplamiento a la estructura interna de una colección.

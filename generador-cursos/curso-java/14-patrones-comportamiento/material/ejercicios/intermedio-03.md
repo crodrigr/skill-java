@@ -1,4 +1,4 @@
-# 🟡 Intermedio 03 — Aplicar Command
+# 🟡 Intermedio 03 — Aplicar Iterator
 
 ## 🧩 Problema
 
@@ -9,26 +9,26 @@ Tienes la misma clase de la Biblioteca Universitaria del ejercicio Básico 03:
 ```java
 package com.biblioteca;
 
-public class PuestoDeLectura {
-    private String numero;
-    private String usuarioAsignado;
+public class ColeccionDeFichas {
+    private String[] fichas;
+    private int cantidad;
 
-    public PuestoDeLectura(String numero) {
-        this.numero = numero;
+    public ColeccionDeFichas(int capacidad) {
+        this.fichas = new String[capacidad];
+        this.cantidad = 0;
     }
 
-    public void ocupar(String usuario) {
-        this.usuarioAsignado = usuario;
-        System.out.println("Puesto " + numero + " ocupado por " + usuario);
+    public void agregar(String ficha) {
+        fichas[cantidad] = ficha;
+        cantidad = cantidad + 1;
     }
 
-    public void liberar() {
-        System.out.println("Puesto " + numero + " liberado (estaba " + usuarioAsignado + ")");
-        this.usuarioAsignado = null;
+    public String[] getFichas() {
+        return fichas;
     }
 
-    public String getUsuarioAsignado() {
-        return usuarioAsignado;
+    public int getCantidad() {
+        return cantidad;
     }
 }
 ```
@@ -38,31 +38,35 @@ package com.biblioteca;
 
 public class Demo {
     public static void main(String[] args) {
-        PuestoDeLectura puesto = new PuestoDeLectura("12");
-        puesto.ocupar("Ana Torres");
-        System.out.println("ocupado por=" + puesto.getUsuarioAsignado());
+        ColeccionDeFichas coleccion = new ColeccionDeFichas(3);
+        coleccion.agregar("Rayuela");
+        coleccion.agregar("El Aleph");
+        coleccion.agregar("Ficciones");
+
+        for (int i = 0; i < coleccion.getCantidad(); i = i + 1) {
+            System.out.println(coleccion.getFichas()[i]);
+        }
     }
 }
 ```
 
-Rediséñalo para que respete Command: encapsula ocupar y liberar como acciones que un registro pueda
-ejecutar y deshacer.
+Rediséñala para que respete Iterator: declara una interfaz de iterador que oculte la estructura interna
+de la colección.
 
 ## 🧪 Casos de prueba
 
 | Entrada | Verificación | Resultado esperado |
 |---|---|---|
-| Ejecutar `AccionOcuparPuesto` y consultar `getUsuarioAsignado()` | Salida | `"Ana Torres"` |
-| Deshacer la última acción y volver a consultar `getUsuarioAsignado()` | Salida | `null` (el estado exacto anterior a la acción) |
+| Recorrer una colección con tres fichas | Salida completa del programa antes y después de refactorizar | Idéntica, carácter por carácter |
+| Código de `Demo.java` después de refactorizar | Acceso directo al arreglo interno de la colección | Ninguno |
 
 ## 📏 Criterios de evaluación de la solución
 
-- Declara una interfaz (por ejemplo, `AccionDePuesto`) con `ejecutar()`/`deshacer()`, implementada por
-  `AccionOcuparPuesto` y `AccionLiberarPuesto`.
-- Declara un registro (por ejemplo, `RegistroDeAcciones`) que ejecuta acciones y guarda un historial
-  para poder deshacer la última.
-- `deshacerUltima()` revierte el estado exacto anterior a la acción, sin que el código cliente conozca
-  la operación contraria de cada acción.
+- Declara una interfaz (por ejemplo, `IteradorDeFichas`) con `haySiguiente()`/`siguiente()`.
+- `ColeccionDeFichas` expone un método que crea su iterador (`crearIterador()`), sin exponer su arreglo
+  interno.
+- La salida por consola no cambia respecto de la versión original.
+- `Demo` recorre la colección solo a través del iterador.
 
 ## 🚧 Restricciones
 
@@ -74,4 +78,4 @@ Intermedio
 
 ## 🎓 Resultados de aprendizaje
 
-- **RA-10**: implementar Command para un caso dado.
+- **RA-10**: implementar Iterator para un caso dado.

@@ -1,4 +1,4 @@
-# 🔑 Solución del Taller 01 — Sistema de Gestión de Turnos de MediSalud
+# 🔑 Solución del Taller 01 — Sistema de Gestión de Solicitudes Clínicas de MediSalud
 
 > Material docente, no enlazar desde la audiencia estudiante.
 
@@ -6,408 +6,277 @@
 
 ```mermaid
 classDiagram
-    class ReglaDeTarifa {
-        <<interface>>
-        +calcular(montoBase) double
+    class SolicitudDeProcedimiento {
+        -String nombreProcedimiento
+        -String complejidad
+        -String texto
     }
-    class TarifaTurnoPresencial
-    class TarifaTurnoVirtual
-    ReglaDeTarifa <|.. TarifaTurnoPresencial
-    ReglaDeTarifa <|.. TarifaTurnoVirtual
 
-    class EstadoDeTurnoMedico {
+    class ManejadorDeProcedimiento {
         <<interface>>
-        +confirmar(turno) String
-        +atender(turno) String
-        +cancelar(turno) String
+        +aprobar(solicitud) String
     }
-    class Reservado
-    class Confirmado
-    class Atendido
-    class Cancelado
-    EstadoDeTurnoMedico <|.. Reservado
-    EstadoDeTurnoMedico <|.. Confirmado
-    EstadoDeTurnoMedico <|.. Atendido
-    EstadoDeTurnoMedico <|.. Cancelado
+    class AprobadorClinicoNivel1
+    class AprobadorClinicoNivel2
+    class AprobadorClinicoNivel3
+    ManejadorDeProcedimiento <|.. AprobadorClinicoNivel1
+    ManejadorDeProcedimiento <|.. AprobadorClinicoNivel2
+    ManejadorDeProcedimiento <|.. AprobadorClinicoNivel3
+    AprobadorClinicoNivel1 --> AprobadorClinicoNivel2 : pasa al siguiente
+    AprobadorClinicoNivel2 --> AprobadorClinicoNivel3 : pasa al siguiente
+    AprobadorClinicoNivel1 --> SolicitudDeProcedimiento
 
-    class ObservadorDeTurnoMedico {
-        <<interface>>
-        +actualizar(paciente, estado) void
+    class MediadorClinico {
+        +coordinarAprobacion(nombre) void
     }
-    class NotificadorPacienteSms
-    class PantallaDeRecepcion
-    ObservadorDeTurnoMedico <|.. NotificadorPacienteSms
-    ObservadorDeTurnoMedico <|.. PantallaDeRecepcion
+    class AreaInventarioClinico
+    class AreaNotificacionesClinicas
+    MediadorClinico --> AreaInventarioClinico
+    MediadorClinico --> AreaNotificacionesClinicas
 
-    class AccionSobreTurnoMedico {
-        <<interface>>
-        +ejecutar() String
+    class InstanteDeProcedimiento {
+        -String texto
     }
-    class AccionConfirmarTurnoMedico
-    class AccionCancelarTurnoMedico
-    class BitacoraDeAcciones {
-        +ejecutar(accion) String
-        +totalAcciones() int
+    class HistorialDeInstantes {
+        +guardar(instante) void
+        +obtenerUltimo() InstanteDeProcedimiento
     }
-    AccionSobreTurnoMedico <|.. AccionConfirmarTurnoMedico
-    AccionSobreTurnoMedico <|.. AccionCancelarTurnoMedico
-    BitacoraDeAcciones --> AccionSobreTurnoMedico
-
-    class TurnoMedico {
-        -ReglaDeTarifa reglaDeTarifa
-        -EstadoDeTurnoMedico estado
-        -List~ObservadorDeTurnoMedico~ observadores
-        +calcularTarifa() double
-        +confirmar() String
-        +atender() String
-        +cancelar() String
+    class BorradorDeProcedimiento {
+        +guardarInstante() InstanteDeProcedimiento
+        +restaurar(instante) void
     }
-    TurnoMedico --> ReglaDeTarifa
-    TurnoMedico --> EstadoDeTurnoMedico
-    TurnoMedico --> ObservadorDeTurnoMedico
-    AccionConfirmarTurnoMedico --> TurnoMedico
-    AccionCancelarTurnoMedico --> TurnoMedico
+    BorradorDeProcedimiento --> SolicitudDeProcedimiento
+    BorradorDeProcedimiento --> InstanteDeProcedimiento : crea
+    HistorialDeInstantes --> InstanteDeProcedimiento : guarda
 ```
 
 ## 🌳 Árbol de archivos
 
 ```text
-GestionDeTurnos/
+GestionDeSolicitudesClinicas/
 └── com/medisalud/
-    ├── ReglaDeTarifa.java
-    ├── TarifaTurnoPresencial.java
-    ├── TarifaTurnoVirtual.java
-    ├── EstadoDeTurnoMedico.java
-    ├── Reservado.java
-    ├── Confirmado.java
-    ├── Atendido.java
-    ├── Cancelado.java
-    ├── ObservadorDeTurnoMedico.java
-    ├── NotificadorPacienteSms.java
-    ├── PantallaDeRecepcion.java
-    ├── AccionSobreTurnoMedico.java
-    ├── AccionConfirmarTurnoMedico.java
-    ├── AccionCancelarTurnoMedico.java
-    ├── BitacoraDeAcciones.java
-    ├── TurnoMedico.java
+    ├── SolicitudDeProcedimiento.java
+    ├── ManejadorDeProcedimiento.java
+    ├── AprobadorClinicoNivel1.java
+    ├── AprobadorClinicoNivel2.java
+    ├── AprobadorClinicoNivel3.java
+    ├── AreaInventarioClinico.java
+    ├── AreaNotificacionesClinicas.java
+    ├── MediadorClinico.java
+    ├── InstanteDeProcedimiento.java
+    ├── HistorialDeInstantes.java
+    ├── BorradorDeProcedimiento.java
     └── Demo.java
 ```
 
 ## 💻 Código completo
 
-## 💻 Archivo: ReglaDeTarifa.java
+## 💻 Archivo: SolicitudDeProcedimiento.java
 
 ```java
 package com.medisalud;
 
-public interface ReglaDeTarifa {
-    double calcular(double montoBase);
-}
-```
+public class SolicitudDeProcedimiento {
+    private String nombreProcedimiento;
+    private String complejidad;
+    private String texto;
 
-## 💻 Archivo: TarifaTurnoPresencial.java
-
-```java
-package com.medisalud;
-
-public class TarifaTurnoPresencial implements ReglaDeTarifa {
-    public double calcular(double montoBase) {
-        return montoBase;
-    }
-}
-```
-
-## 💻 Archivo: TarifaTurnoVirtual.java
-
-```java
-package com.medisalud;
-
-public class TarifaTurnoVirtual implements ReglaDeTarifa {
-    public double calcular(double montoBase) {
-        return montoBase * 0.7;
-    }
-}
-```
-
-## 💻 Archivo: EstadoDeTurnoMedico.java
-
-```java
-package com.medisalud;
-
-public interface EstadoDeTurnoMedico {
-    String confirmar(TurnoMedico turno);
-    String atender(TurnoMedico turno);
-    String cancelar(TurnoMedico turno);
-    String nombre();
-}
-```
-
-## 💻 Archivo: Reservado.java
-
-```java
-package com.medisalud;
-
-public class Reservado implements EstadoDeTurnoMedico {
-    public String confirmar(TurnoMedico turno) {
-        turno.setEstado(new Confirmado());
-        return "Turno confirmado";
+    public SolicitudDeProcedimiento(String nombreProcedimiento, String complejidad, String texto) {
+        this.nombreProcedimiento = nombreProcedimiento;
+        this.complejidad = complejidad;
+        this.texto = texto;
     }
 
-    public String atender(TurnoMedico turno) {
-        return "No se puede atender: el turno no esta confirmado";
+    public String getNombreProcedimiento() {
+        return nombreProcedimiento;
     }
 
-    public String cancelar(TurnoMedico turno) {
-        turno.setEstado(new Cancelado());
-        return "Turno cancelado";
+    public String getComplejidad() {
+        return complejidad;
     }
 
-    public String nombre() {
-        return "RESERVADO";
+    public String getTexto() {
+        return texto;
+    }
+
+    public void setTexto(String texto) {
+        this.texto = texto;
     }
 }
 ```
 
-## 💻 Archivo: Confirmado.java
+## 💻 Archivo: ManejadorDeProcedimiento.java
 
 ```java
 package com.medisalud;
 
-public class Confirmado implements EstadoDeTurnoMedico {
-    public String confirmar(TurnoMedico turno) {
-        return "No se puede confirmar: el turno ya esta confirmado";
-    }
-
-    public String atender(TurnoMedico turno) {
-        turno.setEstado(new Atendido());
-        return "Turno atendido";
-    }
-
-    public String cancelar(TurnoMedico turno) {
-        turno.setEstado(new Cancelado());
-        return "Turno cancelado";
-    }
-
-    public String nombre() {
-        return "CONFIRMADO";
-    }
+public interface ManejadorDeProcedimiento {
+    String aprobar(SolicitudDeProcedimiento solicitud);
 }
 ```
 
-## 💻 Archivo: Atendido.java
+## 💻 Archivo: AprobadorClinicoNivel1.java
 
 ```java
 package com.medisalud;
 
-public class Atendido implements EstadoDeTurnoMedico {
-    public String confirmar(TurnoMedico turno) {
-        return "No se puede confirmar: el turno ya fue atendido";
+public class AprobadorClinicoNivel1 implements ManejadorDeProcedimiento {
+    private ManejadorDeProcedimiento siguiente;
+
+    public AprobadorClinicoNivel1(ManejadorDeProcedimiento siguiente) {
+        this.siguiente = siguiente;
     }
 
-    public String atender(TurnoMedico turno) {
-        return "No se puede atender: el turno ya fue atendido";
-    }
-
-    public String cancelar(TurnoMedico turno) {
-        return "No se puede cancelar: el turno ya fue atendido";
-    }
-
-    public String nombre() {
-        return "ATENDIDO";
-    }
-}
-```
-
-## 💻 Archivo: Cancelado.java
-
-```java
-package com.medisalud;
-
-public class Cancelado implements EstadoDeTurnoMedico {
-    public String confirmar(TurnoMedico turno) {
-        return "No se puede confirmar: el turno esta cancelado";
-    }
-
-    public String atender(TurnoMedico turno) {
-        return "No se puede atender: el turno esta cancelado";
-    }
-
-    public String cancelar(TurnoMedico turno) {
-        return "No se puede cancelar: el turno ya esta cancelado";
-    }
-
-    public String nombre() {
-        return "CANCELADO";
-    }
-}
-```
-
-## 💻 Archivo: ObservadorDeTurnoMedico.java
-
-```java
-package com.medisalud;
-
-public interface ObservadorDeTurnoMedico {
-    void actualizar(String paciente, String estado);
-}
-```
-
-## 💻 Archivo: NotificadorPacienteSms.java
-
-```java
-package com.medisalud;
-
-public class NotificadorPacienteSms implements ObservadorDeTurnoMedico {
-    public void actualizar(String paciente, String estado) {
-        System.out.println("SMS a " + paciente + ": tu turno paso a " + estado);
-    }
-}
-```
-
-## 💻 Archivo: PantallaDeRecepcion.java
-
-```java
-package com.medisalud;
-
-public class PantallaDeRecepcion implements ObservadorDeTurnoMedico {
-    public void actualizar(String paciente, String estado) {
-        System.out.println("Recepcion: turno de " + paciente + " ahora " + estado);
-    }
-}
-```
-
-## 💻 Archivo: AccionSobreTurnoMedico.java
-
-```java
-package com.medisalud;
-
-public interface AccionSobreTurnoMedico {
-    String ejecutar();
-}
-```
-
-## 💻 Archivo: AccionConfirmarTurnoMedico.java
-
-```java
-package com.medisalud;
-
-public class AccionConfirmarTurnoMedico implements AccionSobreTurnoMedico {
-    private TurnoMedico turno;
-
-    public AccionConfirmarTurnoMedico(TurnoMedico turno) {
-        this.turno = turno;
-    }
-
-    public String ejecutar() {
-        return turno.confirmar();
-    }
-}
-```
-
-## 💻 Archivo: AccionCancelarTurnoMedico.java
-
-```java
-package com.medisalud;
-
-public class AccionCancelarTurnoMedico implements AccionSobreTurnoMedico {
-    private TurnoMedico turno;
-
-    public AccionCancelarTurnoMedico(TurnoMedico turno) {
-        this.turno = turno;
-    }
-
-    public String ejecutar() {
-        return turno.cancelar();
-    }
-}
-```
-
-## 💻 Archivo: BitacoraDeAcciones.java
-
-```java
-package com.medisalud;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class BitacoraDeAcciones {
-    private List<String> registro = new ArrayList<>();
-
-    public String ejecutar(AccionSobreTurnoMedico accion) {
-        String resultado = accion.ejecutar();
-        registro.add(resultado);
-        return resultado;
-    }
-
-    public int totalAcciones() {
-        return registro.size();
-    }
-}
-```
-
-## 💻 Archivo: TurnoMedico.java
-
-```java
-package com.medisalud;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class TurnoMedico {
-    private String paciente;
-    private ReglaDeTarifa reglaDeTarifa;
-    private double montoBase;
-    private EstadoDeTurnoMedico estado = new Reservado();
-    private List<ObservadorDeTurnoMedico> observadores = new ArrayList<>();
-
-    public TurnoMedico(String paciente, ReglaDeTarifa reglaDeTarifa, double montoBase) {
-        this.paciente = paciente;
-        this.reglaDeTarifa = reglaDeTarifa;
-        this.montoBase = montoBase;
-    }
-
-    public void agregarObservador(ObservadorDeTurnoMedico observador) {
-        observadores.add(observador);
-    }
-
-    public double calcularTarifa() {
-        return reglaDeTarifa.calcular(montoBase);
-    }
-
-    public String confirmar() {
-        String resultado = estado.confirmar(this);
-        notificarObservadores();
-        return resultado;
-    }
-
-    public String atender() {
-        String resultado = estado.atender(this);
-        notificarObservadores();
-        return resultado;
-    }
-
-    public String cancelar() {
-        String resultado = estado.cancelar(this);
-        notificarObservadores();
-        return resultado;
-    }
-
-    private void notificarObservadores() {
-        for (ObservadorDeTurnoMedico observador : observadores) {
-            observador.actualizar(paciente, estado.nombre());
+    public String aprobar(SolicitudDeProcedimiento solicitud) {
+        if (solicitud.getComplejidad().equals("BASICA")) {
+            return "Aprobado nivel 1: " + solicitud.getNombreProcedimiento();
         }
+        return siguiente.aprobar(solicitud);
+    }
+}
+```
+
+## 💻 Archivo: AprobadorClinicoNivel2.java
+
+```java
+package com.medisalud;
+
+public class AprobadorClinicoNivel2 implements ManejadorDeProcedimiento {
+    private ManejadorDeProcedimiento siguiente;
+
+    public AprobadorClinicoNivel2(ManejadorDeProcedimiento siguiente) {
+        this.siguiente = siguiente;
     }
 
-    public void setEstado(EstadoDeTurnoMedico estado) {
-        this.estado = estado;
+    public String aprobar(SolicitudDeProcedimiento solicitud) {
+        if (solicitud.getComplejidad().equals("INTERMEDIA")) {
+            return "Aprobado nivel 2: " + solicitud.getNombreProcedimiento();
+        }
+        return siguiente.aprobar(solicitud);
+    }
+}
+```
+
+## 💻 Archivo: AprobadorClinicoNivel3.java
+
+```java
+package com.medisalud;
+
+public class AprobadorClinicoNivel3 implements ManejadorDeProcedimiento {
+    public String aprobar(SolicitudDeProcedimiento solicitud) {
+        if (solicitud.getComplejidad().equals("AVANZADA")) {
+            return "Aprobado nivel 3: " + solicitud.getNombreProcedimiento();
+        }
+        throw new IllegalArgumentException("Ningun nivel pudo aprobar: " + solicitud.getComplejidad());
+    }
+}
+```
+
+## 💻 Archivo: AreaInventarioClinico.java
+
+```java
+package com.medisalud;
+
+public class AreaInventarioClinico {
+    public void reservarInsumos(String nombreProcedimiento) {
+        System.out.println("Inventario clinico: reservando insumos para " + nombreProcedimiento);
+    }
+}
+```
+
+## 💻 Archivo: AreaNotificacionesClinicas.java
+
+```java
+package com.medisalud;
+
+public class AreaNotificacionesClinicas {
+    public void notificarAprobacion(String nombreProcedimiento) {
+        System.out.println("Notificaciones: avisando aprobacion de " + nombreProcedimiento);
+    }
+}
+```
+
+## 💻 Archivo: MediadorClinico.java
+
+```java
+package com.medisalud;
+
+public class MediadorClinico {
+    private AreaInventarioClinico areaInventario = new AreaInventarioClinico();
+    private AreaNotificacionesClinicas areaNotificaciones = new AreaNotificacionesClinicas();
+
+    public void coordinarAprobacion(String nombreProcedimiento) {
+        areaInventario.reservarInsumos(nombreProcedimiento);
+        areaNotificaciones.notificarAprobacion(nombreProcedimiento);
+    }
+}
+```
+
+## 💻 Archivo: InstanteDeProcedimiento.java
+
+```java
+package com.medisalud;
+
+public class InstanteDeProcedimiento {
+    private String texto;
+
+    InstanteDeProcedimiento(String texto) {
+        this.texto = texto;
     }
 
-    public String getEstado() {
-        return estado.nombre();
+    String getTexto() {
+        return texto;
+    }
+}
+```
+
+## 💻 Archivo: HistorialDeInstantes.java
+
+```java
+package com.medisalud;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class HistorialDeInstantes {
+    private List<InstanteDeProcedimiento> instantes = new ArrayList<>();
+
+    public void guardar(InstanteDeProcedimiento instante) {
+        instantes.add(instante);
     }
 
-    public String getPaciente() {
-        return paciente;
+    public InstanteDeProcedimiento obtenerUltimo() {
+        return instantes.remove(instantes.size() - 1);
+    }
+}
+```
+
+## 💻 Archivo: BorradorDeProcedimiento.java
+
+```java
+package com.medisalud;
+
+public class BorradorDeProcedimiento {
+    private SolicitudDeProcedimiento solicitud;
+
+    public BorradorDeProcedimiento(SolicitudDeProcedimiento solicitud) {
+        this.solicitud = solicitud;
+    }
+
+    public void escribir(String texto) {
+        solicitud.setTexto(texto);
+    }
+
+    public String getTexto() {
+        return solicitud.getTexto();
+    }
+
+    public InstanteDeProcedimiento guardarInstante() {
+        return new InstanteDeProcedimiento(solicitud.getTexto());
+    }
+
+    public void restaurar(InstanteDeProcedimiento instante) {
+        solicitud.setTexto(instante.getTexto());
     }
 }
 ```
@@ -419,26 +288,35 @@ package com.medisalud;
 
 public class Demo {
     public static void main(String[] args) {
-        TurnoMedico turnoPresencial = new TurnoMedico("Ana Torres", new TarifaTurnoPresencial(), 5000.0);
-        TurnoMedico turnoVirtual = new TurnoMedico("Carlos Ruiz", new TarifaTurnoVirtual(), 5000.0);
+        SolicitudDeProcedimiento solicitud1 = new SolicitudDeProcedimiento("Curacion simple", "BASICA", "Version inicial");
+        SolicitudDeProcedimiento solicitud2 = new SolicitudDeProcedimiento("Cirugia compleja", "AVANZADA", "Version inicial");
 
-        turnoPresencial.agregarObservador(new NotificadorPacienteSms());
-        turnoPresencial.agregarObservador(new PantallaDeRecepcion());
-        turnoVirtual.agregarObservador(new PantallaDeRecepcion());
+        BorradorDeProcedimiento borrador1 = new BorradorDeProcedimiento(solicitud1);
+        HistorialDeInstantes historial = new HistorialDeInstantes();
 
-        BitacoraDeAcciones bitacora = new BitacoraDeAcciones();
+        borrador1.escribir("Curacion de herida menor, sin complicaciones");
+        historial.guardar(borrador1.guardarInstante());
+        System.out.println(borrador1.getTexto());
 
-        System.out.println(bitacora.ejecutar(new AccionConfirmarTurnoMedico(turnoPresencial)));
-        System.out.println("tarifa presencial=" + turnoPresencial.calcularTarifa());
+        borrador1.escribir("Texto editado por error");
+        System.out.println(borrador1.getTexto());
 
-        System.out.println(bitacora.ejecutar(new AccionConfirmarTurnoMedico(turnoVirtual)));
-        System.out.println("tarifa virtual=" + turnoVirtual.calcularTarifa());
+        borrador1.restaurar(historial.obtenerUltimo());
+        System.out.println(borrador1.getTexto());
 
-        System.out.println(bitacora.ejecutar(new AccionCancelarTurnoMedico(turnoVirtual)));
+        ManejadorDeProcedimiento nivel3 = new AprobadorClinicoNivel3();
+        ManejadorDeProcedimiento nivel2 = new AprobadorClinicoNivel2(nivel3);
+        ManejadorDeProcedimiento nivel1 = new AprobadorClinicoNivel1(nivel2);
 
-        System.out.println("estado turno presencial=" + turnoPresencial.getEstado());
-        System.out.println("estado turno virtual=" + turnoVirtual.getEstado());
-        System.out.println("total de acciones registradas=" + bitacora.totalAcciones());
+        MediadorClinico mediador = new MediadorClinico();
+
+        String resultado1 = nivel1.aprobar(solicitud1);
+        System.out.println(resultado1);
+        mediador.coordinarAprobacion(solicitud1.getNombreProcedimiento());
+
+        String resultado2 = nivel1.aprobar(solicitud2);
+        System.out.println(resultado2);
+        mediador.coordinarAprobacion(solicitud2.getNombreProcedimiento());
     }
 }
 ```
@@ -446,31 +324,27 @@ public class Demo {
 ## ✅ Salida real
 
 ```text
-SMS a Ana Torres: tu turno paso a CONFIRMADO
-Recepcion: turno de Ana Torres ahora CONFIRMADO
-Turno confirmado
-tarifa presencial=5000.0
-Recepcion: turno de Carlos Ruiz ahora CONFIRMADO
-Turno confirmado
-tarifa virtual=3500.0
-Recepcion: turno de Carlos Ruiz ahora CANCELADO
-Turno cancelado
-estado turno presencial=CONFIRMADO
-estado turno virtual=CANCELADO
-total de acciones registradas=3
+Curacion de herida menor, sin complicaciones
+Texto editado por error
+Curacion de herida menor, sin complicaciones
+Aprobado nivel 1: Curacion simple
+Inventario clinico: reservando insumos para Curacion simple
+Notificaciones: avisando aprobacion de Curacion simple
+Aprobado nivel 3: Cirugia compleja
+Inventario clinico: reservando insumos para Cirugia compleja
+Notificaciones: avisando aprobacion de Cirugia compleja
 ```
 
 ## ⚠️ Errores comunes observados
 
-- **Dejar, además del objeto `EstadoDeTurnoMedico`, un campo `String estado` paralelo en
-  `TurnoMedico`**: aunque el resto del diseño esté bien, esa duplicación reintroduce el riesgo de que
-  ambas fuentes de verdad queden desincronizadas — el único lugar donde debe vivir el estado actual es
-  la referencia al objeto de estado.
-- **Hacer que `TurnoMedico.calcularTarifa()` reciba la modalidad como `String` y arme la `ReglaDeTarifa`
-  con un condicional interno**: eso reintroduce exactamente la violación de Strategy que el taller pide
-  evitar — la regla de tarifa debe recibirse ya resuelta, por composición, no elegirse con un
-  condicional dentro de `TurnoMedico`.
-- **Que las clases de acción (`AccionConfirmarTurnoMedico`) llamen directamente a los métodos de
-  `TurnoMedico` sin pasar por `BitacoraDeAcciones.ejecutar(...)`**: si el código cliente sigue llamando
-  a las acciones sin pasar por la bitácora, el registro de acciones queda incompleto — el punto entero
-  de Command en este taller es que **todas** las acciones se ejecuten a través del registro central.
+- **Hacer que `BorradorDeProcedimiento` guarde su propia copia del texto, en vez de leer y escribir
+  directamente el campo de `SolicitudDeProcedimiento`**: si el borrador y la solicitud terminan con dos
+  copias del texto que pueden desincronizarse, la aprobación posterior podría usar un texto distinto
+  del que el borrador muestra — el borrador debe operar siempre sobre el mismo objeto `SolicitudDeProcedimiento` que luego se aprueba.
+- **Declarar `InstanteDeProcedimiento` con un constructor o un método de lectura públicos**: eso
+  permite que cualquier clase (no solo `BorradorDeProcedimiento`) cree o lea instantes directamente,
+  rompiendo el encapsulamiento que Memento busca proteger. Deben quedar con visibilidad de paquete.
+- **Que `AreaInventarioClinico` y `AreaNotificacionesClinicas` reciban una referencia directa entre
+  sí** (por ejemplo, para que inventario avise a notificaciones cuando termina), en vez de que toda su
+  coordinación pase por `MediadorClinico`: eso reintroduce el acoplamiento directo entre áreas que el
+  taller pide evitar.
