@@ -1,7 +1,6 @@
-package com.medisalud.patron.estructural;
+package com.medisalud.entity;
 
-import com.medisalud.entity.Factura;
-
+/** Patron Decorator: agrega un descuento a una Factura existente sin modificar su clase. */
 public class FacturaConDescuentoAfiliado extends Factura {
 
     private static final double DESCUENTO_AFILIADO = 10.0;

@@ -1,5 +1,6 @@
 package com.medisalud.entity;
 
+/** Patron State: cada valor sabe a que otros estados puede transicionar. */
 public enum EstadoCita {
     PENDIENTE,
     CONFIRMADA,

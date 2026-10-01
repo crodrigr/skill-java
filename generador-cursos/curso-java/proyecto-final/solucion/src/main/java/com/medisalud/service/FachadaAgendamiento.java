@@ -1,16 +1,14 @@
-package com.medisalud.patron.estructural;
+package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 import com.medisalud.entity.Medico;
 import com.medisalud.entity.Paciente;
 import com.medisalud.exception.MedicoNoEncontradoException;
 import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.patron.comportamiento.ObservadorCita;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
+import com.medisalud.notificacion.ObservadorCita;
 import java.time.LocalDate;
 
+/** Patron Facade: un unico metodo coordina buscar paciente, buscar medico, crear la cita y conectarla con su observador. */
 public class FachadaAgendamiento {
 
     private final ServicioPacientes servicioPacientes;

@@ -1,8 +1,9 @@
-package com.medisalud.concurrencia;
+package com.medisalud.notificacion;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/** Concurrencia: procesa notificaciones en un hilo separado para no bloquear el hilo principal. */
 public class HiloNotificaciones extends Thread {
 
     private final List<String> pendientes = new ArrayList<>();

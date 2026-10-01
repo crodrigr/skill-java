@@ -1,7 +1,6 @@
-package com.medisalud.patron.estructural;
+package com.medisalud.entity;
 
-import com.medisalud.entity.Factura;
-
+/** Patron Decorator: agrega un recargo a una Factura existente sin modificar su clase. */
 public class FacturaConRecargoNocturno extends Factura {
 
     private static final double RECARGO_NOCTURNO = 15.0;

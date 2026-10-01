@@ -43,7 +43,7 @@ capas por responsabilidad:
 
 ```text
 com.medisalud/
-├── Principal.java                    # unico punto de entrada
+├── Principal.java                           # unico punto de entrada
 ├── entity/
 │   ├── EstadoCita.java
 │   ├── HistoriaClinica.java
@@ -51,7 +51,10 @@ com.medisalud/
 │   ├── Paciente.java
 │   ├── Medico.java
 │   ├── Cita.java
-│   └── Factura.java
+│   ├── Factura.java
+│   ├── FacturaConRecargoNocturno.java       # patron Decorator (envuelve Factura)
+│   ├── FacturaConDescuentoAfiliado.java     # patron Decorator (envuelve Factura)
+│   └── ConstructorHistoriaClinica.java      # patron Builder (construye HistoriaClinica)
 ├── exception/
 │   ├── PacienteNoEncontradoException.java
 │   ├── MedicoNoEncontradoException.java
@@ -63,29 +66,23 @@ com.medisalud/
 │   ├── RepositorioCitas.java
 │   ├── RepositorioPacientesMemoria.java
 │   ├── RepositorioMedicosMemoria.java
-│   └── RepositorioCitasMemoria.java
+│   ├── RepositorioCitasMemoria.java
+│   └── GestorClinica.java                    # patron Singleton (unica instancia de los 3 repositorios)
 ├── service/
 │   ├── ServicioPacientes.java
 │   ├── ServicioMedicos.java
 │   ├── ServicioCitas.java
-│   └── ServicioFacturacion.java
-├── patron/
-│   ├── creacional/
-│   │   ├── ConstructorHistoriaClinica.java
-│   │   └── GestorClinica.java
-│   ├── estructural/
-│   │   ├── FacturaConRecargoNocturno.java
-│   │   ├── FacturaConDescuentoAfiliado.java
-│   │   └── FachadaAgendamiento.java
-│   └── comportamiento/
-│       ├── EstrategiaCosto.java
-│       ├── EstrategiaCostoConsultaGeneral.java
-│       ├── EstrategiaCostoConsultaEspecialista.java
-│       ├── ObservadorCita.java
-│       └── ObservadorCitaNotificacion.java
-├── concurrencia/
-│   ├── ContadorCodigos.java
-│   └── HiloNotificaciones.java
+│   ├── ServicioFacturacion.java
+│   ├── EstrategiaCosto.java                   # patron Strategy (interfaz)
+│   ├── EstrategiaCostoConsultaGeneral.java    # patron Strategy
+│   ├── EstrategiaCostoConsultaEspecialista.java # patron Strategy
+│   └── FachadaAgendamiento.java                # patron Facade (coordina los Servicio*)
+├── notificacion/
+│   ├── ObservadorCita.java                     # patron Observer (interfaz)
+│   ├── ObservadorCitaNotificacion.java         # patron Observer (implementacion real)
+│   └── HiloNotificaciones.java                  # concurrencia: Thread que corre en 2do plano
+├── util/
+│   └── ContadorCodigos.java                     # concurrencia: AtomicLong para codigos unicos
 ├── persistencia/
 │   ├── archivo/
 │   │   ├── AlmacenPacientesArchivo.java
@@ -100,6 +97,16 @@ com.medisalud/
 └── vista/
     └── VistaConsola.java
 ```
+
+El árbol está organizado por **capa** (`entity`, `repository`, `service`,
+`persistencia`, `controlador`, `vista`), igual que en cualquier proyecto Java real —
+**no** por "tipo de patrón" ni por "concurrencia", que son formas de clasificar el
+código que le sirven al docente/estudiante para estudiarlo, pero no a la aplicación
+para organizarse: un decorador de `Factura` vive junto a `Factura`, una estrategia de
+costo vive junto a los servicios de facturación, y el hilo de notificaciones vive junto
+al resto del código de notificaciones. El comentario `# patron ...`/`# concurrencia ...`
+en cada archivo es la única señal de qué técnica aplica — no determina en qué carpeta
+vive.
 
 ## 📐 Alcance del proyecto
 
@@ -175,6 +182,7 @@ Sin dependencias de ninguna otra clase propia del proyecto (salvo
 ```java
 package com.medisalud.entity;
 
+/** Patron State: cada valor sabe a que otros estados puede transicionar. */
 public enum EstadoCita {
     PENDIENTE,
     CONFIRMADA,
@@ -450,10 +458,11 @@ implementa recién en el Bloque 8); `Cita` depende de `Paciente`/`Medico`/`Estad
 #### Archivo: ObservadorCita.java
 
 ```java
-package com.medisalud.patron.comportamiento;
+package com.medisalud.notificacion;
 
 import com.medisalud.entity.Cita;
 
+/** Patron Observer: Cita avisa a sus observadores cuando cambia de estado, sin conocer como lo usan. */
 public interface ObservadorCita {
 
     void notificarCambioEstado(Cita cita);
@@ -465,7 +474,7 @@ public interface ObservadorCita {
 ```java
 package com.medisalud.entity;
 
-import com.medisalud.patron.comportamiento.ObservadorCita;
+import com.medisalud.notificacion.ObservadorCita;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -786,10 +795,11 @@ Dependen solo de `Cita` (Bloque 3).
 #### Archivo: EstrategiaCosto.java
 
 ```java
-package com.medisalud.patron.comportamiento;
+package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 
+/** Patron Strategy: variantes intercambiables para calcular el costo de una cita. */
 public interface EstrategiaCosto {
 
     double calcularCosto(Cita cita);
@@ -799,7 +809,7 @@ public interface EstrategiaCosto {
 #### Archivo: EstrategiaCostoConsultaGeneral.java
 
 ```java
-package com.medisalud.patron.comportamiento;
+package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 
@@ -817,7 +827,7 @@ public class EstrategiaCostoConsultaGeneral implements EstrategiaCosto {
 #### Archivo: EstrategiaCostoConsultaEspecialista.java
 
 ```java
-package com.medisalud.patron.comportamiento;
+package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 
@@ -1017,7 +1027,6 @@ package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 import com.medisalud.entity.Factura;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1083,10 +1092,9 @@ código buscado. `ServicioPacientes.listarMayoresDeEdad` y
 #### Archivo: ConstructorHistoriaClinica.java
 
 ```java
-package com.medisalud.patron.creacional;
+package com.medisalud.entity;
 
-import com.medisalud.entity.HistoriaClinica;
-
+/** Patron Builder: arma una HistoriaClinica con varios campos opcionales paso a paso. */
 public class ConstructorHistoriaClinica {
 
     private String antecedentes;
@@ -1117,12 +1125,9 @@ public class ConstructorHistoriaClinica {
 #### Archivo: GestorClinica.java
 
 ```java
-package com.medisalud.patron.creacional;
+package com.medisalud.repository;
 
-import com.medisalud.repository.RepositorioCitas;
-import com.medisalud.repository.RepositorioMedicos;
-import com.medisalud.repository.RepositorioPacientes;
-
+/** Patron Singleton: unica instancia compartida de los tres repositorios de la aplicacion. */
 public final class GestorClinica {
 
     private static GestorClinica instancia;
@@ -1223,10 +1228,11 @@ problema distinto.
 #### Archivo: ContadorCodigos.java
 
 ```java
-package com.medisalud.concurrencia;
+package com.medisalud.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/** Concurrencia: AtomicLong genera codigos unicos sin condicion de carrera entre hilos. */
 public class ContadorCodigos {
 
     private final AtomicLong contador = new AtomicLong(0);
@@ -1247,11 +1253,12 @@ public class ContadorCodigos {
 #### Archivo: HiloNotificaciones.java
 
 ```java
-package com.medisalud.concurrencia;
+package com.medisalud.notificacion;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/** Concurrencia: procesa notificaciones en un hilo separado para no bloquear el hilo principal. */
 public class HiloNotificaciones extends Thread {
 
     private final List<String> pendientes = new ArrayList<>();
@@ -1295,9 +1302,8 @@ public class HiloNotificaciones extends Thread {
 #### Archivo: ObservadorCitaNotificacion.java
 
 ```java
-package com.medisalud.patron.comportamiento;
+package com.medisalud.notificacion;
 
-import com.medisalud.concurrencia.HiloNotificaciones;
 import com.medisalud.entity.Cita;
 
 public class ObservadorCitaNotificacion implements ObservadorCita {
@@ -1391,10 +1397,9 @@ tres `Servicio*` (Bloque 6) y de `ObservadorCita` (Bloque 3).
 #### Archivo: FacturaConRecargoNocturno.java
 
 ```java
-package com.medisalud.patron.estructural;
+package com.medisalud.entity;
 
-import com.medisalud.entity.Factura;
-
+/** Patron Decorator: agrega un recargo a una Factura existente sin modificar su clase. */
 public class FacturaConRecargoNocturno extends Factura {
 
     private static final double RECARGO_NOCTURNO = 15.0;
@@ -1420,10 +1425,9 @@ public class FacturaConRecargoNocturno extends Factura {
 #### Archivo: FacturaConDescuentoAfiliado.java
 
 ```java
-package com.medisalud.patron.estructural;
+package com.medisalud.entity;
 
-import com.medisalud.entity.Factura;
-
+/** Patron Decorator: agrega un descuento a una Factura existente sin modificar su clase. */
 public class FacturaConDescuentoAfiliado extends Factura {
 
     private static final double DESCUENTO_AFILIADO = 10.0;
@@ -1450,19 +1454,17 @@ public class FacturaConDescuentoAfiliado extends Factura {
 #### Archivo: FachadaAgendamiento.java
 
 ```java
-package com.medisalud.patron.estructural;
+package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 import com.medisalud.entity.Medico;
 import com.medisalud.entity.Paciente;
 import com.medisalud.exception.MedicoNoEncontradoException;
 import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.patron.comportamiento.ObservadorCita;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
+import com.medisalud.notificacion.ObservadorCita;
 import java.time.LocalDate;
 
+/** Patron Facade: un unico metodo coordina buscar paciente, buscar medico, crear la cita y conectarla con su observador. */
 public class FachadaAgendamiento {
 
     private final ServicioPacientes servicioPacientes;
@@ -1986,8 +1988,8 @@ import com.medisalud.exception.CitaNoEncontradaException;
 import com.medisalud.exception.MedicoNoEncontradoException;
 import com.medisalud.exception.PacienteNoEncontradoException;
 import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
+import com.medisalud.service.EstrategiaCosto;
+import com.medisalud.service.FachadaAgendamiento;
 import com.medisalud.service.ServicioCitas;
 import com.medisalud.service.ServicioFacturacion;
 import com.medisalud.service.ServicioMedicos;
@@ -2069,7 +2071,10 @@ package com.medisalud.vista;
 
 import com.medisalud.controlador.ControladorMediSalud;
 import com.medisalud.entity.Cita;
+import com.medisalud.entity.ConstructorHistoriaClinica;
 import com.medisalud.entity.Factura;
+import com.medisalud.entity.FacturaConDescuentoAfiliado;
+import com.medisalud.entity.FacturaConRecargoNocturno;
 import com.medisalud.entity.HistoriaClinica;
 import com.medisalud.entity.Medico;
 import com.medisalud.entity.Paciente;
@@ -2077,12 +2082,9 @@ import com.medisalud.exception.CitaNoEncontradaException;
 import com.medisalud.exception.MedicoNoEncontradoException;
 import com.medisalud.exception.PacienteNoEncontradoException;
 import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import com.medisalud.patron.comportamiento.EstrategiaCostoConsultaEspecialista;
-import com.medisalud.patron.comportamiento.EstrategiaCostoConsultaGeneral;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.estructural.FacturaConDescuentoAfiliado;
-import com.medisalud.patron.estructural.FacturaConRecargoNocturno;
+import com.medisalud.service.EstrategiaCosto;
+import com.medisalud.service.EstrategiaCostoConsultaEspecialista;
+import com.medisalud.service.EstrategiaCostoConsultaGeneral;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -2310,14 +2312,14 @@ Depende de todos los bloques anteriores: es quien los conecta.
 ```java
 package com.medisalud;
 
-import com.medisalud.concurrencia.HiloNotificaciones;
 import com.medisalud.controlador.ControladorMediSalud;
-import com.medisalud.patron.comportamiento.ObservadorCitaNotificacion;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
+import com.medisalud.notificacion.HiloNotificaciones;
+import com.medisalud.notificacion.ObservadorCitaNotificacion;
 import com.medisalud.persistencia.jdbc.CitaDAO;
 import com.medisalud.persistencia.jdbc.MedicoDAO;
 import com.medisalud.persistencia.jdbc.PacienteDAO;
+import com.medisalud.repository.GestorClinica;
+import com.medisalud.service.FachadaAgendamiento;
 import com.medisalud.service.ServicioCitas;
 import com.medisalud.service.ServicioFacturacion;
 import com.medisalud.service.ServicioMedicos;

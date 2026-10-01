@@ -1,7 +1,6 @@
-package com.medisalud.patron.creacional;
+package com.medisalud.entity;
 
-import com.medisalud.entity.HistoriaClinica;
-
+/** Patron Builder: arma una HistoriaClinica con varios campos opcionales paso a paso. */
 public class ConstructorHistoriaClinica {
 
     private String antecedentes;

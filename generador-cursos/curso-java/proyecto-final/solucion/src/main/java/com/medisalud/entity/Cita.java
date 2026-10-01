@@ -1,6 +1,6 @@
 package com.medisalud.entity;
 
-import com.medisalud.patron.comportamiento.ObservadorCita;
+import com.medisalud.notificacion.ObservadorCita;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;

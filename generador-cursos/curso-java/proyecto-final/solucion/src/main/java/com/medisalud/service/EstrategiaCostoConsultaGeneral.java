@@ -1,4 +1,4 @@
-package com.medisalud.patron.comportamiento;
+package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 

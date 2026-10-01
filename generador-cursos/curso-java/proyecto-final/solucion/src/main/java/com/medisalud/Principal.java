@@ -1,13 +1,13 @@
 package com.medisalud;
 
-import com.medisalud.concurrencia.HiloNotificaciones;
 import com.medisalud.controlador.ControladorMediSalud;
-import com.medisalud.patron.comportamiento.ObservadorCitaNotificacion;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
+import com.medisalud.notificacion.HiloNotificaciones;
+import com.medisalud.notificacion.ObservadorCitaNotificacion;
 import com.medisalud.persistencia.jdbc.CitaDAO;
 import com.medisalud.persistencia.jdbc.MedicoDAO;
 import com.medisalud.persistencia.jdbc.PacienteDAO;
+import com.medisalud.repository.GestorClinica;
+import com.medisalud.service.FachadaAgendamiento;
 import com.medisalud.service.ServicioCitas;
 import com.medisalud.service.ServicioFacturacion;
 import com.medisalud.service.ServicioMedicos;

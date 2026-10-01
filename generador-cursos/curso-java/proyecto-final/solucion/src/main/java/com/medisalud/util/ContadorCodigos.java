@@ -1,7 +1,8 @@
-package com.medisalud.concurrencia;
+package com.medisalud.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/** Concurrencia: AtomicLong genera codigos unicos sin condicion de carrera entre hilos. */
 public class ContadorCodigos {
 
     private final AtomicLong contador = new AtomicLong(0);

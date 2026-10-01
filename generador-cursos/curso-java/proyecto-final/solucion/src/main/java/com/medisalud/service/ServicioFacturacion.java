@@ -2,7 +2,6 @@ package com.medisalud.service;
 
 import com.medisalud.entity.Cita;
 import com.medisalud.entity.Factura;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

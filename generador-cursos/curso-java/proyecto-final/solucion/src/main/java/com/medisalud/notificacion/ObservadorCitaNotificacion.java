@@ -1,6 +1,5 @@
-package com.medisalud.patron.comportamiento;
+package com.medisalud.notificacion;
 
-import com.medisalud.concurrencia.HiloNotificaciones;
 import com.medisalud.entity.Cita;
 
 public class ObservadorCitaNotificacion implements ObservadorCita {

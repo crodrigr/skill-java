@@ -1,9 +1,6 @@
-package com.medisalud.patron.creacional;
+package com.medisalud.repository;
 
-import com.medisalud.repository.RepositorioCitas;
-import com.medisalud.repository.RepositorioMedicos;
-import com.medisalud.repository.RepositorioPacientes;
-
+/** Patron Singleton: unica instancia compartida de los tres repositorios de la aplicacion. */
 public final class GestorClinica {
 
     private static GestorClinica instancia;
