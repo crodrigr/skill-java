@@ -16,11 +16,32 @@ de cada paciente, calcular y facturar el costo de una consulta, notificar a los
 pacientes, y guardar todo en una base de datos para que no se pierda al cerrar el
 programa.
 
+### 🔍 Señales de diseño, ya en el propio enunciado
+
+Antes de escribir una sola línea de código, este párrafo ya dice más de lo que parece.
+Entrenate en detectar este tipo de frases — son la materia prima con la que después se
+elige un patrón o una técnica, no al revés:
+
+| Frase del enunciado | Lo que insinúa | Dónde se resuelve |
+|---|---|---|
+| "mantener la historia clínica... con varios datos" (antecedentes, alergias, consultas) | datos que casi nunca se completan todos juntos | Bloque 7 (Builder) |
+| "calcular... el costo de una consulta" (sin decir *cómo*, porque va a depender del tipo) | una regla de cálculo que **puede variar y crecer** | Bloque 5 (Strategy) |
+| "notificar a los pacientes" sin que el resto del sistema espere a que termine | una tarea que **no debe bloquear** al resto | Bloque 8 (hilo en 2.º plano) |
+| "agendar y dar seguimiento" (una cita pasa por varios estados, no cualquiera después de cualquiera) | una secuencia de estados **con reglas de transición** | Bloque 6 (State) |
+| "guardar todo... para que no se pierda al cerrar el programa", primero de una forma y después de otra | un mecanismo de almacenamiento que **va a cambiar** sin que el resto del sistema lo note | Bloques 4 y 11 (inversión de dependencias) |
+
+La sección "🧱 Resultado final" retoma esta misma idea con la lista completa de
+patrones que aplica el proyecto terminado.
+
 ## ✅ Prerrequisitos
 
 - Haber completado los Módulos 1 a 20 del Curso de Java (esta guía usa, sin volver a
   explicarlos, los conceptos de clases, encapsulamiento, herencia, colecciones, SOLID,
   patrones de diseño, hilos, archivos, JDBC, lambdas y Stream API).
+- Haber visto, en particular, los patrones de diseño de los Módulos 12-14 y la
+  concurrencia de los Módulos 15-16: este enunciado ya contiene las señales que los
+  activan (ver arriba), y la guía asume que reconocés el nombre de cada patrón cuando
+  lo nombra, aunque no hayas memorizado su implementación exacta.
 - Tener instalado el JDK 17 o superior.
 - Tener instalado Visual Studio Code con la Extension Pack for Java.
 - Tener disponible un servidor MySQL local y el conector `mysql-connector-j` (el mismo
@@ -34,6 +55,30 @@ un menú interactivo real, que persiste sus datos en una base de datos MySQL ví
 aplica patrones de diseño sobre problemas reales del propio proyecto, ejecuta una tarea
 en un hilo separado, y resuelve dos operaciones con lambdas y Stream API — exactamente el
 mismo código que encontrarás ya ensamblado en `../solucion/`.
+
+### Arquitectura y patrones que vas a reconocer
+
+Cada fila conecta una necesidad real del enunciado con la decisión de diseño que la
+resuelve en este proyecto — y esa misma fila es la respuesta a "¿por qué se eligió
+justo esta solución y no otra?" que se repite, con más detalle, en el bloque indicado:
+
+| Necesidad del enunciado | Arquitectura / patrón | Bloque |
+|---|---|---|
+| Separar lo que el estudiante ve (menú), la lógica de negocio y el almacenamiento | Modelo-Vista-Controlador | 12 |
+| Cambiar de mecanismo de almacenamiento (memoria → archivo → base de datos) sin reescribir los servicios | Inversión de dependencias (interfaces de repositorio) | 4, 11 |
+| Construir una historia clínica con varios datos opcionales, sin un constructor confuso | Builder | 7 |
+| Garantizar un único punto de acceso compartido a los repositorios | Singleton | 7 |
+| Avisar que una cita cambió de estado sin acoplar `Cita` al mecanismo de aviso | Observer | 3, 8 |
+| No bloquear el menú mientras se "envía" una notificación | Hilo en segundo plano (concurrencia) | 8 |
+| Generar códigos únicos sin colisión aunque varios hilos los pidan a la vez | `AtomicLong` (concurrencia) | 8 |
+| Calcular el costo de una consulta de formas que varían y pueden crecer | Strategy | 5 |
+| Agregar recargos/descuentos a una factura, combinables entre sí | Decorator | 9 |
+| Coordinar varios pasos (buscar paciente, buscar médico, crear la cita...) en un único método | Facade | 9 |
+| Permitir solo ciertas transiciones de estado de una cita, nunca cualquiera a cualquiera | State | 6 |
+| Resolver un filtro/total sobre una colección sin un bucle manual | Lambda + Stream API | 6 |
+
+Esta tabla es, en efecto, un resumen de todo lo que vas a construir — volvé a ella
+cuando termines cada bloque para confirmar que identificaste la señal correcta.
 
 ## 🌳 Árbol de archivos del proyecto
 
@@ -126,34 +171,67 @@ vive.
 ## ⚙️ Funcionalidades
 
 El resultado final ofrece un menú interactivo (`VistaConsola`) con estas operaciones,
-en bucle, hasta elegir "Salir":
+en bucle, hasta elegir "Salir". Para cada una, **📌 Señal** marca qué detalle de su
+propia descripción es el que anticipa la solución de diseño:
 
 1. **Registrar paciente** — nombre, código y edad; opcionalmente antecedentes y
-   alergias (construidos con el patrón Builder).
+   alergias.
+   📌 *Señal*: "opcionalmente" + varios datos que no siempre van juntos → patrón
+   **Builder** (`ConstructorHistoriaClinica`).
 2. **Registrar médico** — nombre, código y especialidad.
+   *(CRUD simple: validación y encapsulamiento, Módulo 6; no dispara ningún patrón
+   adicional — no toda funcionalidad tiene que tenerlo).*
 3. **Agendar cita** — código de cita, paciente, médico y fecha; permite confirmarla y
    registrar su atención (con diagnóstico) en el mismo flujo.
+   📌 *Señal*: "en el mismo flujo" (varios pasos coordinados: buscar paciente, buscar
+   médico, crear la cita, suscribirla a quien la notifica) → patrón **Facade**
+   (`FachadaAgendamiento`); y "confirmarla"/"registrar su atención" son **transiciones
+   de un estado a otro, no cualquiera** → patrón **State** (`EstadoCita`).
 4. **Consultar historia clínica** — por código de paciente.
+   *(lectura simple; la señal de diseño ya se resolvió al registrar el paciente, en
+   el punto 1).*
 5. **Facturar consulta** — por código de cita, con estrategia de costo (general o
-   especialista) y recargos/descuentos opcionales (patrón Decorator).
-6. **Generar reporte** — citas de un médico, total facturado por médico (Stream API) y
-   pacientes a partir de una edad mínima (lambda + Stream API).
-7. **Salir** — detiene el hilo de notificaciones de forma ordenada y cierra el programa.
+   especialista) y recargos/descuentos opcionales.
+   📌 *Señal*: "estrategia de costo (general o especialista)" — el enunciado usa
+   literalmente la palabra que nombra al patrón **Strategy**
+   (`EstrategiaCosto`); "recargos/descuentos opcionales" que se pueden combinar entre
+   sí → patrón **Decorator** (`FacturaConRecargoNocturno`/`FacturaConDescuentoAfiliado`).
+6. **Generar reporte** — citas de un médico, total facturado por médico, y pacientes a
+   partir de una edad mínima.
+   📌 *Señal*: "total" y "a partir de una edad mínima" son un filtro y una agrupación
+   sobre una colección → **lambda + Stream API** (`Predicate`, `Collectors.groupingBy`)
+   en vez de un bucle manual.
+7. **Salir** — detiene el hilo de notificaciones de forma ordenada y cierra el
+   programa.
+   📌 *Señal*: "detiene... de forma ordenada" implica que algo sigue corriendo en
+   paralelo que hay que apagar explícitamente → **concurrencia** (`HiloNotificaciones`,
+   ciclo de vida de un hilo).
 
 ## 📏 Reglas de negocio
 
+Cada regla incluye, entre paréntesis, la señal que permite reconocer qué solución de
+diseño aplica — la misma lectura que se espera que hagas frente a cualquier regla de
+negocio nueva, en este proyecto o en cualquier otro.
+
 - La edad de un paciente no puede ser negativa; el nombre completo y la especialidad
-  tampoco pueden estar vacíos (se valida en el `set` de cada clase).
+  tampoco pueden estar vacíos *(validación simple en el `set` de cada clase —
+  encapsulamiento, Módulo 6; no toda regla necesita un patrón de diseño)*.
 - Una `Cita` nace en estado `PENDIENTE` y solo puede seguir las transiciones válidas:
   `PENDIENTE → CONFIRMADA` o `CANCELADA`; `CONFIRMADA → ATENDIDA` o `CANCELADA`;
-  `ATENDIDA` y `CANCELADA` son estados finales. Cualquier otra transición se rechaza.
+  `ATENDIDA` y `CANCELADA` son estados finales. Cualquier otra transición se rechaza
+  *(señal: "solo puede seguir ciertas transiciones, nunca cualquier otra" → patrón
+  **State**, Bloque 6)*.
 - Buscar un paciente, médico o cita por un código inexistente nunca detiene el
-  programa: siempre se informa con un mensaje claro mediante una excepción propia.
+  programa: siempre se informa con un mensaje claro mediante una excepción propia
+  *(señal: "nunca detiene el programa" ante un error esperable → excepciones propias
+  del dominio en vez de dejar que explote una excepción genérica, Bloque 1)*.
 - El acceso al repositorio compartido está protegido para el caso de hilos
-  concurrentes; las notificaciones de cambio de estado de una cita se procesan en un
-  hilo separado, sin bloquear el menú.
+  concurrentes *(señal: "compartido" + "concurrentes" → `synchronized`, Bloque 4)*;
+  las notificaciones de cambio de estado de una cita se procesan en un hilo separado,
+  sin bloquear el menú *(señal: "sin bloquear" → hilo en segundo plano, Bloque 8)*.
 - El total facturado por médico y el filtro de pacientes por edad se calculan con
-  `Stream`/`Predicate` sobre las colecciones del dominio.
+  `Stream`/`Predicate` sobre las colecciones del dominio *(señal: "total" y "filtro"
+  sobre una colección → lambda + Stream API, Bloque 6)*.
 
 ## 📝 Cómo usar esta guía
 
