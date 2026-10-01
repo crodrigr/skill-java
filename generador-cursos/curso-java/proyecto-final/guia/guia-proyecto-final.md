@@ -571,12 +571,29 @@ public class Factura {
 ```
 
 📖 **Explicación**: `Cita` **asocia** `Paciente` y `Medico` (los conoce, no los posee —
-Módulo 9) y guarda su `EstadoCita`; `cambiarEstado` notifica a sus observadores (patrón
-Observer, implementado en el Bloque 8). `observadores` es `transient` porque un
-`ObservadorCita` real (que termina usando un hilo) no se puede serializar; un
+Módulo 9) y guarda su `EstadoCita`. `observadores` es `transient` porque un
+`ObservadorCita` real (que termina usando un hilo, Bloque 8) no se puede serializar; un
 `readObject` propio lo reconstruye vacío al recargar un objeto `Cita` desde
 `citas.ser` (Módulo 17). `Factura` representa el costo de una consulta; su
 `calcularMonto()` es sobre-escrito por los decoradores del Bloque 9 (patrón Decorator).
+
+**Patrón Observer — `ObservadorCita`**
+
+- **Problema**: cuando una cita cambia de estado, hay que notificar a alguien — pero
+  `Cita` no debería saber **cómo** se notifica (¿imprime en consola? ¿manda un correo?
+  ¿los dos?) ni **a quién**. Si `Cita` llamara directamente a una clase concreta de
+  notificaciones, cualquier cambio en cómo se notifica obligaría a modificar `Cita`
+  — una clase que representa una cita, no un sistema de mensajería.
+- **Por qué Observer es la mejor opción acá**: `Cita` solo conoce la interfaz
+  `ObservadorCita` y le avisa "cambié de estado" a quien esté suscripto
+  (`agregarObservador`), sin saber qué hace cada observador con ese aviso. La
+  implementación real (`ObservadorCitaNotificacion`, Bloque 8) puede cambiar por
+  completo —o agregarse una segunda, una tercera— sin tocar una sola línea de `Cita`.
+- **Dónde más aparece este mismo escenario**: cualquier situación donde un cambio de
+  estado interesa a otras partes del sistema que no deberían estar acopladas entre sí
+  — un carrito de compras que notifica al inventario cuando se confirma una compra, una
+  hoja de cálculo que recalcula las celdas dependientes cuando una celda cambia, o los
+  *listeners* de clics y otros eventos en cualquier interfaz gráfica.
 
 ---
 
@@ -815,9 +832,28 @@ public class EstrategiaCostoConsultaEspecialista implements EstrategiaCosto {
 }
 ```
 
-📖 **Explicación**: patrón Strategy (Módulo 14): `EstrategiaCosto` separa el cálculo del
-costo en variantes intercambiables (consulta general vs. especialista) en vez de un
-`if` dentro de `Factura`. El Bloque 6 (`ServicioFacturacion`) decide cuál usar.
+📖 **Explicación**: patrón Strategy (Módulo 14).
+
+- **Problema**: calcular el costo de una consulta depende del tipo de consulta
+  (general, especialista...), y esa lista de tipos **va a seguir creciendo** (pediatría,
+  urgencias, telemedicina). Si `Factura` calculara el costo con un `if`/`switch` interno
+  sobre el tipo, cada tipo nuevo obligaría a modificar `Factura` — una clase que ya
+  tiene su propia responsabilidad (representar el costo de una consulta, no decidir
+  cómo se calcula).
+- **Por qué Strategy es la mejor opción acá**: separa "qué se calcula" (lo hace
+  `Factura`/`ServicioFacturacion`) de "cómo se calcula" (lo hace cada
+  `EstrategiaCosto`). Agregar `EstrategiaCostoUrgencias` el día de mañana es crear una
+  clase nueva que implementa la interfaz — **cero líneas** cambiadas en el código que ya
+  funciona (principio abierto/cerrado, Módulo 11). La alternativa (un `if`/`switch`
+  gigante en `Factura`) funcionaría hoy, pero cada tipo nuevo agrandaría ese mismo
+  método para siempre, y mezclaría la entidad con la lógica de negocio.
+- **Dónde más aparece este mismo escenario**: cualquier cálculo o comportamiento que
+  **varía según un tipo o categoría y que puede crecer con el tiempo** es candidato a
+  Strategy — calcular un envío según el método elegido (correo, moto, retiro en
+  tienda), calcular un descuento según el tipo de cliente, validar un documento según
+  su formato, u ordenar una lista con distintos criterios. La señal de alarma que avisa
+  "acá conviene Strategy" es un `if`/`switch` sobre un tipo que vas a tener que volver a
+  tocar cada vez que aparezca un caso nuevo.
 
 ---
 
@@ -1013,11 +1049,29 @@ public class ServicioFacturacion {
 
 📖 **Explicación**: cada `Servicio*` encapsula las reglas de negocio de una entidad
 (responsabilidad única, Módulo 11) y lanza su excepción propia si no encuentra el
-código buscado. `ServicioCitas.cambiarEstado` es privado y centraliza la validación de
-`EstadoCita` (patrón State, Módulo 14): confirmar, atender y cancelar son la única
-forma de cambiar el estado de una cita, nunca directamente. `ServicioPacientes.
-listarMayoresDeEdad` y `ServicioFacturacion.totalFacturadoPorMedico` ya usan
-`Predicate`/`Stream` (Módulos 19-20) desde esta única versión final.
+código buscado. `ServicioPacientes.listarMayoresDeEdad` y
+`ServicioFacturacion.totalFacturadoPorMedico` ya usan `Predicate`/`Stream` (Módulos
+19-20) desde esta única versión final.
+
+**Patrón State — `EstadoCita.puedeTransicionarA` + `ServicioCitas.cambiarEstado`**
+
+- **Problema**: una cita no puede pasar de cualquier estado a cualquier otro — una
+  cita `ATENDIDA` no puede volver a `PENDIENTE`, por ejemplo. Si esa regla se
+  verificara con un `if`/`switch` repetido en cada método que cambia el estado
+  (`confirmarCita`, `atenderCita`, `cancelarCita`, y cualquiera que se agregue
+  después), la regla terminaría duplicada varias veces, y sería fácil que alguna copia
+  quedara desactualizada el día que la regla cambie.
+- **Por qué State es la mejor opción acá**: cada valor de `EstadoCita` sabe, con
+  `puedeTransicionarA`, a qué otros estados puede pasar — la regla vive en **un solo
+  lugar**. `cambiarEstado` (privado, en `ServicioCitas`) es el **único** punto donde se
+  aplica esa regla antes de cambiar el estado; `confirmarCita`/`atenderCita`/
+  `cancelarCita` son la única forma pública de llegar ahí, así que es imposible
+  cambiar el estado de una cita sin pasar por la validación.
+- **Dónde más aparece este mismo escenario**: cualquier entidad cuyo comportamiento
+  válido depende de un estado actual y tiene transiciones permitidas y prohibidas — un
+  pedido de e-commerce (`pendiente → pagado → enviado → entregado`, nunca al revés),
+  un documento en un flujo de aprobación (`borrador → en revisión → aprobado/rechazado`),
+  o un semáforo que solo puede pasar de verde a amarillo, nunca directo a rojo.
 
 ---
 
@@ -1115,11 +1169,48 @@ public final class GestorClinica {
 }
 ```
 
-📖 **Explicación**: Builder (`ConstructorHistoriaClinica`) resuelve un problema real:
-`HistoriaClinica` tiene varios campos opcionales y un constructor con todos ellos sería
-confuso de llamar — el builder los va fijando uno a uno con métodos encadenados.
-Singleton (`GestorClinica`) garantiza un único punto de acceso a los tres repositorios
-de toda la aplicación. Ambos del Módulo 12.
+📖 **Explicación**: dos patrones creacionales (Módulo 12), cada uno resolviendo un
+problema distinto.
+
+**Builder — `ConstructorHistoriaClinica`**
+
+- **Problema**: `HistoriaClinica` tiene tres campos opcionales (`antecedentes`,
+  `alergias`, `observaciones`) que casi nunca se llenan todos juntos. Un único
+  constructor con los tres sería `new HistoriaClinica(null, "Penicilina", null)` —
+  hay que acordarse del orden exacto, y los `null` de relleno no dicen nada sobre qué
+  dato es cuál. Si además hubiera que agregar un cuarto o quinto campo opcional más
+  adelante, el problema (y los `null`) solo empeorarían.
+- **Por qué Builder es la mejor opción acá**: cada método (`conAntecedentes`,
+  `conAlergias`, ...) tiene un nombre que dice exactamente qué dato está fijando, se
+  pueden llamar en cualquier orden, y se puede omitir cualquiera sin pasar `null` a
+  mano. La alternativa de "varios constructores sobrecargados, uno por combinación de
+  campos" (*constructor telescópico*) necesitaría 2³ = 8 constructores distintos solo
+  para 3 campos opcionales — y crece exponencialmente con cada campo nuevo.
+- **Dónde más aparece este mismo escenario**: cualquier objeto con varios atributos
+  opcionales que se usan en distintas combinaciones — una petición HTTP con *headers*
+  opcionales, un correo con copia/copia oculta/adjuntos opcionales, una consulta a una
+  base de datos con filtros opcionales, o la configuración de un componente visual con
+  muchas propiedades que casi nunca se usan todas a la vez.
+
+**Singleton — `GestorClinica`**
+
+- **Problema**: los tres repositorios (`RepositorioPacientes`, `RepositorioMedicos`,
+  `RepositorioCitas`) deben ser **los mismos** objetos en toda la aplicación. Si cada
+  clase que los necesita creara su propia instancia (o los repositorios se pasaran
+  "a mano" de clase en clase), sería muy fácil terminar con dos copias distintas del
+  repositorio de pacientes en memoria — una se actualiza y la otra no, y el programa
+  muestra datos inconsistentes según quién pregunte.
+- **Por qué Singleton es la mejor opción acá**: garantiza, en tiempo de compilación y
+  de ejecución, que exista **una sola** instancia compartida, accesible desde cualquier
+  punto del programa sin tener que pasarla como parámetro de clase en clase. El costo a
+  tener en cuenta (y por eso Singleton no es la respuesta correcta para todo): un
+  estado global compartido es más difícil de probar de forma aislada y crea una
+  dependencia oculta — cualquier clase puede llamar a `GestorClinica.obtenerInstancia()`
+  sin que se vea en su constructor que depende de él.
+- **Dónde más aparece este mismo escenario**: cualquier recurso del que debe existir
+  **una sola instancia compartida** en toda la aplicación — un *pool* de conexiones a
+  base de datos, un sistema de *logging*, una caché en memoria, o el objeto de
+  configuración que se lee una sola vez al arrancar el programa.
 
 ---
 
@@ -1224,13 +1315,71 @@ public class ObservadorCitaNotificacion implements ObservadorCita {
 }
 ```
 
-📖 **Explicación**: `HiloNotificaciones` extiende `Thread` (ciclo de vida de un hilo,
-Módulo 15) y procesa, en segundo plano, los mensajes que se le encolan, con sus
-métodos sincronizados (Módulo 16) porque el hilo propio y el hilo principal acceden a
-la misma lista `pendientes`. `ContadorCodigos` usa `AtomicLong` para generar códigos
-sin colisión entre hilos. `ObservadorCitaNotificacion` es la implementación real de
-`ObservadorCita` (patrón Observer, Módulo 14): cuando una `Cita` cambia de estado,
-encola un mensaje en vez de imprimirlo directamente.
+📖 **Explicación**: tres piezas de concurrencia (Módulos 15-16), cada una resolviendo
+un problema distinto.
+
+**`HiloNotificaciones` — un hilo separado**
+
+- **Problema**: notificar a un paciente que su cita cambió de estado es, en una
+  aplicación real, una operación que puede tardar (enviar un correo, un SMS, llamar a
+  una API externa). Si esa notificación se hiciera **en el mismo hilo** que atiende el
+  menú, el usuario se quedaría esperando a que termine de "enviarse" el mensaje antes
+  de poder seguir usando el programa — el menú se congelaría por algo que no tiene
+  nada que ver con lo que el usuario quiere hacer ahora.
+- **Por qué un hilo separado es la mejor opción acá**: `HiloNotificaciones` corre en
+  paralelo (`extends Thread`, Módulo 15) y procesa su lista de mensajes pendientes cada
+  200 ms, sin que el hilo principal (el que atiende `VistaConsola`) tenga que esperarlo.
+  `encolar(...)` solo agrega un mensaje a una lista y devuelve el control de inmediato
+  — lo "lento" pasa en segundo plano. La alternativa (notificar en el mismo hilo, de
+  forma síncrona) sería más simple de programar, pero bloquearía al usuario cada vez
+  que se confirma o atiende una cita.
+- **Dónde más aparece este mismo escenario**: cualquier tarea que no necesita
+  terminarse para que el usuario siga interactuando con el programa — enviar un correo
+  de bienvenida al registrarse, escribir un registro de auditoría (*log*), generar un
+  reporte pesado, o subir un archivo a un servidor mientras la aplicación sigue
+  respondiendo a otras acciones.
+
+**`synchronized` en `HiloNotificaciones.pendientes`**
+
+- **Problema**: la lista `pendientes` la escribe el hilo principal (cuando una cita
+  cambia de estado) y la lee/vacía `HiloNotificaciones` (cuando procesa los
+  mensajes) — **dos hilos accediendo a la misma lista al mismo tiempo**. Sin ninguna
+  protección, un hilo podría estar leyendo la lista mientras el otro la está
+  modificando a la mitad, y `ArrayList` no garantiza qué pasa en ese caso (desde un
+  resultado incorrecto hasta una excepción en tiempo de ejecución).
+- **Por qué `synchronized` es la mejor opción acá**: obliga a que solo un hilo a la vez
+  pueda ejecutar `encolar(...)` o `procesarPendientes()`, así nunca se superponen sobre
+  la misma lista. Es la herramienta más simple y directa para este caso: una sola
+  colección compartida, con pocos métodos que la tocan.
+- **Dónde más aparece este mismo escenario**: cualquier estructura de datos (lista,
+  mapa, contador) que **más de un hilo lee o escribe a la vez** — el carrito de compras
+  de una tienda en línea con varias pestañas abiertas, un contador de visitas de una
+  página, o la cola de tareas pendientes de un sistema de procesamiento en segundo
+  plano.
+
+**`ContadorCodigos` — `AtomicLong` en vez de `synchronized`**
+
+- **Problema**: generar el siguiente código (`P001`, `P002`...) parece tan simple como
+  "leer el número actual, sumarle uno, devolver el resultado" — pero esos son **tres
+  pasos separados**. Si dos hilos ejecutan esos tres pasos al mismo tiempo, los dos
+  pueden leer el mismo número antes de que cualquiera llegue a incrementarlo, y los dos
+  terminan generando **el mismo código** — una condición de carrera clásica que no se
+  nota en pruebas rápidas y aparece justo cuando más usuarios hay.
+- **Por qué `AtomicLong` es la mejor opción acá**: `incrementAndGet()` hace "leer,
+  sumar y devolver" como **una sola operación indivisible**, garantizada por el
+  hardware, sin usar `synchronized` ni bloquear ningún hilo — más liviano que poner
+  todo el método bajo un bloqueo, porque acá alcanza con proteger un único número, no
+  una estructura completa.
+- **Dónde más aparece este mismo escenario**: cualquier contador o secuencia que
+  **genera identificadores únicos y puede ser llamado desde más de un hilo a la vez** —
+  números de pedido en una tienda en línea, números de ticket en un sistema de soporte,
+  o IDs de sesión en un servidor que atiende a muchos usuarios en simultáneo.
+
+**`ObservadorCitaNotificacion` conecta ambas piezas**: es la implementación real de
+`ObservadorCita` (patrón Observer, Módulo 14) — cuando una `Cita` cambia de estado,
+encola el mensaje en `HiloNotificaciones` en vez de imprimirlo directamente, que es lo
+que permite que "notificar" sea una operación en segundo plano y no una que bloquea
+al usuario.
 
 ---
 
@@ -1342,12 +1491,48 @@ public class FachadaAgendamiento {
 }
 ```
 
-📖 **Explicación**: Decorator (`FacturaConRecargoNocturno`/`FacturaConDescuentoAfiliado`)
-agrega recargos/descuentos envolviendo una `Factura` sin modificar su clase. Facade
-(`FachadaAgendamiento`) oculta detrás de un único método `agendar(...)` los pasos de
-buscar paciente, buscar médico, crear la cita, y conectarla con el observador que la
-notificará — sin este método, quien agenda una cita tendría que hacer esos cuatro pasos
-a mano. Ambos del Módulo 13.
+📖 **Explicación**: dos patrones estructurales (Módulo 13), cada uno resolviendo un
+problema distinto.
+
+**Decorator — `FacturaConRecargoNocturno` / `FacturaConDescuentoAfiliado`**
+
+- **Problema**: una factura puede llevar recargo nocturno, descuento de afiliado,
+  ambos, o ninguno — cuatro combinaciones con solo dos extras, y cada extra nuevo que
+  aparezca (recargo por feriado, descuento por plan familiar...) **duplica** la
+  cantidad de combinaciones posibles. Resolverlo con herencia (una subclase por
+  combinación: `FacturaConRecargoYDescuento`, `FacturaSoloRecargo`,
+  `FacturaSoloDescuento`...) crece exponencialmente y hay que anticipar de antemano
+  cada combinación como una clase separada.
+- **Por qué Decorator es la mejor opción acá**: cada decorador envuelve una `Factura`
+  (la original o ya decorada) y solo agrega su propio ajuste al monto, sin tocar la
+  clase que envuelve. Combinar recargo + descuento es simplemente envolver dos veces,
+  en el orden que haga falta — **en tiempo de ejecución**, según lo que el usuario
+  elija en el menú, no una combinación fija decidida de antemano en el código. No hace
+  falta crear ninguna clase nueva para una combinación que ya no existía.
+- **Dónde más aparece este mismo escenario**: cualquier objeto al que se le pueden
+  agregar **variantes combinables entre sí** — los ingredientes extra de un pedido de
+  café o pizza (el ejemplo clásico de este patrón), los filtros que se le aplican a una
+  imagen uno encima de otro, o los `BufferedReader`/`InputStreamReader` que ya usaste
+  en el Bloque 10: cada uno envuelve al anterior y le agrega una capacidad.
+
+**Facade — `FachadaAgendamiento`**
+
+- **Problema**: agendar una cita no es un solo paso, son cuatro: buscar que el
+  paciente exista, buscar que el médico exista, crear la cita, y conectarla con quien
+  la va a notificar cuando cambie de estado. Si cada lugar del código que necesita
+  agendar una cita repitiera esos cuatro pasos a mano, cualquier cambio en ese orden
+  (o un paso olvidado) habría que corregirlo en todos esos lugares por separado.
+- **Por qué Facade es la mejor opción acá**: `agendar(...)` es la **única puerta de
+  entrada** para agendar una cita; adentro coordina `ServicioPacientes`,
+  `ServicioMedicos`, `ServicioCitas` y el observador, en el orden correcto, una sola
+  vez. Quien lo llama (por ejemplo `VistaConsola`) no necesita saber que existen esos
+  cuatro pasos, ni en qué orden van.
+- **Dónde más aparece este mismo escenario**: cualquier operación que internamente
+  necesita coordinar **varios pasos o varios subsistemas en un orden específico** — un
+  checkout de una tienda en línea (verificar stock, cobrar, actualizar inventario,
+  notificar), encender una aplicación (leer configuración, conectar a la base de
+  datos, levantar los servicios), o una librería que simplifica una API externa
+  compleja detrás de unos pocos métodos propios.
 
 ---
 
