@@ -7,10 +7,9 @@ y la especificación en [`../../../specs/022-proyecto-final/spec.md`](../../../s
 ## Un solo proyecto, un solo punto de entrada
 
 Toda la aplicación es **un único código**: `com.medisalud.Principal` es la única clase
-`main` de principio a fin. No hay una segunda clase `main` para la etapa JDBC — a partir
-del Paso 18, `Principal` simplemente delega en `VistaConsola.mostrarMenu()`, que ofrece
-un **menú interactivo real** (con `java.util.Scanner`, la única clase del proyecto que
-lee la consola) en un bucle hasta que el usuario elige "Salir".
+`main`. `Principal` delega en `VistaConsola.mostrarMenu()`, que ofrece un **menú
+interactivo real** (con `java.util.Scanner`, la única clase del proyecto que lee la
+consola) en un bucle hasta que el usuario elige "Salir".
 
 También hay una cuarta excepción propia, `TransicionInvalidaException`, además de las
 tres (`PacienteNoEncontradoException`/`MedicoNoEncontradoException`/
@@ -134,4 +133,4 @@ conservan entre ejecuciones.
 - La ejecución real contra un servidor MySQL no se pudo probar en este entorno por no
   disponer de uno disponible; queda verificada por revisión manual del código (mismos
   DAOs, mismas interfaces de repositorio ya probadas en memoria) y debe confirmarse en
-  un entorno con MySQL disponible antes de dar por cerrado el Paso 18.
+  un entorno con MySQL disponible antes de dar por cerrado el proyecto.

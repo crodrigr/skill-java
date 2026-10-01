@@ -2,11 +2,10 @@
 
 ## 🎯 Objetivo
 
-Construir, paso a paso y en paralelo con los Módulos 1 a 20 del curso, una aplicación de
-consola en Java que integra todo lo aprendido: variables, decisiones y bucles, cadenas,
-programación orientada a objetos, colecciones, relaciones entre clases, SOLID, patrones
-de diseño, concurrencia, archivos, JDBC con arquitectura Modelo-Vista-Controlador,
-lambdas y Stream API.
+Construir, en un solo recorrido, la aplicación de consola completa que integra todo lo
+aprendido en el curso: variables, decisiones y bucles, cadenas, programación orientada a
+objetos, colecciones, relaciones entre clases, SOLID, patrones de diseño, concurrencia,
+archivos, JDBC con arquitectura Modelo-Vista-Controlador, lambdas y Stream API.
 
 ## 🌍 Contexto
 
@@ -14,16 +13,18 @@ MediSalud, la red de clínicas que ya conocés de los ejemplos del curso, necesi
 sistema de consola para gestionar las citas médicas de sus pacientes: registrar
 pacientes y médicos, agendar y dar seguimiento a sus citas, mantener la historia clínica
 de cada paciente, calcular y facturar el costo de una consulta, notificar a los
-pacientes, y guardar todo de forma que no se pierda al cerrar el programa — primero en
-archivos, y más adelante en una base de datos.
+pacientes, y guardar todo en una base de datos para que no se pierda al cerrar el
+programa.
 
 ## ✅ Prerrequisitos
 
-- Haber completado los Módulos 1 a 20 del Curso de Java.
+- Haber completado los Módulos 1 a 20 del Curso de Java (esta guía usa, sin volver a
+  explicarlos, los conceptos de clases, encapsulamiento, herencia, colecciones, SOLID,
+  patrones de diseño, hilos, archivos, JDBC, lambdas y Stream API).
 - Tener instalado el JDK 17 o superior.
 - Tener instalado Visual Studio Code con la Extension Pack for Java.
-- A partir del Paso 18, tener disponible un servidor MySQL local (la misma dependencia
-  que ya exige el propio Módulo 18 del curso).
+- Tener disponible un servidor MySQL local y el conector `mysql-connector-j` (el mismo
+  requisito que ya exige el Módulo 18 del curso).
 
 ## 🧱 Resultado final
 
@@ -31,91 +32,89 @@ Un proyecto de Visual Studio Code (`SistemaMediSaludFinal`) con **un solo códig
 aplicación de consola completa, organizada en capas bajo el paquete `com.medisalud`, con
 un menú interactivo real, que persiste sus datos en una base de datos MySQL vía JDBC,
 aplica patrones de diseño sobre problemas reales del propio proyecto, ejecuta una tarea
-en un hilo separado, y resuelve dos recorridos con lambdas y Stream API — exactamente el
+en un hilo separado, y resuelve dos operaciones con lambdas y Stream API — exactamente el
 mismo código que encontrarás ya ensamblado en `../solucion/`.
 
 ## 🌳 Árbol de archivos del proyecto
 
-Así se ve el proyecto completo al terminar el Paso 20 — un único proyecto Java
+Así se ve el proyecto completo, de principio a fin — un único proyecto Java
 (`SistemaMediSaludFinal`), con un único punto de entrada (`Principal`), organizado en
-capas por responsabilidad. Cada paso de esta guía agrega, de a una, las carpetas y
-archivos marcados con el módulo que los introduce:
+capas por responsabilidad:
 
 ```text
 com.medisalud/
-├── Principal.java                              # unico punto de entrada (Paso 1, actualizado en cada paso)
-├── entity/                                      # Modulos 5, 7, 9, 10, 13
+├── Principal.java                    # unico punto de entrada
+├── entity/
+│   ├── EstadoCita.java
+│   ├── HistoriaClinica.java
 │   ├── Persona.java
 │   ├── Paciente.java
 │   ├── Medico.java
 │   ├── Cita.java
-│   ├── EstadoCita.java
-│   ├── HistoriaClinica.java
 │   └── Factura.java
-├── exception/                                   # Modulo 10
+├── exception/
 │   ├── PacienteNoEncontradoException.java
 │   ├── MedicoNoEncontradoException.java
 │   ├── CitaNoEncontradaException.java
 │   └── TransicionInvalidaException.java
-├── repository/                                   # Modulos 8, 11, 16
+├── repository/
 │   ├── RepositorioPacientes.java
 │   ├── RepositorioMedicos.java
 │   ├── RepositorioCitas.java
 │   ├── RepositorioPacientesMemoria.java
 │   ├── RepositorioMedicosMemoria.java
 │   └── RepositorioCitasMemoria.java
-├── service/                                      # Modulos 9, 10, 11, 14, 19, 20
+├── service/
 │   ├── ServicioPacientes.java
 │   ├── ServicioMedicos.java
 │   ├── ServicioCitas.java
 │   └── ServicioFacturacion.java
 ├── patron/
-│   ├── creacional/                               # Modulo 12
+│   ├── creacional/
 │   │   ├── ConstructorHistoriaClinica.java
 │   │   └── GestorClinica.java
-│   ├── estructural/                              # Modulos 13, 14
+│   ├── estructural/
 │   │   ├── FacturaConRecargoNocturno.java
 │   │   ├── FacturaConDescuentoAfiliado.java
 │   │   └── FachadaAgendamiento.java
-│   └── comportamiento/                           # Modulos 14, 15
+│   └── comportamiento/
 │       ├── EstrategiaCosto.java
 │       ├── EstrategiaCostoConsultaGeneral.java
 │       ├── EstrategiaCostoConsultaEspecialista.java
 │       ├── ObservadorCita.java
 │       └── ObservadorCitaNotificacion.java
-├── concurrencia/                                 # Modulos 15, 16
-│   ├── HiloNotificaciones.java
-│   └── ContadorCodigos.java
+├── concurrencia/
+│   ├── ContadorCodigos.java
+│   └── HiloNotificaciones.java
 ├── persistencia/
-│   ├── archivo/                                  # Modulo 17
+│   ├── archivo/
 │   │   ├── AlmacenPacientesArchivo.java
 │   │   └── AlmacenCitasSerializado.java
-│   └── jdbc/                                      # Modulo 18
+│   └── jdbc/
 │       ├── ConexionBD.java
 │       ├── PacienteDAO.java
 │       ├── MedicoDAO.java
 │       └── CitaDAO.java
-├── controlador/                                   # Modulo 18
+├── controlador/
 │   └── ControladorMediSalud.java
-└── vista/                                         # Modulo 18
+└── vista/
     └── VistaConsola.java
 ```
-
-Dos clases transitorias (`Repositorio<T>` del Paso 8 y una versión temprana de
-`ObservadorCitaNotificacion`) se reemplazan antes de llegar a este árbol final — la
-guía lo explica en el momento en que ocurre cada reemplazo.
 
 ## 📐 Alcance del proyecto
 
 - Aplicación de **consola** (sin interfaz gráfica) para la gestión de citas médicas de
   MediSalud: pacientes, médicos, citas, historias clínicas y facturación.
-- Persistencia progresiva: en memoria (Pasos 8-16), en archivo de texto y serializado
-  (Paso 17), y finalmente en una base de datos MySQL vía JDBC (Paso 18 en adelante).
+- Persistencia final en una base de datos MySQL vía JDBC. El proyecto también incluye,
+  como parte de su arquitectura en capas, una implementación en memoria de los
+  repositorios y una persistencia alternativa en archivo (texto y serializado) — ambas
+  usan exactamente las mismas interfaces que la versión JDBC, para mostrar que se puede
+  cambiar el almacenamiento sin tocar la capa de servicios (inversión de dependencias).
 - Un **único dominio de negocio** (MediSalud); no se usa Biblioteca Universitaria en
   este proyecto.
 - Sin frameworks externos al temario del curso (sin Spring, sin un ORM): JDBC puro.
 - Un único concepto fuera de los Módulos 1-20: `Scanner`, introducido únicamente en
-  `VistaConsola` (Paso 18) para el menú interactivo — ver la explicación de ese paso.
+  `VistaConsola` para el menú interactivo — ver el Bloque 13.
 
 ## ⚙️ Funcionalidades
 
@@ -137,833 +136,39 @@ en bucle, hasta elegir "Salir":
 ## 📏 Reglas de negocio
 
 - La edad de un paciente no puede ser negativa; el nombre completo y la especialidad
-  tampoco pueden estar vacíos.
+  tampoco pueden estar vacíos (se valida en el `set` de cada clase).
 - Una `Cita` nace en estado `PENDIENTE` y solo puede seguir las transiciones válidas:
   `PENDIENTE → CONFIRMADA` o `CANCELADA`; `CONFIRMADA → ATENDIDA` o `CANCELADA`;
   `ATENDIDA` y `CANCELADA` son estados finales. Cualquier otra transición se rechaza.
 - Buscar un paciente, médico o cita por un código inexistente nunca detiene el
-  programa: siempre se informa con un mensaje claro.
+  programa: siempre se informa con un mensaje claro mediante una excepción propia.
 - El acceso al repositorio compartido está protegido para el caso de hilos
   concurrentes; las notificaciones de cambio de estado de una cita se procesan en un
   hilo separado, sin bloquear el menú.
-- El total facturado por médico y el filtro de pacientes por edad siempre se calculan
-  con el mismo resultado, ya sea con un bucle manual (versión temprana) o con
-  `Stream`/`Predicate` (versión final) — nunca cambia el dato, solo cómo se calcula.
+- El total facturado por médico y el filtro de pacientes por edad se calculan con
+  `Stream`/`Predicate` sobre las colecciones del dominio.
 
 ## 📝 Cómo usar esta guía
 
-Cada paso corresponde a un módulo del curso (Paso *N* ↔ Módulo *N*) y muestra el código
-**completo y actualizado** de cada archivo que crea o modifica, para que lo transcribas
-en tu propio proyecto de Visual Studio Code, seguido de una explicación breve de qué
-cambia respecto al paso anterior y por qué. No hay ejemplos adicionales, ejercicios ni
-quiz en esta guía — eso ya lo viste en el material de cada módulo. Hacé cada paso recién
-termines el módulo correspondiente, y compilá y ejecutá antes de continuar con el
-siguiente.
+A diferencia de una guía que avanza módulo por módulo, esta presenta el proyecto
+**completo y final de una sola vez**, organizado en bloques de **menor a mayor
+dependencia**: el Bloque 1 son las clases que no dependen de ninguna otra clase propia
+del proyecto; cada bloque siguiente depende solo de clases de bloques anteriores; el
+último bloque es el punto de entrada que conecta todo. Cada bloque muestra el código
+**completo** de sus archivos (idéntico al de `../solucion/`), seguido de una explicación
+de qué hace y de qué depende. Podés transcribir los bloques en el orden en que aparecen,
+o crear directamente todos los archivos del proyecto y compilar al final — a diferencia
+de un lenguaje interpretado, Java no exige ningún orden particular para escribir los
+archivos, solo para entender cómo se apoyan unos en otros.
 
 ---
 
-## 🪜 Pasos
+## 🧱 Construcción del proyecto
 
-### Paso 1 — Primeras variables del paciente (Módulo 1)
+### Bloque 1 — Enumeraciones y excepciones
 
-Creá en Visual Studio Code un proyecto Java llamado `SistemaMediSaludFinal` (lo vas a
-reutilizar en todos los pasos siguientes) y agregá la clase `Principal`.
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        String nombreCompleto = "Ana Torres";
-        String codigo = "P001";
-        int edad = 34;
-
-        System.out.println("Paciente: " + nombreCompleto);
-        System.out.println("Codigo: " + codigo);
-        System.out.println("Edad: " + edad);
-    }
-}
-```
-
-📖 **Explicación**: así arranca todo el proyecto: variables simples (`String`, `int`)
-para describir el primer paciente de MediSalud. Todavía no hay clases propias ni
-estructuras: solo los tipos de dato básicos del Módulo 1.
-
----
-
-### Paso 2 — Decisiones sobre el plan de cobertura (Módulo 2)
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        String nombreCompleto = "Ana Torres";
-        String codigo = "P001";
-        int edad = 34;
-        String tipoPlan = "AFILIADO";
-
-        String categoria;
-        if (edad < 18) {
-            categoria = "pediatrico";
-        } else if (edad < 60) {
-            categoria = "adulto";
-        } else {
-            categoria = "adulto mayor";
-        }
-
-        String descuento = tipoPlan.equals("AFILIADO") ? "con descuento de afiliado" : "sin descuento";
-
-        switch (tipoPlan) {
-            case "AFILIADO":
-                System.out.println("Plan: afiliado, aplica descuento especial");
-                break;
-            case "PARTICULAR":
-                System.out.println("Plan: particular, tarifa completa");
-                break;
-            default:
-                System.out.println("Plan: no reconocido");
-        }
-
-        System.out.println("Paciente: " + nombreCompleto);
-        System.out.println("Codigo: " + codigo);
-        System.out.println("Edad: " + edad + " (" + categoria + ")");
-        System.out.println("Facturacion: " + descuento);
-    }
-}
-```
-
-📖 **Explicación**: se agregan tres formas de decisión sobre el mismo dato (`edad`,
-`tipoPlan`): `if`/`else if`/`else` para clasificar al paciente por edad, el operador
-ternario para el mensaje de descuento, y `switch` para el mensaje según el tipo de plan.
-
----
-
-### Paso 3 — Recordatorios e intentos de contacto (Módulo 3)
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        String nombreCompleto = "Ana Torres";
-        String codigo = "P001";
-        int edad = 34;
-        String tipoPlan = "AFILIADO";
-
-        String categoria;
-        if (edad < 18) {
-            categoria = "pediatrico";
-        } else if (edad < 60) {
-            categoria = "adulto";
-        } else {
-            categoria = "adulto mayor";
-        }
-
-        String descuento = tipoPlan.equals("AFILIADO") ? "con descuento de afiliado" : "sin descuento";
-
-        switch (tipoPlan) {
-            case "AFILIADO":
-                System.out.println("Plan: afiliado, aplica descuento especial");
-                break;
-            case "PARTICULAR":
-                System.out.println("Plan: particular, tarifa completa");
-                break;
-            default:
-                System.out.println("Plan: no reconocido");
-        }
-
-        System.out.println("Paciente: " + nombreCompleto);
-        System.out.println("Codigo: " + codigo);
-        System.out.println("Edad: " + edad + " (" + categoria + ")");
-        System.out.println("Facturacion: " + descuento);
-
-        System.out.println("== Recordatorios de la cita ==");
-        for (int numeroRecordatorio = 1; numeroRecordatorio <= 3; numeroRecordatorio++) {
-            System.out.println("Recordatorio " + numeroRecordatorio + " enviado a " + nombreCompleto);
-        }
-
-        System.out.println("== Intentos de contacto ==");
-        int intento = 0;
-        boolean contactado = false;
-        while (intento < 5 && !contactado) {
-            intento++;
-            if (intento == 3) {
-                contactado = true;
-                System.out.println("Contacto exitoso en el intento " + intento);
-                continue;
-            }
-            System.out.println("Intento " + intento + " sin respuesta");
-        }
-
-        int reintento = 0;
-        do {
-            reintento++;
-            if (reintento == 2) {
-                System.out.println("Confirmacion registrada en el reintento " + reintento);
-                break;
-            }
-            System.out.println("Esperando confirmacion, reintento " + reintento);
-        } while (reintento < 4);
-    }
-}
-```
-
-📖 **Explicación**: `for` recorre un número fijo de recordatorios; `while` con `continue`
-simula intentos de contacto hasta lograr uno exitoso; `do-while` con `break` simula
-reintentos de confirmación. Los tres bucles del Módulo 3 sobre el mismo escenario.
-
----
-
-### Paso 4 — Formato de nombre y código (Módulo 4)
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        String nombreCompleto = "  Ana Torres  ";
-        String codigo = "p001";
-        int edad = 34;
-        String tipoPlan = "AFILIADO";
-
-        String nombreFormateado = nombreCompleto.trim();
-        String codigoFormateado = codigo.toUpperCase();
-
-        StringBuilder resumen = new StringBuilder();
-        resumen.append(codigoFormateado).append(" - ").append(nombreFormateado);
-        resumen.append(" (").append(edad).append(" anios)");
-
-        String edadComoTexto = String.valueOf(edad);
-        int edadDesdeTexto = Integer.parseInt(edadComoTexto);
-
-        String categoria;
-        if (edadDesdeTexto < 18) {
-            categoria = "pediatrico";
-        } else if (edadDesdeTexto < 60) {
-            categoria = "adulto";
-        } else {
-            categoria = "adulto mayor";
-        }
-
-        String descuento = tipoPlan.equals("AFILIADO") ? "con descuento de afiliado" : "sin descuento";
-
-        switch (tipoPlan) {
-            case "AFILIADO":
-                System.out.println("Plan: afiliado, aplica descuento especial");
-                break;
-            case "PARTICULAR":
-                System.out.println("Plan: particular, tarifa completa");
-                break;
-            default:
-                System.out.println("Plan: no reconocido");
-        }
-
-        System.out.println("Resumen: " + resumen);
-        System.out.println("Categoria: " + categoria);
-        System.out.println("Facturacion: " + descuento);
-
-        System.out.println("== Recordatorios de la cita ==");
-        for (int numeroRecordatorio = 1; numeroRecordatorio <= 3; numeroRecordatorio++) {
-            System.out.println("Recordatorio " + numeroRecordatorio + " enviado a " + nombreFormateado);
-        }
-
-        System.out.println("== Intentos de contacto ==");
-        int intento = 0;
-        boolean contactado = false;
-        while (intento < 5 && !contactado) {
-            intento++;
-            if (intento == 3) {
-                contactado = true;
-                System.out.println("Contacto exitoso en el intento " + intento);
-                continue;
-            }
-            System.out.println("Intento " + intento + " sin respuesta");
-        }
-
-        int reintento = 0;
-        do {
-            reintento++;
-            if (reintento == 2) {
-                System.out.println("Confirmacion registrada en el reintento " + reintento);
-                break;
-            }
-            System.out.println("Esperando confirmacion, reintento " + reintento);
-        } while (reintento < 4);
-    }
-}
-```
-
-📖 **Explicación**: `trim()` y `toUpperCase()` limpian y normalizan el nombre y el
-código tal como llegarían de una fuente externa; `StringBuilder` arma el resumen sin
-concatenar `String` en un bucle; `String.valueOf`/`Integer.parseInt` muestran la
-conversión de ida y vuelta entre texto y número del Módulo 4.
-
----
-
-### Paso 5 — Nace la clase Paciente (Módulo 5)
-
-#### Archivo: Paciente.java
-
-```java
-package com.medisalud.entity;
-
-public class Paciente {
-
-    public String nombreCompleto;
-    public String codigo;
-    public int edad;
-
-    public Paciente(String nombreCompleto, String codigo, int edad) {
-        this.nombreCompleto = nombreCompleto;
-        this.codigo = codigo;
-        this.edad = edad;
-    }
-
-    public String describir() {
-        return codigo + " - " + nombreCompleto + " (" + edad + " anios)";
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Paciente;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        Paciente paciente = new Paciente("Ana Torres", "P001", 34);
-        System.out.println(paciente.describir());
-    }
-}
-```
-
-📖 **Explicación**: todo lo que antes eran variables sueltas ahora vive junto, como
-atributos de un objeto `Paciente` con su propio constructor y su propio método
-`describir()`. `Principal` se simplifica porque esa responsabilidad ya no es suya — el
-primer paso de POO del Módulo 5.
-
----
-
-### Paso 6 — Encapsulamiento (Módulo 6)
-
-#### Archivo: Paciente.java
-
-```java
-package com.medisalud.entity;
-
-public class Paciente {
-
-    private String nombreCompleto;
-    private String codigo;
-    private int edad;
-
-    public Paciente(String nombreCompleto, String codigo, int edad) {
-        setNombreCompleto(nombreCompleto);
-        this.codigo = codigo;
-        setEdad(edad);
-    }
-
-    public String getNombreCompleto() {
-        return nombreCompleto;
-    }
-
-    public void setNombreCompleto(String nombreCompleto) {
-        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre completo no puede estar vacio");
-        }
-        this.nombreCompleto = nombreCompleto;
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public void setEdad(int edad) {
-        if (edad < 0) {
-            throw new IllegalArgumentException("La edad no puede ser negativa");
-        }
-        this.edad = edad;
-    }
-
-    public String describir() {
-        return codigo + " - " + nombreCompleto + " (" + edad + " anios)";
-    }
-}
-```
-
-📖 **Explicación**: los atributos pasan a ser `private`; cualquier lectura o escritura
-ahora pasa por un `get`/`set`, y `setNombreCompleto`/`setEdad` validan el dato antes de
-aceptarlo. `Principal.java` no cambia: sigue llamando a `describir()` de la misma forma,
-sin saber que por dentro ahora hay validación.
-
----
-
-### Paso 7 — Herencia y polimorfismo (Módulo 7)
-
-#### Archivo: Persona.java
-
-```java
-package com.medisalud.entity;
-
-public abstract class Persona {
-
-    private String nombreCompleto;
-    private String codigo;
-
-    protected Persona(String nombreCompleto, String codigo) {
-        setNombreCompleto(nombreCompleto);
-        this.codigo = codigo;
-    }
-
-    public String getNombreCompleto() {
-        return nombreCompleto;
-    }
-
-    public void setNombreCompleto(String nombreCompleto) {
-        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre completo no puede estar vacio");
-        }
-        this.nombreCompleto = nombreCompleto;
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-
-    @Override
-    public String toString() {
-        return codigo + " - " + nombreCompleto;
-    }
-}
-```
-
-#### Archivo: Paciente.java
-
-```java
-package com.medisalud.entity;
-
-public class Paciente extends Persona {
-
-    private int edad;
-
-    public Paciente(String nombreCompleto, String codigo, int edad) {
-        super(nombreCompleto, codigo);
-        setEdad(edad);
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public void setEdad(int edad) {
-        if (edad < 0) {
-            throw new IllegalArgumentException("La edad no puede ser negativa");
-        }
-        this.edad = edad;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (paciente, " + edad + " anios)";
-    }
-}
-```
-
-#### Archivo: Medico.java
-
-```java
-package com.medisalud.entity;
-
-public class Medico extends Persona {
-
-    private String especialidad;
-
-    public Medico(String nombreCompleto, String codigo, String especialidad) {
-        super(nombreCompleto, codigo);
-        setEspecialidad(especialidad);
-    }
-
-    public String getEspecialidad() {
-        return especialidad;
-    }
-
-    public void setEspecialidad(String especialidad) {
-        if (especialidad == null || especialidad.trim().isEmpty()) {
-            throw new IllegalArgumentException("La especialidad no puede estar vacia");
-        }
-        this.especialidad = especialidad;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (medico, " + especialidad + ")";
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.entity.Persona;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        Persona[] personas = new Persona[2];
-        personas[0] = new Paciente("Ana Torres", "P001", 34);
-        personas[1] = new Medico("Carla Gomez", "M001", "Medicina general");
-
-        for (Persona persona : personas) {
-            System.out.println(persona);
-        }
-    }
-}
-```
-
-📖 **Explicación**: `Persona` es ahora la superclase abstracta común (`nombreCompleto`,
-`codigo`, validados una sola vez); `Paciente` y `Medico` la extienden y cada una
-sobre-escribe `toString()`. El arreglo `Persona[]` demuestra polimorfismo: el mismo
-`System.out.println(persona)` imprime algo distinto segun el objeto real.
-
----
-
-### Paso 8 — Colecciones y clase genérica (Módulo 8)
-
-#### Archivo: Repositorio.java
-
-```java
-package com.medisalud.repository;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class Repositorio<T> {
-
-    private final List<T> elementos = new ArrayList<>();
-
-    public void agregar(T elemento) {
-        elementos.add(elemento);
-    }
-
-    public List<T> listarTodos() {
-        return new ArrayList<>(elementos);
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.repository.Repositorio;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        Repositorio<Paciente> repositorioPacientes = new Repositorio<>();
-        Repositorio<Medico> repositorioMedicos = new Repositorio<>();
-
-        repositorioPacientes.agregar(new Paciente("Ana Torres", "P001", 34));
-        repositorioPacientes.agregar(new Paciente("Luis Fernandez", "P002", 45));
-        repositorioMedicos.agregar(new Medico("Carla Gomez", "M001", "Medicina general"));
-
-        for (Paciente paciente : repositorioPacientes.listarTodos()) {
-            System.out.println(paciente);
-        }
-        for (Medico medico : repositorioMedicos.listarTodos()) {
-            System.out.println(medico);
-        }
-    }
-}
-```
-
-📖 **Explicación**: el arreglo de tamaño fijo del Paso 7 se reemplaza por `ArrayList`
-(crece segun haga falta), envuelto en una clase genérica propia `Repositorio<T>` que
-sirve tanto para `Paciente` como para `Medico` sin repetir código — el aporte del
-Módulo 8. Esta clase es transitoria: el Paso 11 la va a reemplazar por interfaces
-específicas.
-
----
-
-### Paso 9 — Asociación y composición (Módulo 9)
-
-#### Archivo: Cita.java
-
-```java
-package com.medisalud.entity;
-
-import java.time.LocalDate;
-
-public class Cita {
-
-    private final String codigo;
-    private final Paciente paciente;
-    private final Medico medico;
-    private final LocalDate fecha;
-
-    public Cita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
-        this.codigo = codigo;
-        this.paciente = paciente;
-        this.medico = medico;
-        this.fecha = fecha;
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public Medico getMedico() {
-        return medico;
-    }
-
-    public LocalDate getFecha() {
-        return fecha;
-    }
-
-    @Override
-    public String toString() {
-        return "Cita " + codigo + " " + paciente.getNombreCompleto() + " con " + medico.getNombreCompleto()
-                + " el " + fecha;
-    }
-}
-```
-
-#### Archivo: HistoriaClinica.java
-
-```java
-package com.medisalud.entity;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class HistoriaClinica {
-
-    private final List<String> consultas = new ArrayList<>();
-
-    public void agregarConsulta(String diagnostico) {
-        consultas.add(diagnostico);
-    }
-
-    public List<String> getConsultas() {
-        return consultas;
-    }
-
-    @Override
-    public String toString() {
-        return "Historia clinica: " + consultas.size() + " consulta(s) registrada(s)";
-    }
-}
-```
-
-#### Archivo: Paciente.java
-
-```java
-package com.medisalud.entity;
-
-public class Paciente extends Persona {
-
-    private int edad;
-    private final HistoriaClinica historiaClinica;
-
-    public Paciente(String nombreCompleto, String codigo, int edad) {
-        super(nombreCompleto, codigo);
-        setEdad(edad);
-        this.historiaClinica = new HistoriaClinica();
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public void setEdad(int edad) {
-        if (edad < 0) {
-            throw new IllegalArgumentException("La edad no puede ser negativa");
-        }
-        this.edad = edad;
-    }
-
-    public HistoriaClinica getHistoriaClinica() {
-        return historiaClinica;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (paciente, " + edad + " anios)";
-    }
-}
-```
-
-#### Archivo: ServicioPacientes.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Paciente;
-import com.medisalud.repository.Repositorio;
-import java.util.ArrayList;
-import java.util.List;
-
-public class ServicioPacientes {
-
-    private final Repositorio<Paciente> repositorioPacientes;
-
-    public ServicioPacientes(Repositorio<Paciente> repositorioPacientes) {
-        this.repositorioPacientes = repositorioPacientes;
-    }
-
-    public void registrarPaciente(Paciente paciente) {
-        repositorioPacientes.agregar(paciente);
-    }
-
-    public List<Paciente> listarTodos() {
-        return repositorioPacientes.listarTodos();
-    }
-
-    public List<Paciente> listarMayoresDeEdad(int edadMinima) {
-        List<Paciente> resultado = new ArrayList<>();
-        for (Paciente paciente : repositorioPacientes.listarTodos()) {
-            if (paciente.getEdad() >= edadMinima) {
-                resultado.add(paciente);
-            }
-        }
-        return resultado;
-    }
-}
-```
-
-#### Archivo: ServicioMedicos.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Medico;
-import com.medisalud.repository.Repositorio;
-import java.util.List;
-
-public class ServicioMedicos {
-
-    private final Repositorio<Medico> repositorioMedicos;
-
-    public ServicioMedicos(Repositorio<Medico> repositorioMedicos) {
-        this.repositorioMedicos = repositorioMedicos;
-    }
-
-    public void registrarMedico(Medico medico) {
-        repositorioMedicos.agregar(medico);
-    }
-
-    public List<Medico> listarTodos() {
-        return repositorioMedicos.listarTodos();
-    }
-}
-```
-
-#### Archivo: ServicioCitas.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.repository.Repositorio;
-import java.time.LocalDate;
-import java.util.List;
-
-public class ServicioCitas {
-
-    private final Repositorio<Cita> repositorioCitas;
-
-    public ServicioCitas(Repositorio<Cita> repositorioCitas) {
-        this.repositorioCitas = repositorioCitas;
-    }
-
-    public Cita agendarCita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
-        Cita cita = new Cita(codigo, paciente, medico, fecha);
-        repositorioCitas.agregar(cita);
-        return cita;
-    }
-
-    public List<Cita> listarTodas() {
-        return repositorioCitas.listarTodos();
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.repository.Repositorio;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        ServicioPacientes servicioPacientes = new ServicioPacientes(new Repositorio<>());
-        ServicioMedicos servicioMedicos = new ServicioMedicos(new Repositorio<>());
-        ServicioCitas servicioCitas = new ServicioCitas(new Repositorio<>());
-
-        Paciente ana = new Paciente("Ana Torres", "P001", 34);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = servicioCitas.agendarCita("C001", ana, carla, LocalDate.of(2026, 10, 5));
-        System.out.println(cita);
-        System.out.println(ana.getHistoriaClinica());
-    }
-}
-```
-
-📖 **Explicación**: `Cita` **asocia** `Paciente` y `Medico` (los conoce, no los posee);
-`Paciente` **compone** su propia `HistoriaClinica` (la crea y la posee). Nacen los tres
-`Servicio*`, cada uno responsable de una entidad, siguiendo el Módulo 9. También se
-anticipa `listarMayoresDeEdad`, un recorrido manual con bucle que el Paso 19 va a
-reemplazar por `Stream`.
-
----
-
-### Paso 10 — Estados, mapas y excepciones propias (Módulo 10)
+Sin dependencias de ninguna otra clase propia del proyecto (salvo
+`TransicionInvalidaException`, que depende del enum de este mismo bloque).
 
 #### Archivo: EstadoCita.java
 
@@ -1043,20 +248,241 @@ public class TransicionInvalidaException extends Exception {
 }
 ```
 
+📖 **Explicación**: `EstadoCita` es un `enum` (Módulo 10) que además sabe decidir, con
+`puedeTransicionarA`, qué transición es válida desde su propio valor (patrón State).
+Las cuatro excepciones son excepciones propias del dominio (Módulo 10): tres para datos
+no encontrados (ejemplo de FR-012) y una para transiciones de estado inválidas, exigida
+por la regla de validación V5. Ninguna de las cinco depende de ninguna otra clase del
+proyecto fuera de este bloque.
+
+---
+
+### Bloque 2 — Entidades base: Persona, Paciente, Medico, HistoriaClinica
+
+Dependen solo de tipos de la biblioteca estándar y, entre sí, de `Persona` y
+`HistoriaClinica` (ambas del Bloque 1 en espíritu: tampoco dependen de nada propio).
+
+#### Archivo: HistoriaClinica.java
+
+```java
+package com.medisalud.entity;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class HistoriaClinica implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private String antecedentes;
+    private String alergias;
+    private String observaciones;
+    private final List<String> consultas = new ArrayList<>();
+
+    public HistoriaClinica() {
+    }
+
+    public HistoriaClinica(String antecedentes, String alergias, String observaciones) {
+        this.antecedentes = antecedentes;
+        this.alergias = alergias;
+        this.observaciones = observaciones;
+    }
+
+    public void agregarConsulta(String diagnostico) {
+        consultas.add(diagnostico);
+    }
+
+    public List<String> getConsultas() {
+        return consultas;
+    }
+
+    public String getAntecedentes() {
+        return antecedentes;
+    }
+
+    public String getAlergias() {
+        return alergias;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    @Override
+    public String toString() {
+        return "Historia clinica: " + consultas.size() + " consulta(s) registrada(s)";
+    }
+}
+```
+
+#### Archivo: Persona.java
+
+```java
+package com.medisalud.entity;
+
+import java.io.Serializable;
+
+public abstract class Persona implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private String nombreCompleto;
+    private String codigo;
+
+    protected Persona(String nombreCompleto, String codigo) {
+        setNombreCompleto(nombreCompleto);
+        this.codigo = codigo;
+    }
+
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre completo no puede estar vacio");
+        }
+        this.nombreCompleto = nombreCompleto;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    @Override
+    public String toString() {
+        return codigo + " - " + nombreCompleto;
+    }
+}
+```
+
+#### Archivo: Paciente.java
+
+```java
+package com.medisalud.entity;
+
+public class Paciente extends Persona {
+
+    private int edad;
+    private final HistoriaClinica historiaClinica;
+
+    public Paciente(String nombreCompleto, String codigo, int edad) {
+        this(nombreCompleto, codigo, edad, new HistoriaClinica());
+    }
+
+    public Paciente(String nombreCompleto, String codigo, int edad, HistoriaClinica historiaClinica) {
+        super(nombreCompleto, codigo);
+        setEdad(edad);
+        this.historiaClinica = historiaClinica;
+    }
+
+    public int getEdad() {
+        return edad;
+    }
+
+    public void setEdad(int edad) {
+        if (edad < 0) {
+            throw new IllegalArgumentException("La edad no puede ser negativa");
+        }
+        this.edad = edad;
+    }
+
+    public HistoriaClinica getHistoriaClinica() {
+        return historiaClinica;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (paciente, " + edad + " anios)";
+    }
+}
+```
+
+#### Archivo: Medico.java
+
+```java
+package com.medisalud.entity;
+
+public class Medico extends Persona {
+
+    private String especialidad;
+
+    public Medico(String nombreCompleto, String codigo, String especialidad) {
+        super(nombreCompleto, codigo);
+        setEspecialidad(especialidad);
+    }
+
+    public String getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(String especialidad) {
+        if (especialidad == null || especialidad.trim().isEmpty()) {
+            throw new IllegalArgumentException("La especialidad no puede estar vacia");
+        }
+        this.especialidad = especialidad;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (medico, " + especialidad + ")";
+    }
+}
+```
+
+📖 **Explicación**: `Persona` (Módulo 7) es la superclase abstracta común de
+`Paciente`/`Medico` (herencia + polimorfismo vía `toString()`), con sus atributos
+encapsulados y validados (Módulo 6). `HistoriaClinica` (Módulo 9) es independiente y se
+compone dentro de `Paciente`: cada paciente crea y posee la suya (composición), con un
+segundo constructor que acepta una ya construida — lo usa el patrón Builder del
+Bloque 7. `implements Serializable` (Módulo 17) se agrega desde ahora porque estas
+clases viajan dentro de `Cita` cuando esta se serializa (Bloque 3).
+
+---
+
+### Bloque 3 — ObservadorCita, Cita y Factura
+
+`ObservadorCita` es una interfaz pequeña que se referencia desde `Cita` (y se
+implementa recién en el Bloque 8); `Cita` depende de `Paciente`/`Medico`/`EstadoCita`
+(Bloques 1-2); `Factura` depende de `Cita`.
+
+#### Archivo: ObservadorCita.java
+
+```java
+package com.medisalud.patron.comportamiento;
+
+import com.medisalud.entity.Cita;
+
+public interface ObservadorCita {
+
+    void notificarCambioEstado(Cita cita);
+}
+```
+
 #### Archivo: Cita.java
 
 ```java
 package com.medisalud.entity;
 
+import com.medisalud.patron.comportamiento.ObservadorCita;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Cita {
+public class Cita implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final String codigo;
     private final Paciente paciente;
     private final Medico medico;
     private final LocalDate fecha;
     private EstadoCita estado;
+    private transient List<ObservadorCita> observadores = new ArrayList<>();
 
     public Cita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
         this.codigo = codigo;
@@ -1066,8 +492,15 @@ public class Cita {
         this.estado = EstadoCita.PENDIENTE;
     }
 
+    public void agregarObservador(ObservadorCita observador) {
+        observadores.add(observador);
+    }
+
     public void cambiarEstado(EstadoCita nuevoEstado) {
         this.estado = nuevoEstado;
+        for (ObservadorCita observador : observadores) {
+            observador.notificarCambioEstado(this);
+        }
     }
 
     public String getCodigo() {
@@ -1095,181 +528,61 @@ public class Cita {
         return "Cita " + codigo + " [" + estado + "] " + paciente.getNombreCompleto()
                 + " con " + medico.getNombreCompleto() + " el " + fecha;
     }
-}
-```
 
-#### Archivo: ServicioPacientes.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.repository.Repositorio;
-import java.util.ArrayList;
-import java.util.List;
-
-public class ServicioPacientes {
-
-    private final Repositorio<Paciente> repositorioPacientes;
-
-    public ServicioPacientes(Repositorio<Paciente> repositorioPacientes) {
-        this.repositorioPacientes = repositorioPacientes;
-    }
-
-    public void registrarPaciente(Paciente paciente) {
-        repositorioPacientes.agregar(paciente);
-    }
-
-    public Paciente buscarPorCodigo(String codigo) throws PacienteNoEncontradoException {
-        for (Paciente paciente : repositorioPacientes.listarTodos()) {
-            if (paciente.getCodigo().equals(codigo)) {
-                return paciente;
-            }
-        }
-        throw new PacienteNoEncontradoException(codigo);
-    }
-
-    public List<Paciente> listarTodos() {
-        return repositorioPacientes.listarTodos();
-    }
-
-    public List<Paciente> listarMayoresDeEdad(int edadMinima) {
-        List<Paciente> resultado = new ArrayList<>();
-        for (Paciente paciente : repositorioPacientes.listarTodos()) {
-            if (paciente.getEdad() >= edadMinima) {
-                resultado.add(paciente);
-            }
-        }
-        return resultado;
+    private void readObject(ObjectInputStream entrada) throws IOException, ClassNotFoundException {
+        entrada.defaultReadObject();
+        observadores = new ArrayList<>();
     }
 }
 ```
 
-#### Archivo: ServicioCitas.java
+#### Archivo: Factura.java
 
 ```java
-package com.medisalud.service;
+package com.medisalud.entity;
 
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.EstadoCita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.TransicionInvalidaException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+public class Factura {
 
-public class ServicioCitas {
+    private final Cita cita;
+    private final double montoBase;
 
-    private final Map<String, Cita> citasPorCodigo = new HashMap<>();
+    public Factura(Cita cita, double montoBase) {
+        this.cita = cita;
+        this.montoBase = montoBase;
+    }
 
-    public Cita agendarCita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
-        Cita cita = new Cita(codigo, paciente, medico, fecha);
-        citasPorCodigo.put(codigo, cita);
+    public Cita getCita() {
         return cita;
     }
 
-    public Cita buscarPorCodigo(String codigo) throws CitaNoEncontradaException {
-        Cita cita = citasPorCodigo.get(codigo);
-        if (cita == null) {
-            throw new CitaNoEncontradaException(codigo);
-        }
-        return cita;
+    public double getMontoBase() {
+        return montoBase;
     }
 
-    public void confirmarCita(String codigo) throws CitaNoEncontradaException, TransicionInvalidaException {
-        cambiarEstado(codigo, EstadoCita.CONFIRMADA);
+    public double calcularMonto() {
+        return montoBase;
     }
 
-    public void atenderCita(String codigo, String diagnostico)
-            throws CitaNoEncontradaException, TransicionInvalidaException {
-        Cita cita = buscarPorCodigo(codigo);
-        cambiarEstado(codigo, EstadoCita.ATENDIDA);
-        cita.getPaciente().getHistoriaClinica().agregarConsulta(diagnostico);
-    }
-
-    public void cancelarCita(String codigo) throws CitaNoEncontradaException, TransicionInvalidaException {
-        cambiarEstado(codigo, EstadoCita.CANCELADA);
-    }
-
-    public List<Cita> listarTodas() {
-        return new ArrayList<>(citasPorCodigo.values());
-    }
-
-    private void cambiarEstado(String codigo, EstadoCita nuevoEstado)
-            throws CitaNoEncontradaException, TransicionInvalidaException {
-        Cita cita = buscarPorCodigo(codigo);
-        if (!cita.getEstado().puedeTransicionarA(nuevoEstado)) {
-            throw new TransicionInvalidaException(codigo, cita.getEstado(), nuevoEstado);
-        }
-        cita.cambiarEstado(nuevoEstado);
+    @Override
+    public String toString() {
+        return "Factura de la cita " + cita.getCodigo() + ": $" + calcularMonto();
     }
 }
 ```
 
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.repository.Repositorio;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        ServicioPacientes servicioPacientes = new ServicioPacientes(new Repositorio<>());
-        ServicioMedicos servicioMedicos = new ServicioMedicos(new Repositorio<>());
-        ServicioCitas servicioCitas = new ServicioCitas();
-
-        Paciente ana = new Paciente("Ana Torres", "P001", 34);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = servicioCitas.agendarCita("C001", ana, carla, LocalDate.of(2026, 10, 5));
-
-        try {
-            servicioCitas.confirmarCita("C001");
-            servicioCitas.atenderCita("C001", "Control de presion arterial normal");
-            System.out.println(cita);
-        } catch (CitaNoEncontradaException | TransicionInvalidaException excepcion) {
-            System.out.println("No se pudo actualizar la cita: " + excepcion.getMessage());
-        }
-
-        try {
-            servicioPacientes.buscarPorCodigo("P999");
-        } catch (PacienteNoEncontradoException excepcion) {
-            System.out.println("Error esperado: " + excepcion.getMessage());
-        }
-    }
-}
-```
-
-📖 **Explicación**: `EstadoCita` (`enum`) representa los cuatro estados posibles de una
-cita y ya sabe qué transiciones son válidas; `ServicioCitas` pasa a usar un
-`Map<String, Cita>` para buscar por código en lugar de recorrer una lista; cuatro
-excepciones propias (tres del enunciado más `TransicionInvalidaException`, exigida por
-la regla de validación V5) reemplazan los mensajes de error genéricos — el aporte del
-Módulo 10. El `try`/`catch` en `Principal` muestra cómo se manejan sin detener el
-programa.
+📖 **Explicación**: `Cita` **asocia** `Paciente` y `Medico` (los conoce, no los posee —
+Módulo 9) y guarda su `EstadoCita`; `cambiarEstado` notifica a sus observadores (patrón
+Observer, implementado en el Bloque 8). `observadores` es `transient` porque un
+`ObservadorCita` real (que termina usando un hilo) no se puede serializar; un
+`readObject` propio lo reconstruye vacío al recargar un objeto `Cita` desde
+`citas.ser` (Módulo 17). `Factura` representa el costo de una consulta; su
+`calcularMonto()` es sobre-escrito por los decoradores del Bloque 9 (patrón Decorator).
 
 ---
 
-### Paso 11 — Refactor SOLID (Módulo 11)
+### Bloque 4 — Repositorios
+
+Interfaces e implementación en memoria; dependen de las entidades de los Bloques 2-3.
 
 #### Archivo: RepositorioPacientes.java
 
@@ -1324,1346 +637,6 @@ public interface RepositorioCitas {
     List<Cita> listarTodas();
 
     List<Cita> listarPorMedico(String codigoMedico);
-}
-```
-
-#### Archivo: RepositorioPacientesMemoria.java
-
-```java
-package com.medisalud.repository;
-
-import com.medisalud.entity.Paciente;
-import java.util.ArrayList;
-import java.util.List;
-
-public class RepositorioPacientesMemoria implements RepositorioPacientes {
-
-    private final List<Paciente> pacientes = new ArrayList<>();
-
-    @Override
-    public void guardar(Paciente paciente) {
-        pacientes.add(paciente);
-    }
-
-    @Override
-    public Paciente buscarPorCodigo(String codigo) {
-        for (Paciente paciente : pacientes) {
-            if (paciente.getCodigo().equals(codigo)) {
-                return paciente;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public List<Paciente> listarTodos() {
-        return new ArrayList<>(pacientes);
-    }
-}
-```
-
-#### Archivo: RepositorioMedicosMemoria.java
-
-```java
-package com.medisalud.repository;
-
-import com.medisalud.entity.Medico;
-import java.util.ArrayList;
-import java.util.List;
-
-public class RepositorioMedicosMemoria implements RepositorioMedicos {
-
-    private final List<Medico> medicos = new ArrayList<>();
-
-    @Override
-    public void guardar(Medico medico) {
-        medicos.add(medico);
-    }
-
-    @Override
-    public Medico buscarPorCodigo(String codigo) {
-        for (Medico medico : medicos) {
-            if (medico.getCodigo().equals(codigo)) {
-                return medico;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public List<Medico> listarTodos() {
-        return new ArrayList<>(medicos);
-    }
-}
-```
-
-#### Archivo: RepositorioCitasMemoria.java
-
-```java
-package com.medisalud.repository;
-
-import com.medisalud.entity.Cita;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class RepositorioCitasMemoria implements RepositorioCitas {
-
-    private final Map<String, Cita> citasPorCodigo = new HashMap<>();
-
-    @Override
-    public void guardar(Cita cita) {
-        citasPorCodigo.put(cita.getCodigo(), cita);
-    }
-
-    @Override
-    public Cita buscarPorCodigo(String codigo) {
-        return citasPorCodigo.get(codigo);
-    }
-
-    @Override
-    public List<Cita> listarTodas() {
-        return new ArrayList<>(citasPorCodigo.values());
-    }
-
-    @Override
-    public List<Cita> listarPorMedico(String codigoMedico) {
-        List<Cita> resultado = new ArrayList<>();
-        for (Cita cita : citasPorCodigo.values()) {
-            if (cita.getMedico().getCodigo().equals(codigoMedico)) {
-                resultado.add(cita);
-            }
-        }
-        return resultado;
-    }
-}
-```
-
-#### Archivo: ServicioPacientes.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.repository.RepositorioPacientes;
-import java.util.ArrayList;
-import java.util.List;
-
-public class ServicioPacientes {
-
-    private final RepositorioPacientes repositorioPacientes;
-
-    public ServicioPacientes(RepositorioPacientes repositorioPacientes) {
-        this.repositorioPacientes = repositorioPacientes;
-    }
-
-    public void registrarPaciente(Paciente paciente) {
-        repositorioPacientes.guardar(paciente);
-    }
-
-    public Paciente buscarPorCodigo(String codigo) throws PacienteNoEncontradoException {
-        Paciente paciente = repositorioPacientes.buscarPorCodigo(codigo);
-        if (paciente == null) {
-            throw new PacienteNoEncontradoException(codigo);
-        }
-        return paciente;
-    }
-
-    public List<Paciente> listarTodos() {
-        return repositorioPacientes.listarTodos();
-    }
-
-    public List<Paciente> listarMayoresDeEdad(int edadMinima) {
-        List<Paciente> resultado = new ArrayList<>();
-        for (Paciente paciente : repositorioPacientes.listarTodos()) {
-            if (paciente.getEdad() >= edadMinima) {
-                resultado.add(paciente);
-            }
-        }
-        return resultado;
-    }
-}
-```
-
-#### Archivo: ServicioMedicos.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Medico;
-import com.medisalud.exception.MedicoNoEncontradoException;
-import com.medisalud.repository.RepositorioMedicos;
-import java.util.List;
-
-public class ServicioMedicos {
-
-    private final RepositorioMedicos repositorioMedicos;
-
-    public ServicioMedicos(RepositorioMedicos repositorioMedicos) {
-        this.repositorioMedicos = repositorioMedicos;
-    }
-
-    public void registrarMedico(Medico medico) {
-        repositorioMedicos.guardar(medico);
-    }
-
-    public Medico buscarPorCodigo(String codigo) throws MedicoNoEncontradoException {
-        Medico medico = repositorioMedicos.buscarPorCodigo(codigo);
-        if (medico == null) {
-            throw new MedicoNoEncontradoException(codigo);
-        }
-        return medico;
-    }
-
-    public List<Medico> listarTodos() {
-        return repositorioMedicos.listarTodos();
-    }
-}
-```
-
-#### Archivo: ServicioCitas.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.EstadoCita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.repository.RepositorioCitas;
-import java.time.LocalDate;
-import java.util.List;
-
-public class ServicioCitas {
-
-    private final RepositorioCitas repositorioCitas;
-
-    public ServicioCitas(RepositorioCitas repositorioCitas) {
-        this.repositorioCitas = repositorioCitas;
-    }
-
-    public Cita agendarCita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
-        Cita cita = new Cita(codigo, paciente, medico, fecha);
-        repositorioCitas.guardar(cita);
-        return cita;
-    }
-
-    public Cita buscarPorCodigo(String codigo) throws CitaNoEncontradaException {
-        Cita cita = repositorioCitas.buscarPorCodigo(codigo);
-        if (cita == null) {
-            throw new CitaNoEncontradaException(codigo);
-        }
-        return cita;
-    }
-
-    public void confirmarCita(String codigo) throws CitaNoEncontradaException, TransicionInvalidaException {
-        cambiarEstado(codigo, EstadoCita.CONFIRMADA);
-    }
-
-    public void atenderCita(String codigo, String diagnostico)
-            throws CitaNoEncontradaException, TransicionInvalidaException {
-        Cita cita = buscarPorCodigo(codigo);
-        cambiarEstado(codigo, EstadoCita.ATENDIDA);
-        cita.getPaciente().getHistoriaClinica().agregarConsulta(diagnostico);
-    }
-
-    public void cancelarCita(String codigo) throws CitaNoEncontradaException, TransicionInvalidaException {
-        cambiarEstado(codigo, EstadoCita.CANCELADA);
-    }
-
-    public List<Cita> listarPorMedico(String codigoMedico) {
-        return repositorioCitas.listarPorMedico(codigoMedico);
-    }
-
-    private void cambiarEstado(String codigo, EstadoCita nuevoEstado)
-            throws CitaNoEncontradaException, TransicionInvalidaException {
-        Cita cita = buscarPorCodigo(codigo);
-        if (!cita.getEstado().puedeTransicionarA(nuevoEstado)) {
-            throw new TransicionInvalidaException(codigo, cita.getEstado(), nuevoEstado);
-        }
-        cita.cambiarEstado(nuevoEstado);
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        ServicioPacientes servicioPacientes = new ServicioPacientes(new RepositorioPacientesMemoria());
-        ServicioMedicos servicioMedicos = new ServicioMedicos(new RepositorioMedicosMemoria());
-        ServicioCitas servicioCitas = new ServicioCitas(new RepositorioCitasMemoria());
-
-        Paciente ana = new Paciente("Ana Torres", "P001", 34);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = servicioCitas.agendarCita("C001", ana, carla, LocalDate.of(2026, 10, 5));
-
-        try {
-            servicioCitas.confirmarCita("C001");
-            servicioCitas.atenderCita("C001", "Control de presion arterial normal");
-            System.out.println(cita);
-        } catch (CitaNoEncontradaException | TransicionInvalidaException excepcion) {
-            System.out.println("No se pudo actualizar la cita: " + excepcion.getMessage());
-        }
-
-        try {
-            servicioPacientes.buscarPorCodigo("P999");
-        } catch (PacienteNoEncontradoException excepcion) {
-            System.out.println("Error esperado: " + excepcion.getMessage());
-        }
-    }
-}
-```
-
-📖 **Explicación**: `Repositorio<T>` se reemplaza por tres interfaces específicas
-(`RepositorioPacientes`/`RepositorioMedicos`/`RepositorioCitas`) con su implementación en
-memoria, e inyección de dependencias en cada `Servicio*` (reciben la interfaz por
-constructor, nunca la implementación concreta). Esto resuelve varios de los cinco
-principios SOLID del Módulo 11 a la vez: responsabilidad única (cada repositorio, una
-entidad), abierto/cerrado y sustitución (cualquier implementación de la interfaz sirve),
-segregación de interfaces (métodos específicos por entidad) e inversión de dependencias
-(los `Servicio*` dependen de la interfaz, no de `RepositorioPacientesMemoria`) — esta
-última es la que va a permitir cambiar a JDBC en el Paso 18 sin tocar ningún `Servicio*`.
-
----
-
-### Paso 12 — Builder y Singleton (Módulo 12)
-
-#### Archivo: HistoriaClinica.java
-
-```java
-package com.medisalud.entity;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class HistoriaClinica {
-
-    private String antecedentes;
-    private String alergias;
-    private String observaciones;
-    private final List<String> consultas = new ArrayList<>();
-
-    public HistoriaClinica() {
-    }
-
-    public HistoriaClinica(String antecedentes, String alergias, String observaciones) {
-        this.antecedentes = antecedentes;
-        this.alergias = alergias;
-        this.observaciones = observaciones;
-    }
-
-    public void agregarConsulta(String diagnostico) {
-        consultas.add(diagnostico);
-    }
-
-    public List<String> getConsultas() {
-        return consultas;
-    }
-
-    public String getAntecedentes() {
-        return antecedentes;
-    }
-
-    public String getAlergias() {
-        return alergias;
-    }
-
-    public String getObservaciones() {
-        return observaciones;
-    }
-
-    @Override
-    public String toString() {
-        return "Historia clinica: " + consultas.size() + " consulta(s) registrada(s)";
-    }
-}
-```
-
-#### Archivo: Paciente.java
-
-```java
-package com.medisalud.entity;
-
-public class Paciente extends Persona {
-
-    private int edad;
-    private final HistoriaClinica historiaClinica;
-
-    public Paciente(String nombreCompleto, String codigo, int edad) {
-        this(nombreCompleto, codigo, edad, new HistoriaClinica());
-    }
-
-    public Paciente(String nombreCompleto, String codigo, int edad, HistoriaClinica historiaClinica) {
-        super(nombreCompleto, codigo);
-        setEdad(edad);
-        this.historiaClinica = historiaClinica;
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public void setEdad(int edad) {
-        if (edad < 0) {
-            throw new IllegalArgumentException("La edad no puede ser negativa");
-        }
-        this.edad = edad;
-    }
-
-    public HistoriaClinica getHistoriaClinica() {
-        return historiaClinica;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (paciente, " + edad + " anios)";
-    }
-}
-```
-
-#### Archivo: ConstructorHistoriaClinica.java
-
-```java
-package com.medisalud.patron.creacional;
-
-import com.medisalud.entity.HistoriaClinica;
-
-public class ConstructorHistoriaClinica {
-
-    private String antecedentes;
-    private String alergias;
-    private String observaciones;
-
-    public ConstructorHistoriaClinica conAntecedentes(String antecedentes) {
-        this.antecedentes = antecedentes;
-        return this;
-    }
-
-    public ConstructorHistoriaClinica conAlergias(String alergias) {
-        this.alergias = alergias;
-        return this;
-    }
-
-    public ConstructorHistoriaClinica conObservaciones(String observaciones) {
-        this.observaciones = observaciones;
-        return this;
-    }
-
-    public HistoriaClinica construir() {
-        return new HistoriaClinica(antecedentes, alergias, observaciones);
-    }
-}
-```
-
-#### Archivo: GestorClinica.java
-
-```java
-package com.medisalud.patron.creacional;
-
-import com.medisalud.repository.RepositorioCitas;
-import com.medisalud.repository.RepositorioMedicos;
-import com.medisalud.repository.RepositorioPacientes;
-
-public final class GestorClinica {
-
-    private static GestorClinica instancia;
-
-    private final RepositorioPacientes repositorioPacientes;
-    private final RepositorioMedicos repositorioMedicos;
-    private final RepositorioCitas repositorioCitas;
-
-    private GestorClinica(RepositorioPacientes repositorioPacientes,
-                           RepositorioMedicos repositorioMedicos,
-                           RepositorioCitas repositorioCitas) {
-        this.repositorioPacientes = repositorioPacientes;
-        this.repositorioMedicos = repositorioMedicos;
-        this.repositorioCitas = repositorioCitas;
-    }
-
-    public static synchronized GestorClinica inicializar(RepositorioPacientes repositorioPacientes,
-                                                           RepositorioMedicos repositorioMedicos,
-                                                           RepositorioCitas repositorioCitas) {
-        if (instancia == null) {
-            instancia = new GestorClinica(repositorioPacientes, repositorioMedicos, repositorioCitas);
-        }
-        return instancia;
-    }
-
-    public static GestorClinica obtenerInstancia() {
-        if (instancia == null) {
-            throw new IllegalStateException("GestorClinica no fue inicializado todavia");
-        }
-        return instancia;
-    }
-
-    public RepositorioPacientes getRepositorioPacientes() {
-        return repositorioPacientes;
-    }
-
-    public RepositorioMedicos getRepositorioMedicos() {
-        return repositorioMedicos;
-    }
-
-    public RepositorioCitas getRepositorioCitas() {
-        return repositorioCitas;
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.HistoriaClinica;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) {
-        RepositorioPacientesMemoria repositorioPacientes = new RepositorioPacientesMemoria();
-        RepositorioMedicosMemoria repositorioMedicos = new RepositorioMedicosMemoria();
-        RepositorioCitasMemoria repositorioCitas = new RepositorioCitasMemoria();
-        GestorClinica.inicializar(repositorioPacientes, repositorioMedicos, repositorioCitas);
-
-        ServicioPacientes servicioPacientes = new ServicioPacientes(
-                GestorClinica.obtenerInstancia().getRepositorioPacientes());
-        ServicioMedicos servicioMedicos = new ServicioMedicos(
-                GestorClinica.obtenerInstancia().getRepositorioMedicos());
-        ServicioCitas servicioCitas = new ServicioCitas(
-                GestorClinica.obtenerInstancia().getRepositorioCitas());
-
-        HistoriaClinica historiaAna = new ConstructorHistoriaClinica()
-                .conAntecedentes("Hipertension controlada")
-                .conAlergias("Ninguna conocida")
-                .construir();
-        Paciente ana = new Paciente("Ana Torres", "P001", 34, historiaAna);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = servicioCitas.agendarCita("C001", ana, carla, LocalDate.of(2026, 10, 5));
-
-        try {
-            servicioCitas.confirmarCita("C001");
-            servicioCitas.atenderCita("C001", "Control de presion arterial normal");
-            System.out.println(cita);
-        } catch (CitaNoEncontradaException | TransicionInvalidaException excepcion) {
-            System.out.println("No se pudo actualizar la cita: " + excepcion.getMessage());
-        }
-
-        System.out.println(ana.getHistoriaClinica());
-
-        try {
-            servicioPacientes.buscarPorCodigo("P999");
-        } catch (PacienteNoEncontradoException excepcion) {
-            System.out.println("Error esperado: " + excepcion.getMessage());
-        }
-    }
-}
-```
-
-📖 **Explicación**: **Builder** (`ConstructorHistoriaClinica`) resuelve un problema real:
-`HistoriaClinica` tiene varios campos opcionales (`antecedentes`, `alergias`,
-`observaciones`) y un constructor con todos ellos sería confuso de llamar — el builder
-los va fijando uno a uno con métodos encadenados. **Singleton** (`GestorClinica`)
-garantiza un único punto de acceso a los tres repositorios de toda la aplicación, en vez
-de pasarlos sueltos por todos lados. Ambos del Módulo 12.
-
----
-
-### Paso 13 — Decorator y Facade (Módulo 13)
-
-#### Archivo: Factura.java
-
-```java
-package com.medisalud.entity;
-
-public class Factura {
-
-    private final Cita cita;
-    private final double montoBase;
-
-    public Factura(Cita cita, double montoBase) {
-        this.cita = cita;
-        this.montoBase = montoBase;
-    }
-
-    public Cita getCita() {
-        return cita;
-    }
-
-    public double getMontoBase() {
-        return montoBase;
-    }
-
-    public double calcularMonto() {
-        return montoBase;
-    }
-
-    @Override
-    public String toString() {
-        return "Factura de la cita " + cita.getCodigo() + ": $" + calcularMonto();
-    }
-}
-```
-
-#### Archivo: FacturaConRecargoNocturno.java
-
-```java
-package com.medisalud.patron.estructural;
-
-import com.medisalud.entity.Factura;
-
-public class FacturaConRecargoNocturno extends Factura {
-
-    private static final double RECARGO_NOCTURNO = 15.0;
-    private final Factura facturaOriginal;
-
-    public FacturaConRecargoNocturno(Factura facturaOriginal) {
-        super(facturaOriginal.getCita(), facturaOriginal.getMontoBase());
-        this.facturaOriginal = facturaOriginal;
-    }
-
-    @Override
-    public double calcularMonto() {
-        return facturaOriginal.calcularMonto() + RECARGO_NOCTURNO;
-    }
-
-    @Override
-    public String toString() {
-        return facturaOriginal.toString() + " + recargo nocturno = $" + calcularMonto();
-    }
-}
-```
-
-#### Archivo: FacturaConDescuentoAfiliado.java
-
-```java
-package com.medisalud.patron.estructural;
-
-import com.medisalud.entity.Factura;
-
-public class FacturaConDescuentoAfiliado extends Factura {
-
-    private static final double DESCUENTO_AFILIADO = 10.0;
-    private final Factura facturaOriginal;
-
-    public FacturaConDescuentoAfiliado(Factura facturaOriginal) {
-        super(facturaOriginal.getCita(), facturaOriginal.getMontoBase());
-        this.facturaOriginal = facturaOriginal;
-    }
-
-    @Override
-    public double calcularMonto() {
-        double montoConDescuento = facturaOriginal.calcularMonto() - DESCUENTO_AFILIADO;
-        return Math.max(0.0, montoConDescuento);
-    }
-
-    @Override
-    public String toString() {
-        return facturaOriginal.toString() + " - descuento afiliado = $" + calcularMonto();
-    }
-}
-```
-
-#### Archivo: FachadaAgendamiento.java
-
-```java
-package com.medisalud.patron.estructural;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.MedicoNoEncontradoException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class FachadaAgendamiento {
-
-    private final ServicioPacientes servicioPacientes;
-    private final ServicioMedicos servicioMedicos;
-    private final ServicioCitas servicioCitas;
-
-    public FachadaAgendamiento(ServicioPacientes servicioPacientes,
-                                ServicioMedicos servicioMedicos,
-                                ServicioCitas servicioCitas) {
-        this.servicioPacientes = servicioPacientes;
-        this.servicioMedicos = servicioMedicos;
-        this.servicioCitas = servicioCitas;
-    }
-
-    public Cita agendar(String codigoCita, String codigoPaciente, String codigoMedico, LocalDate fecha)
-            throws PacienteNoEncontradoException, MedicoNoEncontradoException {
-        Paciente paciente = servicioPacientes.buscarPorCodigo(codigoPaciente);
-        Medico medico = servicioMedicos.buscarPorCodigo(codigoMedico);
-        return servicioCitas.agendarCita(codigoCita, paciente, medico, fecha);
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.entity.HistoriaClinica;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.MedicoNoEncontradoException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
-import com.medisalud.patron.estructural.FacturaConDescuentoAfiliado;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) throws PacienteNoEncontradoException, MedicoNoEncontradoException {
-        RepositorioPacientesMemoria repositorioPacientes = new RepositorioPacientesMemoria();
-        RepositorioMedicosMemoria repositorioMedicos = new RepositorioMedicosMemoria();
-        RepositorioCitasMemoria repositorioCitas = new RepositorioCitasMemoria();
-        GestorClinica.inicializar(repositorioPacientes, repositorioMedicos, repositorioCitas);
-
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorioPacientes);
-        ServicioMedicos servicioMedicos = new ServicioMedicos(repositorioMedicos);
-        ServicioCitas servicioCitas = new ServicioCitas(repositorioCitas);
-        FachadaAgendamiento fachadaAgendamiento =
-                new FachadaAgendamiento(servicioPacientes, servicioMedicos, servicioCitas);
-
-        HistoriaClinica historiaAna = new ConstructorHistoriaClinica()
-                .conAntecedentes("Hipertension controlada")
-                .conAlergias("Ninguna conocida")
-                .construir();
-        Paciente ana = new Paciente("Ana Torres", "P001", 34, historiaAna);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = fachadaAgendamiento.agendar("C001", ana.getCodigo(), carla.getCodigo(), LocalDate.of(2026, 10, 5));
-
-        try {
-            servicioCitas.confirmarCita("C001");
-            servicioCitas.atenderCita("C001", "Control de presion arterial normal");
-            System.out.println(cita);
-        } catch (CitaNoEncontradaException | TransicionInvalidaException excepcion) {
-            System.out.println("No se pudo actualizar la cita: " + excepcion.getMessage());
-        }
-
-        System.out.println(ana.getHistoriaClinica());
-
-        Factura factura = new Factura(cita, 50.0);
-        Factura facturaConDescuento = new FacturaConDescuentoAfiliado(factura);
-        System.out.println(facturaConDescuento);
-    }
-}
-```
-
-📖 **Explicación**: nace `Factura` (recién ahora, porque recién ahora el proyecto
-necesita calcular y mostrar un costo). **Decorator**
-(`FacturaConRecargoNocturno`/`FacturaConDescuentoAfiliado`) agrega recargos/descuentos
-envolviendo una `Factura` sin modificar su clase. **Facade** (`FachadaAgendamiento`)
-oculta detrás de un único método `agendar(...)` los pasos de buscar paciente, buscar
-médico y crear la cita — por eso `Principal` ya no necesita su propio `try`/`catch` para
-esas búsquedas. Ambos patrones del Módulo 13.
-
----
-
-### Paso 14 — Strategy, Observer y State (Módulo 14)
-
-#### Archivo: EstrategiaCosto.java
-
-```java
-package com.medisalud.patron.comportamiento;
-
-import com.medisalud.entity.Cita;
-
-public interface EstrategiaCosto {
-
-    double calcularCosto(Cita cita);
-}
-```
-
-#### Archivo: EstrategiaCostoConsultaGeneral.java
-
-```java
-package com.medisalud.patron.comportamiento;
-
-import com.medisalud.entity.Cita;
-
-public class EstrategiaCostoConsultaGeneral implements EstrategiaCosto {
-
-    private static final double COSTO_CONSULTA_GENERAL = 50.0;
-
-    @Override
-    public double calcularCosto(Cita cita) {
-        return COSTO_CONSULTA_GENERAL;
-    }
-}
-```
-
-#### Archivo: EstrategiaCostoConsultaEspecialista.java
-
-```java
-package com.medisalud.patron.comportamiento;
-
-import com.medisalud.entity.Cita;
-
-public class EstrategiaCostoConsultaEspecialista implements EstrategiaCosto {
-
-    private static final double COSTO_CONSULTA_ESPECIALISTA = 90.0;
-
-    @Override
-    public double calcularCosto(Cita cita) {
-        return COSTO_CONSULTA_ESPECIALISTA;
-    }
-}
-```
-
-#### Archivo: ObservadorCita.java
-
-```java
-package com.medisalud.patron.comportamiento;
-
-import com.medisalud.entity.Cita;
-
-public interface ObservadorCita {
-
-    void notificarCambioEstado(Cita cita);
-}
-```
-
-#### Archivo: ObservadorCitaNotificacion.java
-
-```java
-package com.medisalud.patron.comportamiento;
-
-import com.medisalud.entity.Cita;
-
-public class ObservadorCitaNotificacion implements ObservadorCita {
-
-    @Override
-    public void notificarCambioEstado(Cita cita) {
-        System.out.println("[notificacion] La cita " + cita.getCodigo() + " ahora esta " + cita.getEstado());
-    }
-}
-```
-
-#### Archivo: Cita.java
-
-```java
-package com.medisalud.entity;
-
-import com.medisalud.patron.comportamiento.ObservadorCita;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-public class Cita {
-
-    private final String codigo;
-    private final Paciente paciente;
-    private final Medico medico;
-    private final LocalDate fecha;
-    private EstadoCita estado;
-    private final List<ObservadorCita> observadores = new ArrayList<>();
-
-    public Cita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
-        this.codigo = codigo;
-        this.paciente = paciente;
-        this.medico = medico;
-        this.fecha = fecha;
-        this.estado = EstadoCita.PENDIENTE;
-    }
-
-    public void agregarObservador(ObservadorCita observador) {
-        observadores.add(observador);
-    }
-
-    public void cambiarEstado(EstadoCita nuevoEstado) {
-        this.estado = nuevoEstado;
-        for (ObservadorCita observador : observadores) {
-            observador.notificarCambioEstado(this);
-        }
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public Medico getMedico() {
-        return medico;
-    }
-
-    public LocalDate getFecha() {
-        return fecha;
-    }
-
-    public EstadoCita getEstado() {
-        return estado;
-    }
-
-    @Override
-    public String toString() {
-        return "Cita " + codigo + " [" + estado + "] " + paciente.getNombreCompleto()
-                + " con " + medico.getNombreCompleto() + " el " + fecha;
-    }
-}
-```
-
-#### Archivo: FachadaAgendamiento.java
-
-```java
-package com.medisalud.patron.estructural;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.MedicoNoEncontradoException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.patron.comportamiento.ObservadorCita;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class FachadaAgendamiento {
-
-    private final ServicioPacientes servicioPacientes;
-    private final ServicioMedicos servicioMedicos;
-    private final ServicioCitas servicioCitas;
-    private final ObservadorCita observadorCita;
-
-    public FachadaAgendamiento(ServicioPacientes servicioPacientes,
-                                ServicioMedicos servicioMedicos,
-                                ServicioCitas servicioCitas,
-                                ObservadorCita observadorCita) {
-        this.servicioPacientes = servicioPacientes;
-        this.servicioMedicos = servicioMedicos;
-        this.servicioCitas = servicioCitas;
-        this.observadorCita = observadorCita;
-    }
-
-    public Cita agendar(String codigoCita, String codigoPaciente, String codigoMedico, LocalDate fecha)
-            throws PacienteNoEncontradoException, MedicoNoEncontradoException {
-        Paciente paciente = servicioPacientes.buscarPorCodigo(codigoPaciente);
-        Medico medico = servicioMedicos.buscarPorCodigo(codigoMedico);
-        Cita cita = servicioCitas.agendarCita(codigoCita, paciente, medico, fecha);
-        cita.agregarObservador(observadorCita);
-        return cita;
-    }
-}
-```
-
-#### Archivo: ServicioFacturacion.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class ServicioFacturacion {
-
-    private final List<Factura> facturasEmitidas = new ArrayList<>();
-
-    public Factura emitirFactura(Cita cita, EstrategiaCosto estrategiaCosto) {
-        double montoBase = estrategiaCosto.calcularCosto(cita);
-        Factura factura = new Factura(cita, montoBase);
-        facturasEmitidas.add(factura);
-        return factura;
-    }
-
-    public List<Factura> listarFacturas() {
-        return new ArrayList<>(facturasEmitidas);
-    }
-
-    public Map<String, Double> totalFacturadoPorMedico() {
-        Map<String, Double> totales = new HashMap<>();
-        for (Factura factura : facturasEmitidas) {
-            String codigoMedico = factura.getCita().getMedico().getCodigo();
-            double totalActual = totales.getOrDefault(codigoMedico, 0.0);
-            totales.put(codigoMedico, totalActual + factura.calcularMonto());
-        }
-        return totales;
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.entity.HistoriaClinica;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.CitaNoEncontradaException;
-import com.medisalud.exception.MedicoNoEncontradoException;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.exception.TransicionInvalidaException;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import com.medisalud.patron.comportamiento.EstrategiaCostoConsultaGeneral;
-import com.medisalud.patron.comportamiento.ObservadorCitaNotificacion;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
-import com.medisalud.patron.estructural.FacturaConDescuentoAfiliado;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioFacturacion;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) throws PacienteNoEncontradoException, MedicoNoEncontradoException {
-        RepositorioPacientesMemoria repositorioPacientes = new RepositorioPacientesMemoria();
-        RepositorioMedicosMemoria repositorioMedicos = new RepositorioMedicosMemoria();
-        RepositorioCitasMemoria repositorioCitas = new RepositorioCitasMemoria();
-        GestorClinica.inicializar(repositorioPacientes, repositorioMedicos, repositorioCitas);
-
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorioPacientes);
-        ServicioMedicos servicioMedicos = new ServicioMedicos(repositorioMedicos);
-        ServicioCitas servicioCitas = new ServicioCitas(repositorioCitas);
-        ObservadorCitaNotificacion observador = new ObservadorCitaNotificacion();
-        FachadaAgendamiento fachadaAgendamiento = new FachadaAgendamiento(
-                servicioPacientes, servicioMedicos, servicioCitas, observador);
-
-        HistoriaClinica historiaAna = new ConstructorHistoriaClinica()
-                .conAntecedentes("Hipertension controlada")
-                .conAlergias("Ninguna conocida")
-                .construir();
-        Paciente ana = new Paciente("Ana Torres", "P001", 34, historiaAna);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = fachadaAgendamiento.agendar("C001", ana.getCodigo(), carla.getCodigo(), LocalDate.of(2026, 10, 5));
-
-        try {
-            servicioCitas.confirmarCita("C001");
-            servicioCitas.atenderCita("C001", "Control de presion arterial normal");
-            System.out.println(cita);
-        } catch (CitaNoEncontradaException | TransicionInvalidaException excepcion) {
-            System.out.println("No se pudo actualizar la cita: " + excepcion.getMessage());
-        }
-
-        System.out.println(ana.getHistoriaClinica());
-
-        EstrategiaCosto estrategiaCosto = new EstrategiaCostoConsultaGeneral();
-        Factura factura = new ServicioFacturacion().emitirFactura(cita, estrategiaCosto);
-        Factura facturaConDescuento = new FacturaConDescuentoAfiliado(factura);
-        System.out.println(facturaConDescuento);
-    }
-}
-```
-
-📖 **Explicación**: **Strategy** (`EstrategiaCosto`) separa el cálculo del costo en
-variantes intercambiables (consulta general vs. especialista) en vez de un `if` dentro
-de `Factura`. **Observer** (`ObservadorCita`) permite que `Cita` notifique cambios de
-estado sin conocer quién escucha. **State** ya estaba aplicado desde el Paso 10/11: los
-propios valores de `EstadoCita` (`puedeTransicionarA`) deciden qué transición es válida,
-sin que `ServicioCitas` necesite un gran `if`/`switch` repetido — los tres patrones de
-comportamiento del Módulo 14. También nace `ServicioFacturacion`, que ahora centraliza
-el cálculo y guarda cada factura emitida para el reporte del Paso 20.
-
----
-
-### Paso 15 — Un hilo para las notificaciones (Módulo 15)
-
-#### Archivo: HiloNotificaciones.java
-
-```java
-package com.medisalud.concurrencia;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class HiloNotificaciones extends Thread {
-
-    private final List<String> pendientes = new ArrayList<>();
-    private volatile boolean activo = true;
-
-    public HiloNotificaciones() {
-        super("hilo-notificaciones");
-    }
-
-    public void encolar(String mensaje) {
-        pendientes.add(mensaje);
-    }
-
-    public void detener() {
-        activo = false;
-    }
-
-    @Override
-    public void run() {
-        while (activo) {
-            procesarPendientes();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException excepcion) {
-                Thread.currentThread().interrupt();
-                activo = false;
-            }
-        }
-        procesarPendientes();
-    }
-
-    private void procesarPendientes() {
-        for (String mensaje : pendientes) {
-            System.out.println("[notificacion] " + mensaje);
-        }
-        pendientes.clear();
-    }
-}
-```
-
-#### Archivo: ObservadorCitaNotificacion.java
-
-```java
-package com.medisalud.patron.comportamiento;
-
-import com.medisalud.concurrencia.HiloNotificaciones;
-import com.medisalud.entity.Cita;
-
-public class ObservadorCitaNotificacion implements ObservadorCita {
-
-    private final HiloNotificaciones hiloNotificaciones;
-
-    public ObservadorCitaNotificacion(HiloNotificaciones hiloNotificaciones) {
-        this.hiloNotificaciones = hiloNotificaciones;
-    }
-
-    @Override
-    public void notificarCambioEstado(Cita cita) {
-        hiloNotificaciones.encolar("La cita " + cita.getCodigo() + " ahora esta " + cita.getEstado());
-    }
-}
-```
-
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.concurrencia.HiloNotificaciones;
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.entity.HistoriaClinica;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import com.medisalud.patron.comportamiento.EstrategiaCostoConsultaGeneral;
-import com.medisalud.patron.comportamiento.ObservadorCitaNotificacion;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
-import com.medisalud.patron.estructural.FacturaConDescuentoAfiliado;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioFacturacion;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) throws Exception {
-        RepositorioPacientesMemoria repositorioPacientes = new RepositorioPacientesMemoria();
-        RepositorioMedicosMemoria repositorioMedicos = new RepositorioMedicosMemoria();
-        RepositorioCitasMemoria repositorioCitas = new RepositorioCitasMemoria();
-        GestorClinica.inicializar(repositorioPacientes, repositorioMedicos, repositorioCitas);
-
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorioPacientes);
-        ServicioMedicos servicioMedicos = new ServicioMedicos(repositorioMedicos);
-        ServicioCitas servicioCitas = new ServicioCitas(repositorioCitas);
-        ServicioFacturacion servicioFacturacion = new ServicioFacturacion();
-
-        HiloNotificaciones hiloNotificaciones = new HiloNotificaciones();
-        hiloNotificaciones.start();
-        ObservadorCitaNotificacion observador = new ObservadorCitaNotificacion(hiloNotificaciones);
-        FachadaAgendamiento fachadaAgendamiento = new FachadaAgendamiento(
-                servicioPacientes, servicioMedicos, servicioCitas, observador);
-
-        HistoriaClinica historiaAna = new ConstructorHistoriaClinica()
-                .conAntecedentes("Hipertension controlada")
-                .conAlergias("Ninguna conocida")
-                .construir();
-        Paciente ana = new Paciente("Ana Torres", "P001", 34, historiaAna);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        Cita cita = fachadaAgendamiento.agendar("C001", ana.getCodigo(), carla.getCodigo(), LocalDate.of(2026, 10, 5));
-
-        servicioCitas.confirmarCita("C001");
-        servicioCitas.atenderCita("C001", "Control de presion arterial normal");
-        System.out.println(cita);
-        System.out.println(ana.getHistoriaClinica());
-
-        EstrategiaCosto estrategiaCosto = new EstrategiaCostoConsultaGeneral();
-        Factura factura = servicioFacturacion.emitirFactura(cita, estrategiaCosto);
-        Factura facturaConDescuento = new FacturaConDescuentoAfiliado(factura);
-        System.out.println(facturaConDescuento);
-
-        hiloNotificaciones.detener();
-        hiloNotificaciones.join();
-    }
-}
-```
-
-📖 **Explicación**: `HiloNotificaciones` extiende `Thread` y corre en paralelo al hilo
-principal (`run()` procesa mensajes pendientes cada 200 ms hasta que `detener()` lo
-apaga); `ObservadorCitaNotificacion` ya no imprime directamente, encola el mensaje para
-que el hilo lo procese — el ciclo de vida de un hilo del Módulo 15 (`start`, `run`,
-`join`). Desde este paso, `main` declara `throws Exception` en vez de repetir cada
-`try`/`catch` ya demostrado en los Pasos 10-11.
-
----
-
-### Paso 16 — Sincronización y códigos atómicos (Módulo 16)
-
-#### Archivo: ContadorCodigos.java
-
-```java
-package com.medisalud.concurrencia;
-
-import java.util.concurrent.atomic.AtomicLong;
-
-public class ContadorCodigos {
-
-    private final AtomicLong contador = new AtomicLong(0);
-    private final String prefijo;
-
-    public ContadorCodigos(String prefijo) {
-        this.prefijo = prefijo;
-    }
-
-    public String siguienteCodigo() {
-        long numero = contador.incrementAndGet();
-        String numeroConRelleno = String.format("%03d", numero);
-        return prefijo + numeroConRelleno;
-    }
-}
-```
-
-#### Archivo: HiloNotificaciones.java
-
-```java
-package com.medisalud.concurrencia;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class HiloNotificaciones extends Thread {
-
-    private final List<String> pendientes = new ArrayList<>();
-    private volatile boolean activo = true;
-
-    public HiloNotificaciones() {
-        super("hilo-notificaciones");
-    }
-
-    public synchronized void encolar(String mensaje) {
-        pendientes.add(mensaje);
-    }
-
-    public void detener() {
-        activo = false;
-    }
-
-    @Override
-    public void run() {
-        while (activo) {
-            procesarPendientes();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException excepcion) {
-                Thread.currentThread().interrupt();
-                activo = false;
-            }
-        }
-        procesarPendientes();
-    }
-
-    private synchronized void procesarPendientes() {
-        for (String mensaje : pendientes) {
-            System.out.println("[notificacion] " + mensaje);
-        }
-        pendientes.clear();
-    }
 }
 ```
 
@@ -2780,268 +753,609 @@ public class RepositorioCitasMemoria implements RepositorioCitas {
 }
 ```
 
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.concurrencia.ContadorCodigos;
-import com.medisalud.concurrencia.HiloNotificaciones;
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.entity.HistoriaClinica;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import com.medisalud.patron.comportamiento.EstrategiaCostoConsultaGeneral;
-import com.medisalud.patron.comportamiento.ObservadorCitaNotificacion;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
-import com.medisalud.patron.estructural.FacturaConDescuentoAfiliado;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioFacturacion;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-
-public class Principal {
-
-    public static void main(String[] args) throws Exception {
-        RepositorioPacientesMemoria repositorioPacientes = new RepositorioPacientesMemoria();
-        RepositorioMedicosMemoria repositorioMedicos = new RepositorioMedicosMemoria();
-        RepositorioCitasMemoria repositorioCitas = new RepositorioCitasMemoria();
-        GestorClinica.inicializar(repositorioPacientes, repositorioMedicos, repositorioCitas);
-
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorioPacientes);
-        ServicioMedicos servicioMedicos = new ServicioMedicos(repositorioMedicos);
-        ServicioCitas servicioCitas = new ServicioCitas(repositorioCitas);
-        ServicioFacturacion servicioFacturacion = new ServicioFacturacion();
-
-        HiloNotificaciones hiloNotificaciones = new HiloNotificaciones();
-        hiloNotificaciones.start();
-        ObservadorCitaNotificacion observador = new ObservadorCitaNotificacion(hiloNotificaciones);
-        FachadaAgendamiento fachadaAgendamiento = new FachadaAgendamiento(
-                servicioPacientes, servicioMedicos, servicioCitas, observador);
-
-        ContadorCodigos contadorPacientes = new ContadorCodigos("P");
-        ContadorCodigos contadorCitas = new ContadorCodigos("C");
-
-        HistoriaClinica historiaAna = new ConstructorHistoriaClinica()
-                .conAntecedentes("Hipertension controlada")
-                .conAlergias("Ninguna conocida")
-                .construir();
-        Paciente ana = new Paciente("Ana Torres", contadorPacientes.siguienteCodigo(), 34, historiaAna);
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioPacientes.registrarPaciente(ana);
-        servicioMedicos.registrarMedico(carla);
-
-        String codigoCita = contadorCitas.siguienteCodigo();
-        Cita cita = fachadaAgendamiento.agendar(
-                codigoCita, ana.getCodigo(), carla.getCodigo(), LocalDate.of(2026, 10, 5));
-
-        servicioCitas.confirmarCita(codigoCita);
-        servicioCitas.atenderCita(codigoCita, "Control de presion arterial normal");
-        System.out.println(cita);
-        System.out.println(ana.getHistoriaClinica());
-
-        EstrategiaCosto estrategiaCosto = new EstrategiaCostoConsultaGeneral();
-        Factura factura = servicioFacturacion.emitirFactura(cita, estrategiaCosto);
-        Factura facturaConDescuento = new FacturaConDescuentoAfiliado(factura);
-        System.out.println(facturaConDescuento);
-
-        hiloNotificaciones.detener();
-        hiloNotificaciones.join();
-    }
-}
-```
-
-📖 **Explicación**: `ContadorCodigos` usa `AtomicLong` para generar códigos únicos sin
-colisión aunque varios hilos lo llamen a la vez; los tres repositorios en memoria y
-`HiloNotificaciones` agregan `synchronized` a sus métodos de modificación y lectura,
-protegiendo el acceso concurrente al mismo `ArrayList`/`Map` (el repositorio, llamado
-desde `main`) o a la misma lista de pendientes (`HiloNotificaciones`, leída por su
-propio hilo y escrita por `ObservadorCitaNotificacion` desde `main`) — resuelve el Edge
-Case de dos hilos modificando datos compartidos al mismo tiempo, y es el aporte del
-Módulo 16.
+📖 **Explicación**: una interfaz por entidad (segregación de interfaces, Módulo 11) con
+su implementación en memoria (`ArrayList`/`Map`, Módulo 8-9), con los métodos de
+modificación y lectura sincronizados (`synchronized`, Módulo 16) para el caso de hilos
+concurrentes. Que los servicios del Bloque 6 dependan de estas **interfaces** y no de
+`RepositorioPacientesMemoria` directamente (inversión de dependencias) es lo que permite
+reemplazarlas por los DAOs de JDBC (Bloque 11) sin cambiar ningún `Servicio*`.
 
 ---
 
-### Paso 17 — Persistencia en archivo (Módulo 17)
+### Bloque 5 — Estrategias de costo
 
-#### Archivo: Persona.java
+Dependen solo de `Cita` (Bloque 3).
+
+#### Archivo: EstrategiaCosto.java
 
 ```java
-package com.medisalud.entity;
+package com.medisalud.patron.comportamiento;
 
-import java.io.Serializable;
+import com.medisalud.entity.Cita;
 
-public abstract class Persona implements Serializable {
+public interface EstrategiaCosto {
 
-    private static final long serialVersionUID = 1L;
+    double calcularCosto(Cita cita);
+}
+```
 
-    private String nombreCompleto;
-    private String codigo;
+#### Archivo: EstrategiaCostoConsultaGeneral.java
 
-    protected Persona(String nombreCompleto, String codigo) {
-        setNombreCompleto(nombreCompleto);
-        this.codigo = codigo;
-    }
+```java
+package com.medisalud.patron.comportamiento;
 
-    public String getNombreCompleto() {
-        return nombreCompleto;
-    }
+import com.medisalud.entity.Cita;
 
-    public void setNombreCompleto(String nombreCompleto) {
-        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre completo no puede estar vacio");
-        }
-        this.nombreCompleto = nombreCompleto;
-    }
+public class EstrategiaCostoConsultaGeneral implements EstrategiaCosto {
 
-    public String getCodigo() {
-        return codigo;
-    }
+    private static final double COSTO_CONSULTA_GENERAL = 50.0;
 
     @Override
-    public String toString() {
-        return codigo + " - " + nombreCompleto;
+    public double calcularCosto(Cita cita) {
+        return COSTO_CONSULTA_GENERAL;
     }
 }
 ```
 
-#### Archivo: HistoriaClinica.java
+#### Archivo: EstrategiaCostoConsultaEspecialista.java
 
 ```java
-package com.medisalud.entity;
+package com.medisalud.patron.comportamiento;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import com.medisalud.entity.Cita;
+
+public class EstrategiaCostoConsultaEspecialista implements EstrategiaCosto {
+
+    private static final double COSTO_CONSULTA_ESPECIALISTA = 90.0;
+
+    @Override
+    public double calcularCosto(Cita cita) {
+        return COSTO_CONSULTA_ESPECIALISTA;
+    }
+}
+```
+
+📖 **Explicación**: patrón Strategy (Módulo 14): `EstrategiaCosto` separa el cálculo del
+costo en variantes intercambiables (consulta general vs. especialista) en vez de un
+`if` dentro de `Factura`. El Bloque 6 (`ServicioFacturacion`) decide cuál usar.
+
+---
+
+### Bloque 6 — Servicios
+
+Dependen de las interfaces de repositorio (Bloque 4), las excepciones (Bloque 1), y
+`EstrategiaCosto` (Bloque 5).
+
+#### Archivo: ServicioPacientes.java
+
+```java
+package com.medisalud.service;
+
+import com.medisalud.entity.Paciente;
+import com.medisalud.exception.PacienteNoEncontradoException;
+import com.medisalud.repository.RepositorioPacientes;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+public class ServicioPacientes {
+
+    private final RepositorioPacientes repositorioPacientes;
+
+    public ServicioPacientes(RepositorioPacientes repositorioPacientes) {
+        this.repositorioPacientes = repositorioPacientes;
+    }
+
+    public void registrarPaciente(Paciente paciente) {
+        repositorioPacientes.guardar(paciente);
+    }
+
+    public Paciente buscarPorCodigo(String codigo) throws PacienteNoEncontradoException {
+        Paciente paciente = repositorioPacientes.buscarPorCodigo(codigo);
+        if (paciente == null) {
+            throw new PacienteNoEncontradoException(codigo);
+        }
+        return paciente;
+    }
+
+    public List<Paciente> listarTodos() {
+        return repositorioPacientes.listarTodos();
+    }
+
+    public List<Paciente> listarMayoresDeEdad(int edadMinima) {
+        Predicate<Paciente> esMayorDeEdad = paciente -> paciente.getEdad() >= edadMinima;
+        return repositorioPacientes.listarTodos().stream()
+                .filter(esMayorDeEdad)
+                .collect(Collectors.toList());
+    }
+}
+```
+
+#### Archivo: ServicioMedicos.java
+
+```java
+package com.medisalud.service;
+
+import com.medisalud.entity.Medico;
+import com.medisalud.exception.MedicoNoEncontradoException;
+import com.medisalud.repository.RepositorioMedicos;
 import java.util.List;
 
-public class HistoriaClinica implements Serializable {
+public class ServicioMedicos {
 
-    private static final long serialVersionUID = 1L;
+    private final RepositorioMedicos repositorioMedicos;
+
+    public ServicioMedicos(RepositorioMedicos repositorioMedicos) {
+        this.repositorioMedicos = repositorioMedicos;
+    }
+
+    public void registrarMedico(Medico medico) {
+        repositorioMedicos.guardar(medico);
+    }
+
+    public Medico buscarPorCodigo(String codigo) throws MedicoNoEncontradoException {
+        Medico medico = repositorioMedicos.buscarPorCodigo(codigo);
+        if (medico == null) {
+            throw new MedicoNoEncontradoException(codigo);
+        }
+        return medico;
+    }
+
+    public List<Medico> listarTodos() {
+        return repositorioMedicos.listarTodos();
+    }
+}
+```
+
+#### Archivo: ServicioCitas.java
+
+```java
+package com.medisalud.service;
+
+import com.medisalud.entity.Cita;
+import com.medisalud.entity.EstadoCita;
+import com.medisalud.entity.Medico;
+import com.medisalud.entity.Paciente;
+import com.medisalud.exception.CitaNoEncontradaException;
+import com.medisalud.exception.TransicionInvalidaException;
+import com.medisalud.repository.RepositorioCitas;
+import java.time.LocalDate;
+import java.util.List;
+
+public class ServicioCitas {
+
+    private final RepositorioCitas repositorioCitas;
+
+    public ServicioCitas(RepositorioCitas repositorioCitas) {
+        this.repositorioCitas = repositorioCitas;
+    }
+
+    public Cita agendarCita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
+        Cita cita = new Cita(codigo, paciente, medico, fecha);
+        repositorioCitas.guardar(cita);
+        return cita;
+    }
+
+    public Cita buscarPorCodigo(String codigo) throws CitaNoEncontradaException {
+        Cita cita = repositorioCitas.buscarPorCodigo(codigo);
+        if (cita == null) {
+            throw new CitaNoEncontradaException(codigo);
+        }
+        return cita;
+    }
+
+    public void confirmarCita(String codigo) throws CitaNoEncontradaException, TransicionInvalidaException {
+        cambiarEstado(codigo, EstadoCita.CONFIRMADA);
+    }
+
+    public void atenderCita(String codigo, String diagnostico)
+            throws CitaNoEncontradaException, TransicionInvalidaException {
+        Cita cita = buscarPorCodigo(codigo);
+        cambiarEstado(codigo, EstadoCita.ATENDIDA);
+        cita.getPaciente().getHistoriaClinica().agregarConsulta(diagnostico);
+    }
+
+    public void cancelarCita(String codigo) throws CitaNoEncontradaException, TransicionInvalidaException {
+        cambiarEstado(codigo, EstadoCita.CANCELADA);
+    }
+
+    public List<Cita> listarPorMedico(String codigoMedico) {
+        return repositorioCitas.listarPorMedico(codigoMedico);
+    }
+
+    private void cambiarEstado(String codigo, EstadoCita nuevoEstado)
+            throws CitaNoEncontradaException, TransicionInvalidaException {
+        Cita cita = buscarPorCodigo(codigo);
+        if (!cita.getEstado().puedeTransicionarA(nuevoEstado)) {
+            throw new TransicionInvalidaException(codigo, cita.getEstado(), nuevoEstado);
+        }
+        cita.cambiarEstado(nuevoEstado);
+    }
+}
+```
+
+#### Archivo: ServicioFacturacion.java
+
+```java
+package com.medisalud.service;
+
+import com.medisalud.entity.Cita;
+import com.medisalud.entity.Factura;
+import com.medisalud.patron.comportamiento.EstrategiaCosto;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class ServicioFacturacion {
+
+    private final List<Factura> facturasEmitidas = new ArrayList<>();
+
+    public Factura emitirFactura(Cita cita, EstrategiaCosto estrategiaCosto) {
+        double montoBase = estrategiaCosto.calcularCosto(cita);
+        Factura factura = new Factura(cita, montoBase);
+        facturasEmitidas.add(factura);
+        return factura;
+    }
+
+    public List<Factura> listarFacturas() {
+        return new ArrayList<>(facturasEmitidas);
+    }
+
+    public Map<String, Double> totalFacturadoPorMedico() {
+        return facturasEmitidas.stream()
+                .collect(Collectors.groupingBy(
+                        factura -> factura.getCita().getMedico().getCodigo(),
+                        Collectors.summingDouble(Factura::calcularMonto)));
+    }
+}
+```
+
+📖 **Explicación**: cada `Servicio*` encapsula las reglas de negocio de una entidad
+(responsabilidad única, Módulo 11) y lanza su excepción propia si no encuentra el
+código buscado. `ServicioCitas.cambiarEstado` es privado y centraliza la validación de
+`EstadoCita` (patrón State, Módulo 14): confirmar, atender y cancelar son la única
+forma de cambiar el estado de una cita, nunca directamente. `ServicioPacientes.
+listarMayoresDeEdad` y `ServicioFacturacion.totalFacturadoPorMedico` ya usan
+`Predicate`/`Stream` (Módulos 19-20) desde esta única versión final.
+
+---
+
+### Bloque 7 — Patrones creacionales
+
+`ConstructorHistoriaClinica` depende de `HistoriaClinica` (Bloque 2);
+`GestorClinica` depende de las interfaces de repositorio (Bloque 4).
+
+#### Archivo: ConstructorHistoriaClinica.java
+
+```java
+package com.medisalud.patron.creacional;
+
+import com.medisalud.entity.HistoriaClinica;
+
+public class ConstructorHistoriaClinica {
 
     private String antecedentes;
     private String alergias;
     private String observaciones;
-    private final List<String> consultas = new ArrayList<>();
 
-    public HistoriaClinica() {
-    }
-
-    public HistoriaClinica(String antecedentes, String alergias, String observaciones) {
+    public ConstructorHistoriaClinica conAntecedentes(String antecedentes) {
         this.antecedentes = antecedentes;
+        return this;
+    }
+
+    public ConstructorHistoriaClinica conAlergias(String alergias) {
         this.alergias = alergias;
+        return this;
+    }
+
+    public ConstructorHistoriaClinica conObservaciones(String observaciones) {
         this.observaciones = observaciones;
+        return this;
     }
 
-    public void agregarConsulta(String diagnostico) {
-        consultas.add(diagnostico);
-    }
-
-    public List<String> getConsultas() {
-        return consultas;
-    }
-
-    public String getAntecedentes() {
-        return antecedentes;
-    }
-
-    public String getAlergias() {
-        return alergias;
-    }
-
-    public String getObservaciones() {
-        return observaciones;
-    }
-
-    @Override
-    public String toString() {
-        return "Historia clinica: " + consultas.size() + " consulta(s) registrada(s)";
+    public HistoriaClinica construir() {
+        return new HistoriaClinica(antecedentes, alergias, observaciones);
     }
 }
 ```
 
-#### Archivo: Cita.java
+#### Archivo: GestorClinica.java
 
 ```java
-package com.medisalud.entity;
+package com.medisalud.patron.creacional;
 
-import com.medisalud.patron.comportamiento.ObservadorCita;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.time.LocalDate;
+import com.medisalud.repository.RepositorioCitas;
+import com.medisalud.repository.RepositorioMedicos;
+import com.medisalud.repository.RepositorioPacientes;
+
+public final class GestorClinica {
+
+    private static GestorClinica instancia;
+
+    private final RepositorioPacientes repositorioPacientes;
+    private final RepositorioMedicos repositorioMedicos;
+    private final RepositorioCitas repositorioCitas;
+
+    private GestorClinica(RepositorioPacientes repositorioPacientes,
+                           RepositorioMedicos repositorioMedicos,
+                           RepositorioCitas repositorioCitas) {
+        this.repositorioPacientes = repositorioPacientes;
+        this.repositorioMedicos = repositorioMedicos;
+        this.repositorioCitas = repositorioCitas;
+    }
+
+    public static synchronized GestorClinica inicializar(RepositorioPacientes repositorioPacientes,
+                                                           RepositorioMedicos repositorioMedicos,
+                                                           RepositorioCitas repositorioCitas) {
+        if (instancia == null) {
+            instancia = new GestorClinica(repositorioPacientes, repositorioMedicos, repositorioCitas);
+        }
+        return instancia;
+    }
+
+    public static GestorClinica obtenerInstancia() {
+        if (instancia == null) {
+            throw new IllegalStateException("GestorClinica no fue inicializado todavia");
+        }
+        return instancia;
+    }
+
+    public RepositorioPacientes getRepositorioPacientes() {
+        return repositorioPacientes;
+    }
+
+    public RepositorioMedicos getRepositorioMedicos() {
+        return repositorioMedicos;
+    }
+
+    public RepositorioCitas getRepositorioCitas() {
+        return repositorioCitas;
+    }
+}
+```
+
+📖 **Explicación**: Builder (`ConstructorHistoriaClinica`) resuelve un problema real:
+`HistoriaClinica` tiene varios campos opcionales y un constructor con todos ellos sería
+confuso de llamar — el builder los va fijando uno a uno con métodos encadenados.
+Singleton (`GestorClinica`) garantiza un único punto de acceso a los tres repositorios
+de toda la aplicación. Ambos del Módulo 12.
+
+---
+
+### Bloque 8 — Concurrencia y notificaciones
+
+`ContadorCodigos` y `HiloNotificaciones` no dependen de ninguna entidad propia;
+`ObservadorCitaNotificacion` depende de `HiloNotificaciones`, `ObservadorCita` (Bloque
+3) y `Cita` (Bloque 3).
+
+#### Archivo: ContadorCodigos.java
+
+```java
+package com.medisalud.concurrencia;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+public class ContadorCodigos {
+
+    private final AtomicLong contador = new AtomicLong(0);
+    private final String prefijo;
+
+    public ContadorCodigos(String prefijo) {
+        this.prefijo = prefijo;
+    }
+
+    public String siguienteCodigo() {
+        long numero = contador.incrementAndGet();
+        String numeroConRelleno = String.format("%03d", numero);
+        return prefijo + numeroConRelleno;
+    }
+}
+```
+
+#### Archivo: HiloNotificaciones.java
+
+```java
+package com.medisalud.concurrencia;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cita implements Serializable {
+public class HiloNotificaciones extends Thread {
 
-    private static final long serialVersionUID = 1L;
+    private final List<String> pendientes = new ArrayList<>();
+    private volatile boolean activo = true;
 
-    private final String codigo;
-    private final Paciente paciente;
-    private final Medico medico;
-    private final LocalDate fecha;
-    private EstadoCita estado;
-    private transient List<ObservadorCita> observadores = new ArrayList<>();
-
-    public Cita(String codigo, Paciente paciente, Medico medico, LocalDate fecha) {
-        this.codigo = codigo;
-        this.paciente = paciente;
-        this.medico = medico;
-        this.fecha = fecha;
-        this.estado = EstadoCita.PENDIENTE;
+    public HiloNotificaciones() {
+        super("hilo-notificaciones");
     }
 
-    public void agregarObservador(ObservadorCita observador) {
-        observadores.add(observador);
+    public synchronized void encolar(String mensaje) {
+        pendientes.add(mensaje);
     }
 
-    public void cambiarEstado(EstadoCita nuevoEstado) {
-        this.estado = nuevoEstado;
-        for (ObservadorCita observador : observadores) {
-            observador.notificarCambioEstado(this);
+    public void detener() {
+        activo = false;
+    }
+
+    @Override
+    public void run() {
+        while (activo) {
+            procesarPendientes();
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException excepcion) {
+                Thread.currentThread().interrupt();
+                activo = false;
+            }
         }
+        procesarPendientes();
     }
 
-    public String getCodigo() {
-        return codigo;
+    private synchronized void procesarPendientes() {
+        for (String mensaje : pendientes) {
+            System.out.println("[notificacion] " + mensaje);
+        }
+        pendientes.clear();
+    }
+}
+```
+
+#### Archivo: ObservadorCitaNotificacion.java
+
+```java
+package com.medisalud.patron.comportamiento;
+
+import com.medisalud.concurrencia.HiloNotificaciones;
+import com.medisalud.entity.Cita;
+
+public class ObservadorCitaNotificacion implements ObservadorCita {
+
+    private final HiloNotificaciones hiloNotificaciones;
+
+    public ObservadorCitaNotificacion(HiloNotificaciones hiloNotificaciones) {
+        this.hiloNotificaciones = hiloNotificaciones;
     }
 
-    public Paciente getPaciente() {
-        return paciente;
+    @Override
+    public void notificarCambioEstado(Cita cita) {
+        hiloNotificaciones.encolar("La cita " + cita.getCodigo() + " ahora esta " + cita.getEstado());
+    }
+}
+```
+
+📖 **Explicación**: `HiloNotificaciones` extiende `Thread` (ciclo de vida de un hilo,
+Módulo 15) y procesa, en segundo plano, los mensajes que se le encolan, con sus
+métodos sincronizados (Módulo 16) porque el hilo propio y el hilo principal acceden a
+la misma lista `pendientes`. `ContadorCodigos` usa `AtomicLong` para generar códigos
+sin colisión entre hilos. `ObservadorCitaNotificacion` es la implementación real de
+`ObservadorCita` (patrón Observer, Módulo 14): cuando una `Cita` cambia de estado,
+encola un mensaje en vez de imprimirlo directamente.
+
+---
+
+### Bloque 9 — Patrones estructurales
+
+Los decoradores dependen de `Factura` (Bloque 3); `FachadaAgendamiento` depende de los
+tres `Servicio*` (Bloque 6) y de `ObservadorCita` (Bloque 3).
+
+#### Archivo: FacturaConRecargoNocturno.java
+
+```java
+package com.medisalud.patron.estructural;
+
+import com.medisalud.entity.Factura;
+
+public class FacturaConRecargoNocturno extends Factura {
+
+    private static final double RECARGO_NOCTURNO = 15.0;
+    private final Factura facturaOriginal;
+
+    public FacturaConRecargoNocturno(Factura facturaOriginal) {
+        super(facturaOriginal.getCita(), facturaOriginal.getMontoBase());
+        this.facturaOriginal = facturaOriginal;
     }
 
-    public Medico getMedico() {
-        return medico;
-    }
-
-    public LocalDate getFecha() {
-        return fecha;
-    }
-
-    public EstadoCita getEstado() {
-        return estado;
+    @Override
+    public double calcularMonto() {
+        return facturaOriginal.calcularMonto() + RECARGO_NOCTURNO;
     }
 
     @Override
     public String toString() {
-        return "Cita " + codigo + " [" + estado + "] " + paciente.getNombreCompleto()
-                + " con " + medico.getNombreCompleto() + " el " + fecha;
-    }
-
-    private void readObject(ObjectInputStream entrada) throws IOException, ClassNotFoundException {
-        entrada.defaultReadObject();
-        observadores = new ArrayList<>();
+        return facturaOriginal.toString() + " + recargo nocturno = $" + calcularMonto();
     }
 }
 ```
+
+#### Archivo: FacturaConDescuentoAfiliado.java
+
+```java
+package com.medisalud.patron.estructural;
+
+import com.medisalud.entity.Factura;
+
+public class FacturaConDescuentoAfiliado extends Factura {
+
+    private static final double DESCUENTO_AFILIADO = 10.0;
+    private final Factura facturaOriginal;
+
+    public FacturaConDescuentoAfiliado(Factura facturaOriginal) {
+        super(facturaOriginal.getCita(), facturaOriginal.getMontoBase());
+        this.facturaOriginal = facturaOriginal;
+    }
+
+    @Override
+    public double calcularMonto() {
+        double montoConDescuento = facturaOriginal.calcularMonto() - DESCUENTO_AFILIADO;
+        return Math.max(0.0, montoConDescuento);
+    }
+
+    @Override
+    public String toString() {
+        return facturaOriginal.toString() + " - descuento afiliado = $" + calcularMonto();
+    }
+}
+```
+
+#### Archivo: FachadaAgendamiento.java
+
+```java
+package com.medisalud.patron.estructural;
+
+import com.medisalud.entity.Cita;
+import com.medisalud.entity.Medico;
+import com.medisalud.entity.Paciente;
+import com.medisalud.exception.MedicoNoEncontradoException;
+import com.medisalud.exception.PacienteNoEncontradoException;
+import com.medisalud.patron.comportamiento.ObservadorCita;
+import com.medisalud.service.ServicioCitas;
+import com.medisalud.service.ServicioMedicos;
+import com.medisalud.service.ServicioPacientes;
+import java.time.LocalDate;
+
+public class FachadaAgendamiento {
+
+    private final ServicioPacientes servicioPacientes;
+    private final ServicioMedicos servicioMedicos;
+    private final ServicioCitas servicioCitas;
+    private final ObservadorCita observadorCita;
+
+    public FachadaAgendamiento(ServicioPacientes servicioPacientes,
+                                ServicioMedicos servicioMedicos,
+                                ServicioCitas servicioCitas,
+                                ObservadorCita observadorCita) {
+        this.servicioPacientes = servicioPacientes;
+        this.servicioMedicos = servicioMedicos;
+        this.servicioCitas = servicioCitas;
+        this.observadorCita = observadorCita;
+    }
+
+    public Cita agendar(String codigoCita, String codigoPaciente, String codigoMedico, LocalDate fecha)
+            throws PacienteNoEncontradoException, MedicoNoEncontradoException {
+        Paciente paciente = servicioPacientes.buscarPorCodigo(codigoPaciente);
+        Medico medico = servicioMedicos.buscarPorCodigo(codigoMedico);
+        Cita cita = servicioCitas.agendarCita(codigoCita, paciente, medico, fecha);
+        cita.agregarObservador(observadorCita);
+        return cita;
+    }
+}
+```
+
+📖 **Explicación**: Decorator (`FacturaConRecargoNocturno`/`FacturaConDescuentoAfiliado`)
+agrega recargos/descuentos envolviendo una `Factura` sin modificar su clase. Facade
+(`FachadaAgendamiento`) oculta detrás de un único método `agendar(...)` los pasos de
+buscar paciente, buscar médico, crear la cita, y conectarla con el observador que la
+notificará — sin este método, quien agenda una cita tendría que hacer esos cuatro pasos
+a mano. Ambos del Módulo 13.
+
+---
+
+### Bloque 10 — Persistencia en archivo
+
+Dependen de `Paciente` y `Cita` (Bloques 2-3). No la usa el punto de entrada final
+(Bloque 13 usa JDBC), pero se mantiene en el proyecto como la implementación
+alternativa de las mismas interfaces de repositorio.
 
 #### Archivo: AlmacenPacientesArchivo.java
 
@@ -3140,166 +1454,21 @@ public class AlmacenCitasSerializado {
 }
 ```
 
-#### Archivo: Principal.java
-
-```java
-package com.medisalud;
-
-import com.medisalud.concurrencia.ContadorCodigos;
-import com.medisalud.concurrencia.HiloNotificaciones;
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.entity.HistoriaClinica;
-import com.medisalud.entity.Medico;
-import com.medisalud.entity.Paciente;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import com.medisalud.patron.comportamiento.EstrategiaCostoConsultaGeneral;
-import com.medisalud.patron.comportamiento.ObservadorCitaNotificacion;
-import com.medisalud.patron.creacional.ConstructorHistoriaClinica;
-import com.medisalud.patron.creacional.GestorClinica;
-import com.medisalud.patron.estructural.FachadaAgendamiento;
-import com.medisalud.patron.estructural.FacturaConDescuentoAfiliado;
-import com.medisalud.persistencia.archivo.AlmacenCitasSerializado;
-import com.medisalud.persistencia.archivo.AlmacenPacientesArchivo;
-import com.medisalud.repository.RepositorioCitasMemoria;
-import com.medisalud.repository.RepositorioMedicosMemoria;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioCitas;
-import com.medisalud.service.ServicioFacturacion;
-import com.medisalud.service.ServicioMedicos;
-import com.medisalud.service.ServicioPacientes;
-import java.time.LocalDate;
-import java.util.List;
-
-public class Principal {
-
-    private static final String ARCHIVO_PACIENTES = "pacientes.txt";
-    private static final String ARCHIVO_CITAS = "citas.ser";
-
-    public static void main(String[] args) throws Exception {
-        RepositorioPacientesMemoria repositorioPacientes = new RepositorioPacientesMemoria();
-        RepositorioMedicosMemoria repositorioMedicos = new RepositorioMedicosMemoria();
-        RepositorioCitasMemoria repositorioCitas = new RepositorioCitasMemoria();
-        GestorClinica.inicializar(repositorioPacientes, repositorioMedicos, repositorioCitas);
-
-        AlmacenPacientesArchivo almacenPacientes = new AlmacenPacientesArchivo(ARCHIVO_PACIENTES);
-        AlmacenCitasSerializado almacenCitas = new AlmacenCitasSerializado(ARCHIVO_CITAS);
-
-        System.out.println("== Cargar datos previos ==");
-        for (Paciente paciente : almacenPacientes.cargarTodos()) {
-            repositorioPacientes.guardar(paciente);
-        }
-        for (Cita cita : almacenCitas.cargarTodas()) {
-            repositorioCitas.guardar(cita);
-        }
-        System.out.println("Pacientes cargados: " + repositorioPacientes.listarTodos().size());
-
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorioPacientes);
-        ServicioMedicos servicioMedicos = new ServicioMedicos(repositorioMedicos);
-        ServicioCitas servicioCitas = new ServicioCitas(repositorioCitas);
-        ServicioFacturacion servicioFacturacion = new ServicioFacturacion();
-
-        HiloNotificaciones hiloNotificaciones = new HiloNotificaciones();
-        hiloNotificaciones.start();
-        ObservadorCitaNotificacion observador = new ObservadorCitaNotificacion(hiloNotificaciones);
-        FachadaAgendamiento fachadaAgendamiento = new FachadaAgendamiento(
-                servicioPacientes, servicioMedicos, servicioCitas, observador);
-
-        ContadorCodigos contadorPacientes = new ContadorCodigos("P");
-        ContadorCodigos contadorCitas = new ContadorCodigos("C");
-
-        System.out.println("== Registrar paciente ==");
-        HistoriaClinica historiaAna = new ConstructorHistoriaClinica()
-                .conAntecedentes("Hipertension controlada")
-                .conAlergias("Ninguna conocida")
-                .construir();
-        Paciente ana = new Paciente("Ana Torres", contadorPacientes.siguienteCodigo(), 34, historiaAna);
-        servicioPacientes.registrarPaciente(ana);
-        System.out.println(ana);
-
-        System.out.println("== Registrar medico ==");
-        Medico carla = new Medico("Carla Gomez", "M001", "Medicina general");
-        servicioMedicos.registrarMedico(carla);
-        System.out.println(carla);
-
-        System.out.println("== Agendar cita ==");
-        String codigoCita = contadorCitas.siguienteCodigo();
-        Cita cita = fachadaAgendamiento.agendar(
-                codigoCita, ana.getCodigo(), carla.getCodigo(), LocalDate.of(2026, 10, 5));
-        servicioCitas.confirmarCita(codigoCita);
-        servicioCitas.atenderCita(codigoCita, "Control de presion arterial normal");
-        System.out.println(cita);
-
-        System.out.println("== Consultar historia clinica ==");
-        System.out.println(ana.getHistoriaClinica());
-
-        System.out.println("== Facturar consulta ==");
-        EstrategiaCosto estrategiaCosto = new EstrategiaCostoConsultaGeneral();
-        Factura factura = servicioFacturacion.emitirFactura(cita, estrategiaCosto);
-        Factura facturaConDescuento = new FacturaConDescuentoAfiliado(factura);
-        System.out.println(facturaConDescuento);
-
-        System.out.println("== Generar reporte ==");
-        List<Cita> citasDeCarla = servicioCitas.listarPorMedico(carla.getCodigo());
-        System.out.println("Citas de Carla Gomez: " + citasDeCarla.size());
-
-        System.out.println("== Guardar datos ==");
-        almacenPacientes.guardarTodos(repositorioPacientes.listarTodos());
-        almacenCitas.guardarTodas(repositorioCitas.listarTodas());
-
-        hiloNotificaciones.detener();
-        hiloNotificaciones.join();
-
-        System.out.println("== Salir ==");
-        System.out.println("Cerrando el Sistema de Gestion de Citas Medicas MediSalud. Hasta pronto.");
-    }
-}
-```
-
-📖 **Explicación**: `Persona`, `HistoriaClinica` y `Cita` implementan `Serializable`
-para poder guardarse como objetos; `Cita.observadores` se marca `transient` (un
-`ObservadorCita` real no se puede serializar) y se reconstruye vacío en un `readObject`
-propio al recargar. `AlmacenPacientesArchivo` guarda/lee `pacientes.txt` línea por línea
-con `BufferedReader`/`BufferedWriter`; `AlmacenCitasSerializado` guarda/lee el grafo
-completo de citas con `ObjectOutputStream`/`ObjectInputStream` — las dos técnicas del
-Módulo 17. `Principal` ahora carga los datos previos al iniciar y los guarda al cerrar,
-manejando sin fallar el caso de que los archivos no existan todavía (primer arranque).
-Esta es la versión final de `Principal.java` para los Pasos 1 a 17: a partir del
-Paso 18 la persistencia JDBC necesita un segundo punto de entrada, explicado ahí.
+📖 **Explicación**: `AlmacenPacientesArchivo` guarda/lee `pacientes.txt` línea por línea
+(`codigo|nombreCompleto|edad`) con `BufferedReader`/`BufferedWriter`;
+`AlmacenCitasSerializado` guarda/lee el grafo completo de citas con
+`ObjectOutputStream`/`ObjectInputStream` en `citas.ser` — las dos técnicas del
+Módulo 17 (archivo de texto y serialización de objetos), cada una aplicada donde tiene
+más sentido. Ambas clases manejan el caso de que el archivo no exista todavía
+(primer arranque) devolviendo una lista vacía en vez de fallar.
 
 ---
 
-### Paso 18 — JDBC, MySQL y arquitectura MVC (Módulo 18)
+### Bloque 11 — Persistencia JDBC
 
-Antes de este paso, asegurate de tener un servidor MySQL local disponible (la misma
-dependencia que ya exige el Módulo 18) y de crear la base de datos:
-
-```sql
-CREATE DATABASE IF NOT EXISTS medisalud;
-USE medisalud;
-
-CREATE TABLE pacientes (
-    codigo VARCHAR(20) PRIMARY KEY,
-    nombre_completo VARCHAR(100) NOT NULL,
-    edad INT NOT NULL
-);
-
-CREATE TABLE medicos (
-    codigo VARCHAR(20) PRIMARY KEY,
-    nombre_completo VARCHAR(100) NOT NULL,
-    especialidad VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE citas (
-    codigo VARCHAR(20) PRIMARY KEY,
-    paciente_codigo VARCHAR(20) NOT NULL REFERENCES pacientes(codigo),
-    medico_codigo VARCHAR(20) NOT NULL REFERENCES medicos(codigo),
-    fecha DATE NOT NULL,
-    estado VARCHAR(20) NOT NULL
-);
-```
-
-Agregá `mysql-connector-j` como dependencia del proyecto en Visual Studio Code.
+Las tres clases DAO implementan las **mismas** interfaces del Bloque 4, pero con
+`PreparedStatement` sobre MySQL. `CitaDAO` depende también de `PacienteDAO`/`MedicoDAO`
+para reconstruir las referencias de una `Cita` leída de la base de datos.
 
 #### Archivo: ConexionBD.java
 
@@ -3577,6 +1746,46 @@ public class CitaDAO implements RepositorioCitas {
     }
 }
 ```
+
+📖 **Explicación**: `ConexionBD` centraliza `DriverManager.getConnection`;
+`PacienteDAO`/`MedicoDAO`/`CitaDAO` implementan las mismas interfaces del Bloque 4 con
+`PreparedStatement` (consultas parametrizadas, Módulo 18) sobre las tablas
+`pacientes`/`medicos`/`citas` (la última con claves foráneas a las otras dos). Ningún
+`Servicio*` del Bloque 6 necesita cambiar para usar estas implementaciones en vez de
+las de memoria — la inversión de dependencias del Módulo 11 es la que lo permite.
+
+```sql
+CREATE DATABASE IF NOT EXISTS medisalud;
+USE medisalud;
+
+CREATE TABLE pacientes (
+    codigo VARCHAR(20) PRIMARY KEY,
+    nombre_completo VARCHAR(100) NOT NULL,
+    edad INT NOT NULL
+);
+
+CREATE TABLE medicos (
+    codigo VARCHAR(20) PRIMARY KEY,
+    nombre_completo VARCHAR(100) NOT NULL,
+    especialidad VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE citas (
+    codigo VARCHAR(20) PRIMARY KEY,
+    paciente_codigo VARCHAR(20) NOT NULL REFERENCES pacientes(codigo),
+    medico_codigo VARCHAR(20) NOT NULL REFERENCES medicos(codigo),
+    fecha DATE NOT NULL,
+    estado VARCHAR(20) NOT NULL
+);
+```
+
+---
+
+### Bloque 12 — Controlador y Vista (MVC)
+
+`ControladorMediSalud` depende de los `Servicio*` (Bloque 6) y de `FachadaAgendamiento`
+(Bloque 9). `VistaConsola` depende de `ControladorMediSalud`, de las entidades, y de
+los patrones de los Bloques 5, 7 y 9.
 
 #### Archivo: ControladorMediSalud.java
 
@@ -3897,6 +2106,20 @@ public class VistaConsola {
 }
 ```
 
+📖 **Explicación**: `ControladorMediSalud` es la "C" de MVC (Módulo 18): conecta la
+vista con los servicios, sin lógica de negocio propia. `VistaConsola` es la "V": el
+menú interactivo con `Scanner` (único archivo de todo el proyecto que lee la consola —
+justo porque es la única capa de MVC que debe hacerlo); el "modelo" son las clases de
+`entity`/`service`/`repository` de los bloques anteriores, que ninguna de las dos
+conoce en detalle. Cada opción del menú captura sus propias excepciones y sigue
+funcionando ante un error (Edge Cases de la spec).
+
+---
+
+### Bloque 13 — Principal (punto de entrada)
+
+Depende de todos los bloques anteriores: es quien los conecta.
+
 #### Archivo: Principal.java
 
 ```java
@@ -3947,127 +2170,12 @@ public class Principal {
 }
 ```
 
-📖 **Explicación**: `PacienteDAO`/`MedicoDAO`/`CitaDAO` implementan las **mismas**
-interfaces `RepositorioPacientes`/`RepositorioMedicos`/`RepositorioCitas` del Paso 11,
-pero con `PreparedStatement` sobre MySQL en vez de colecciones en memoria — ningún
-`Servicio*` cambia una sola línea, la inversión de dependencias del Módulo 11 es la que
-hace esto posible. `VistaConsola` (la V) y `ControladorMediSalud` (la C) son la
-reorganización explícita en Modelo-Vista-Controlador que exige el Módulo 18: el
-"modelo" son las clases `entity`/`service`/`repository` que ya existían.
-`VistaConsola.mostrarMenu()` usa `Scanner` para leer la opción elegida (1-7) en un
-bucle **real** — la única clase de todo el proyecto que lee la consola, justo porque es
-la única capa de MVC que debe hacerlo (research.md D4). `Principal.java` se reescribe
-por completo en este paso (Edge Case de la spec: un paso posterior puede reemplazar
-toda una clase anterior) para delegar en `VistaConsola`: sigue siendo el **único** punto
-de entrada del proyecto, de principio a fin.
-
----
-
-### Paso 19 — Lambdas y Predicate (Módulo 19)
-
-#### Archivo: ServicioPacientes.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Paciente;
-import com.medisalud.exception.PacienteNoEncontradoException;
-import com.medisalud.repository.RepositorioPacientes;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-public class ServicioPacientes {
-
-    private final RepositorioPacientes repositorioPacientes;
-
-    public ServicioPacientes(RepositorioPacientes repositorioPacientes) {
-        this.repositorioPacientes = repositorioPacientes;
-    }
-
-    public void registrarPaciente(Paciente paciente) {
-        repositorioPacientes.guardar(paciente);
-    }
-
-    public Paciente buscarPorCodigo(String codigo) throws PacienteNoEncontradoException {
-        Paciente paciente = repositorioPacientes.buscarPorCodigo(codigo);
-        if (paciente == null) {
-            throw new PacienteNoEncontradoException(codigo);
-        }
-        return paciente;
-    }
-
-    public List<Paciente> listarTodos() {
-        return repositorioPacientes.listarTodos();
-    }
-
-    public List<Paciente> listarMayoresDeEdad(int edadMinima) {
-        Predicate<Paciente> esMayorDeEdad = paciente -> paciente.getEdad() >= edadMinima;
-        return repositorioPacientes.listarTodos().stream()
-                .filter(esMayorDeEdad)
-                .collect(Collectors.toList());
-    }
-}
-```
-
-📖 **Explicación**: el filtro de pacientes mayores de cierta edad, que desde el Paso 9
-recorría la lista con un `for` y un `if` acumulando en una lista aparte, se reemplaza
-por un `Predicate<Paciente>` (interfaz funcional del Módulo 19) aplicado con
-`Stream.filter`. `ControladorMediSalud.listarPacientesMayoresDeEdad` (Paso 18) no
-cambia ni una línea: llama al mismo método público, que ahora resuelve el filtro por
-dentro de otra forma, con el mismo resultado observable (mismos pacientes, mismo
-orden).
-
----
-
-### Paso 20 — Stream API y reportes (Módulo 20)
-
-#### Archivo: ServicioFacturacion.java
-
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Cita;
-import com.medisalud.entity.Factura;
-import com.medisalud.patron.comportamiento.EstrategiaCosto;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-public class ServicioFacturacion {
-
-    private final List<Factura> facturasEmitidas = new ArrayList<>();
-
-    public Factura emitirFactura(Cita cita, EstrategiaCosto estrategiaCosto) {
-        double montoBase = estrategiaCosto.calcularCosto(cita);
-        Factura factura = new Factura(cita, montoBase);
-        facturasEmitidas.add(factura);
-        return factura;
-    }
-
-    public List<Factura> listarFacturas() {
-        return new ArrayList<>(facturasEmitidas);
-    }
-
-    public Map<String, Double> totalFacturadoPorMedico() {
-        return facturasEmitidas.stream()
-                .collect(Collectors.groupingBy(
-                        factura -> factura.getCita().getMedico().getCodigo(),
-                        Collectors.summingDouble(Factura::calcularMonto)));
-    }
-}
-```
-
-📖 **Explicación**: el total facturado por médico, que desde el Paso 14 acumulaba en un
-`Map<String, Double>` recorriendo `facturasEmitidas` con un `for` manual
-(`totales.put(codigo, totalActual + monto)`), se reemplaza por un único *pipeline* de
-Stream API: `collect(Collectors.groupingBy(..., Collectors.summingDouble(...)))` agrupa
-por código de médico y suma los montos en el mismo paso — el cierre del curso con el
-Módulo 20. `ControladorMediSalud.generarReporteFacturacionPorMedico` (Paso 18) sigue
-llamando al mismo método público: el `Map<String, Double>` que recibe tiene las mismas
-claves y los mismos totales que con la versión anterior basada en bucles (FR-011,
-SC-007).
+📖 **Explicación**: `Principal` es el **único** punto de entrada de todo el proyecto.
+Construye los DAOs de JDBC, inicializa el Singleton `GestorClinica`, arma los
+`Servicio*`, arranca `HiloNotificaciones`, conecta `FachadaAgendamiento` con el
+observador de notificaciones, arma `ControladorMediSalud` con todo lo anterior, y le
+entrega el control a `VistaConsola.mostrarMenu()`. Al salir del menú, detiene el hilo
+de notificaciones de forma ordenada (`detener()` + `join()`) antes de terminar.
 
 ---
 
@@ -4090,4 +2198,3 @@ SC-007).
   correctos, calculados con `Stream`/`Predicate` en vez de bucles manuales.
 - [ ] `HiloNotificaciones` imprime las notificaciones de cambio de estado de una cita en
   segundo plano, sin bloquear el menú, y se detiene de forma ordenada al elegir "Salir".
-
