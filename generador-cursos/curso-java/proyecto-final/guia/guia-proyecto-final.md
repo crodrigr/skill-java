@@ -2040,8 +2040,9 @@ Las tablas se crean con un **script SQL** guardado en el proyecto, en
 `sql/medisalud.sql` (fuera de `src/`, porque no es código Java). La tabla `citas` declara
 sus dos **claves foráneas** con `CONSTRAINT … FOREIGN KEY`: MySQL ignora un `REFERENCES`
 escrito al lado de la columna, así que esta es la forma que realmente impide guardar
-una cita de un paciente o de un médico que no existe. El script se puede ejecutar más de
-una vez sin borrar datos (`IF NOT EXISTS`).
+una cita de un paciente o de un médico que no existe. Al final inserta datos de ejemplo
+(10 pacientes, 10 médicos y 30 citas) para poder probar los reportes. El script se puede
+ejecutar más de una vez sin borrar ni duplicar datos (`IF NOT EXISTS` e `INSERT IGNORE`).
 
 ```sql
 -- Base de datos del proyecto final MediSalud (Curso de Java)
@@ -2075,6 +2076,65 @@ CREATE TABLE IF NOT EXISTS citas (
     CONSTRAINT fk_citas_paciente FOREIGN KEY (paciente_codigo) REFERENCES pacientes (codigo),
     CONSTRAINT fk_citas_medico FOREIGN KEY (medico_codigo) REFERENCES medicos (codigo)
 );
+
+-- Datos de ejemplo: 10 pacientes, 10 medicos y 30 citas.
+-- INSERT IGNORE: se puede repetir sin duplicar ni fallar.
+
+INSERT IGNORE INTO pacientes (codigo, nombre_completo, edad) VALUES
+    ('P001', 'Ana María Gómez', 34),
+    ('P002', 'Luis Fernando Pérez', 52),
+    ('P003', 'Carolina Ruiz', 28),
+    ('P004', 'Jorge Andrés Molina', 67),
+    ('P005', 'Valentina Torres', 19),
+    ('P006', 'Camilo Rodríguez', 47),
+    ('P007', 'Sofía Herrera', 41),
+    ('P008', 'Mateo Castaño', 8),
+    ('P009', 'Laura Jiménez', 59),
+    ('P010', 'Daniel Ospina', 73);
+
+INSERT IGNORE INTO medicos (codigo, nombre_completo, especialidad) VALUES
+    ('M001', 'Dra. Patricia Londoño', 'Medicina General'),
+    ('M002', 'Dr. Ricardo Vélez', 'Cardiología'),
+    ('M003', 'Dra. Marcela Arango', 'Pediatría'),
+    ('M004', 'Dr. Héctor Salazar', 'Dermatología'),
+    ('M005', 'Dra. Isabel Cárdenas', 'Ginecología'),
+    ('M006', 'Dr. Felipe Mejía', 'Ortopedia'),
+    ('M007', 'Dra. Natalia Restrepo', 'Neurología'),
+    ('M008', 'Dr. Sergio Duque', 'Oftalmología'),
+    ('M009', 'Dra. Claudia Ortiz', 'Medicina General'),
+    ('M010', 'Dr. Andrés Giraldo', 'Cardiología');
+
+INSERT IGNORE INTO citas (codigo, paciente_codigo, medico_codigo, fecha, estado) VALUES
+    ('C001', 'P001', 'M001', '2026-10-01', 'PENDIENTE'),
+    ('C002', 'P002', 'M004', '2026-10-04', 'CONFIRMADA'),
+    ('C003', 'P003', 'M007', '2026-10-07', 'ATENDIDA'),
+    ('C004', 'P004', 'M010', '2026-10-10', 'CANCELADA'),
+    ('C005', 'P005', 'M003', '2026-10-13', 'ATENDIDA'),
+    ('C006', 'P006', 'M006', '2026-10-16', 'CONFIRMADA'),
+    ('C007', 'P007', 'M009', '2026-10-19', 'PENDIENTE'),
+    ('C008', 'P008', 'M002', '2026-10-22', 'CONFIRMADA'),
+    ('C009', 'P009', 'M005', '2026-10-25', 'ATENDIDA'),
+    ('C010', 'P010', 'M008', '2026-10-28', 'CANCELADA'),
+    ('C011', 'P001', 'M002', '2026-10-03', 'ATENDIDA'),
+    ('C012', 'P002', 'M005', '2026-10-06', 'CONFIRMADA'),
+    ('C013', 'P003', 'M008', '2026-10-09', 'PENDIENTE'),
+    ('C014', 'P004', 'M001', '2026-10-12', 'CONFIRMADA'),
+    ('C015', 'P005', 'M004', '2026-10-15', 'ATENDIDA'),
+    ('C016', 'P006', 'M007', '2026-10-18', 'CANCELADA'),
+    ('C017', 'P007', 'M010', '2026-10-21', 'ATENDIDA'),
+    ('C018', 'P008', 'M003', '2026-10-24', 'CONFIRMADA'),
+    ('C019', 'P009', 'M006', '2026-10-27', 'PENDIENTE'),
+    ('C020', 'P010', 'M009', '2026-10-02', 'CONFIRMADA'),
+    ('C021', 'P001', 'M003', '2026-11-05', 'ATENDIDA'),
+    ('C022', 'P002', 'M006', '2026-11-08', 'CANCELADA'),
+    ('C023', 'P003', 'M009', '2026-11-11', 'ATENDIDA'),
+    ('C024', 'P004', 'M002', '2026-11-14', 'CONFIRMADA'),
+    ('C025', 'P005', 'M005', '2026-11-17', 'PENDIENTE'),
+    ('C026', 'P006', 'M008', '2026-11-20', 'CONFIRMADA'),
+    ('C027', 'P007', 'M001', '2026-11-23', 'ATENDIDA'),
+    ('C028', 'P008', 'M004', '2026-11-26', 'CANCELADA'),
+    ('C029', 'P009', 'M007', '2026-11-01', 'ATENDIDA'),
+    ('C030', 'P010', 'M010', '2026-11-04', 'CONFIRMADA');
 ```
 
 Cómo levantar MySQL y cargar este script se explica en
@@ -2387,26 +2447,59 @@ public class VistaConsola {
     }
 
     private void generarReporte() {
-        System.out.println("-- Reportes --");
         try {
             System.out.print("Codigo del medico para ver sus citas: ");
             String codigoMedico = lector.nextLine();
             List<Cita> citas = controlador.generarReportePorMedico(codigoMedico);
-            System.out.println("Citas de " + codigoMedico + ": " + citas.size());
-            for (Cita cita : citas) {
-                System.out.println("- " + cita);
+            imprimirTitulo("Citas del medico " + codigoMedico + " (" + citas.size() + ")");
+            if (citas.isEmpty()) {
+                System.out.println("  Sin citas registradas.");
+            } else {
+                String formato = "  %-6s | %-24s | %-10s | %-10s%n";
+                System.out.printf(formato, "Cita", "Paciente", "Fecha", "Estado");
+                System.out.println("  " + "-".repeat(7) + "+" + "-".repeat(26) + "+" + "-".repeat(12) + "+" + "-".repeat(11));
+                for (Cita cita : citas) {
+                    System.out.printf(formato, cita.getCodigo(), cita.getPaciente().getNombreCompleto(),
+                            cita.getFecha(), cita.getEstado());
+                }
             }
 
             Map<String, Double> totalPorMedico = controlador.generarReporteFacturacionPorMedico();
-            System.out.println("Total facturado por medico: " + totalPorMedico);
+            imprimirTitulo("Total facturado por medico");
+            if (totalPorMedico.isEmpty()) {
+                System.out.println("  Sin facturas emitidas.");
+            } else {
+                double granTotal = 0;
+                for (Map.Entry<String, Double> fila : totalPorMedico.entrySet()) {
+                    System.out.printf("  %-10s | $%,12.2f%n", fila.getKey(), fila.getValue());
+                    granTotal += fila.getValue();
+                }
+                System.out.printf("  %-10s | $%,12.2f%n", "TOTAL", granTotal);
+            }
 
             System.out.print("Edad minima para el reporte de pacientes: ");
             int edadMinima = Integer.parseInt(lector.nextLine());
             List<Paciente> mayores = controlador.listarPacientesMayoresDeEdad(edadMinima);
-            System.out.println("Pacientes con " + edadMinima + " anios o mas: " + mayores);
+            imprimirTitulo("Pacientes de " + edadMinima + " anios o mas (" + mayores.size() + ")");
+            if (mayores.isEmpty()) {
+                System.out.println("  Ningun paciente cumple el criterio.");
+            } else {
+                String formato = "  %-8s | %-26s | %4s%n";
+                System.out.printf(formato, "Codigo", "Nombre", "Edad");
+                System.out.println("  " + "-".repeat(9) + "+" + "-".repeat(28) + "+" + "-".repeat(6));
+                for (Paciente paciente : mayores) {
+                    System.out.printf(formato, paciente.getCodigo(), paciente.getNombreCompleto(), paciente.getEdad());
+                }
+            }
+            System.out.println();
         } catch (NumberFormatException excepcion) {
             System.out.println("Edad invalida: " + excepcion.getMessage());
         }
+    }
+
+    private void imprimirTitulo(String titulo) {
+        System.out.println();
+        System.out.println("=== " + titulo + " ===");
     }
 }
 ```
@@ -2417,7 +2510,10 @@ menú interactivo con `Scanner` (único archivo de todo el proyecto que lee la c
 justo porque es la única capa de MVC que debe hacerlo); el "modelo" son las clases de
 `entity`/`service`/`repository` de los bloques anteriores, que ninguna de las dos
 conoce en detalle. Cada opción del menú captura sus propias excepciones y sigue
-funcionando ante un error (Edge Cases de la spec).
+funcionando ante un error (Edge Cases de la spec). La opción 6 imprime cada reporte como
+una tabla con título y columnas alineadas (`System.out.printf` con anchos fijos como
+`%-24s`); si una lista está vacía, muestra un mensaje en vez de
+una tabla sin filas.
 
 ---
 
@@ -2625,6 +2721,14 @@ docker compose exec mysql mysql -uroot -proot -e "SHOW TABLES FROM medisalud;"
 
 (MySQL también muestra el aviso `Using a password on the command line interface can be
 insecure`: es normal cuando la clave va en el comando.)
+
+Los datos de ejemplo también se cargaron. Comprobalo:
+
+```bash
+docker compose exec mysql mysql -uroot -proot medisalud -e "SELECT (SELECT COUNT(*) FROM pacientes) AS pacientes, (SELECT COUNT(*) FROM medicos) AS medicos, (SELECT COUNT(*) FROM citas) AS citas;"
+```
+
+✅ **Resultado esperado**: `10`, `10` y `30`.
 
 Si ves las tres tablas, **el script ya se cargó solo** y podés pasar a
 [Compilar y ejecutar el proyecto](#-compilar-y-ejecutar-el-proyecto).
