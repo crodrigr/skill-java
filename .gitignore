@@ -9,3 +9,7 @@ build/
 dist/
 nbproject/private/
 *.class
+
+# Artefactos de ejecucion del Proyecto final (persistencia en archivo)
+generador-cursos/curso-java/proyecto-final/solucion/pacientes.txt
+generador-cursos/curso-java/proyecto-final/solucion/citas.ser

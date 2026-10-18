@@ -44,8 +44,12 @@ patrones que aplica el proyecto terminado.
   lo nombra, aunque no hayas memorizado su implementación exacta.
 - Tener instalado el JDK 17 o superior.
 - Tener instalado Visual Studio Code con la Extension Pack for Java.
-- Tener disponible un servidor MySQL local y el conector `mysql-connector-j` (el mismo
-  requisito que ya exige el Módulo 18 del curso).
+- Tener **Docker** instalado (Docker Desktop en Windows o macOS; Docker Engine con el
+  complemento Compose en Ubuntu) para levantar MySQL con el `docker-compose.yml` del
+  proyecto (ver [Base de datos MySQL con Docker Compose](#-base-de-datos-mysql-con-docker-compose)).
+  Si ya tenés un servidor MySQL instalado en tu computadora, podés usarlo en su lugar.
+- Tener el conector `mysql-connector-j` (el mismo requisito que ya exige el Módulo 18 del
+  curso).
 
 ## 🧱 Resultado final
 
@@ -2019,30 +2023,51 @@ public class CitaDAO implements RepositorioCitas {
 `Servicio*` del Bloque 6 necesita cambiar para usar estas implementaciones en vez de
 las de memoria — la inversión de dependencias del Módulo 11 es la que lo permite.
 
+#### Archivo: sql/medisalud.sql
+
+Las tablas se crean con un **script SQL** guardado en el proyecto, en
+`sql/medisalud.sql` (fuera de `src/`, porque no es código Java). La tabla `citas` declara
+sus dos **claves foráneas** con `CONSTRAINT … FOREIGN KEY`: MySQL ignora un `REFERENCES`
+escrito al lado de la columna, así que esta es la forma que realmente impide guardar
+una cita de un paciente o de un médico que no existe. El script se puede ejecutar más de
+una vez sin borrar datos (`IF NOT EXISTS`).
+
 ```sql
-CREATE DATABASE IF NOT EXISTS medisalud;
+-- Base de datos del proyecto final MediSalud (Curso de Java)
+-- Crea la base de datos y las tablas que usan PacienteDAO, MedicoDAO y CitaDAO.
+-- Se puede ejecutar más de una vez: no borra datos existentes.
+
+CREATE DATABASE IF NOT EXISTS medisalud
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
 USE medisalud;
 
-CREATE TABLE pacientes (
+CREATE TABLE IF NOT EXISTS pacientes (
     codigo VARCHAR(20) PRIMARY KEY,
     nombre_completo VARCHAR(100) NOT NULL,
     edad INT NOT NULL
 );
 
-CREATE TABLE medicos (
+CREATE TABLE IF NOT EXISTS medicos (
     codigo VARCHAR(20) PRIMARY KEY,
     nombre_completo VARCHAR(100) NOT NULL,
     especialidad VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE citas (
+CREATE TABLE IF NOT EXISTS citas (
     codigo VARCHAR(20) PRIMARY KEY,
-    paciente_codigo VARCHAR(20) NOT NULL REFERENCES pacientes(codigo),
-    medico_codigo VARCHAR(20) NOT NULL REFERENCES medicos(codigo),
+    paciente_codigo VARCHAR(20) NOT NULL,
+    medico_codigo VARCHAR(20) NOT NULL,
     fecha DATE NOT NULL,
-    estado VARCHAR(20) NOT NULL
+    estado VARCHAR(20) NOT NULL,
+    CONSTRAINT fk_citas_paciente FOREIGN KEY (paciente_codigo) REFERENCES pacientes (codigo),
+    CONSTRAINT fk_citas_medico FOREIGN KEY (medico_codigo) REFERENCES medicos (codigo)
 );
 ```
+
+Cómo levantar MySQL y cargar este script se explica en
+[Base de datos MySQL con Docker Compose](#-base-de-datos-mysql-con-docker-compose).
 
 ---
 
@@ -2444,8 +2469,268 @@ de notificaciones de forma ordenada (`detener()` + `join()`) antes de terminar.
 
 ---
 
+## 🐳 Base de datos MySQL con Docker Compose
+
+En lugar de instalar MySQL en tu computadora, lo vas a ejecutar en un **contenedor de
+Docker**. El archivo `docker-compose.yml` describe ese contenedor: qué imagen usa
+(`mysql:8.0`), la clave del usuario `root` (la misma que usa `ConexionBD`: `root`), el
+puerto (`3306`, el de la URL `jdbc:mysql://localhost:3306/medisalud`) y dónde guarda los
+datos.
+
+Así queda la carpeta del proyecto con los dos archivos nuevos:
+
+```text
+SistemaMediSaludFinal/
+├── docker-compose.yml        # el servidor MySQL
+├── sql/
+│   └── medisalud.sql         # el script que crea la base de datos y las tablas
+├── lib/
+│   └── mysql-connector-j-8.3.0.jar
+└── src/main/java/com/medisalud/...
+```
+
+### Archivo: docker-compose.yml
+
+```yaml
+# Servidor MySQL para el proyecto final MediSalud (Curso de Java).
+# Uso: docker compose up -d   (desde la carpeta proyecto-final/solucion)
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: medisalud-mysql
+    restart: unless-stopped
+    environment:
+      # Usuario root con la misma clave que usa ConexionBD (root/root)
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      # puerto de tu computadora : puerto del contenedor
+      - "3306:3306"
+    volumes:
+      # Los datos se guardan en un volumen: sobreviven a docker compose down
+      - medisalud-datos:/var/lib/mysql
+      # Los .sql de esta carpeta se ejecutan solos la PRIMERA vez que arranca el contenedor
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  medisalud-datos:
+```
+
+📖 **Explicación**: `environment` define la clave de `root`; `ports` publica el puerto
+`3306` del contenedor en el `3306` de tu computadora; el volumen `medisalud-datos`
+guarda los datos aunque borres el contenedor; y la carpeta `sql` se monta en
+`/docker-entrypoint-initdb.d`, la carpeta cuyos scripts la imagen de MySQL **ejecuta sola
+la primera vez** que arranca con el volumen vacío. El `healthcheck` le permite a Docker
+avisar cuándo MySQL ya acepta conexiones.
+
+> ⚠️ Estas claves (`root`/`root`) sirven solo para practicar en tu computadora. Nunca las
+> uses en un servidor real.
+
+### Paso A — Comprobar Docker
+
+En una terminal (la de VS Code sirve), escribí:
+
+```bash
+docker --version
+docker compose version
+```
+
+✅ Los dos comandos muestran un número de versión. En Windows y macOS, **Docker Desktop
+tiene que estar abierto** antes de seguir.
+
+### Paso B — Levantar el contenedor
+
+Desde la carpeta del proyecto (la que tiene `docker-compose.yml`):
+
+```bash
+docker compose up -d
+```
+
+`up` crea y arranca el contenedor; `-d` lo deja corriendo en segundo plano. La primera
+vez descarga la imagen de MySQL, así que puede tardar unos minutos.
+
+✅ **Resultado esperado** (al final)
+
+```console
+ Volume "solucion_medisalud-datos"  Created
+ Container medisalud-mysql  Created
+ Container medisalud-mysql  Started
+```
+
+(El nombre del volumen empieza con el nombre de tu carpeta.)
+
+### Paso C — Esperar a que MySQL esté listo
+
+```bash
+docker compose ps
+```
+
+✅ Cuando en la columna de estado aparece `running (healthy)`, MySQL ya acepta
+conexiones. Si dice `starting`, esperá unos segundos y repetí el comando. (Las columnas
+pueden variar un poco según tu versión de Docker.)
+
+```console
+NAME              SERVICE   STATUS              PORTS
+medisalud-mysql   mysql     running (healthy)   0.0.0.0:3306->3306/tcp
+```
+
+Para ver qué está haciendo MySQL, mirá su registro (salís con **Ctrl+C**):
+
+```bash
+docker compose logs -f mysql
+```
+
+En el primer arranque tenés que ver la línea que ejecuta el script:
+
+```console
+[Entrypoint]: /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/medisalud.sql
+```
+
+### Paso D — Comprobar que la base de datos se creó
+
+```bash
+docker compose exec mysql mysql -uroot -proot -e "SHOW TABLES FROM medisalud;"
+```
+
+✅ **Resultado esperado**
+
+```console
++---------------------+
+| Tables_in_medisalud |
++---------------------+
+| citas               |
+| medicos             |
+| pacientes           |
++---------------------+
+```
+
+(MySQL también muestra el aviso `Using a password on the command line interface can be
+insecure`: es normal cuando la clave va en el comando.)
+
+Si ves las tres tablas, **el script ya se cargó solo** y podés pasar a
+[Compilar y ejecutar el proyecto](#-compilar-y-ejecutar-el-proyecto).
+
+### Paso E — Cargar el script a mano (si hace falta)
+
+El script se ejecuta solo **únicamente la primera vez**, cuando el volumen está vacío.
+Cargalo a mano si las tablas no aparecieron, si cambiaste el script o si borraste la base
+de datos. Hay dos formas:
+
+**Forma 1 — Desde la consola de MySQL (igual en Ubuntu y en Windows).** Entrá a la
+consola de MySQL dentro del contenedor:
+
+```bash
+docker compose exec mysql mysql -uroot -p
+```
+
+Escribí la clave (`root`; no se ve mientras la escribís) y, en el indicador `mysql>`,
+ejecutá el script, que ya está dentro del contenedor porque la carpeta `sql` está
+montada:
+
+```sql
+source /docker-entrypoint-initdb.d/medisalud.sql
+SHOW TABLES FROM medisalud;
+exit
+```
+
+**Forma 2 — En un solo comando, enviando el archivo al contenedor.** En la terminal de
+Ubuntu, en Git Bash o en el Símbolo del sistema (`cmd`) de Windows:
+
+```bash
+docker compose exec -T mysql mysql -uroot -proot < sql/medisalud.sql
+```
+
+En **PowerShell** el símbolo `<` no funciona; usá:
+
+```powershell
+Get-Content sql/medisalud.sql | docker compose exec -T mysql mysql -uroot -proot
+```
+
+La opción `-T` hace falta para que `docker compose exec` acepte el archivo como entrada.
+
+> 💡 También podés cargar el script con un cliente gráfico (MySQL Workbench, DBeaver o una
+> extensión de VS Code): conectate a `localhost`, puerto `3306`, usuario `root`, clave
+> `root`, abrí `sql/medisalud.sql` y ejecutalo.
+
+### Paso F — Detener y volver a arrancar
+
+| Qué querés hacer | Comando | ¿Se conservan los datos? |
+|---|---|---|
+| Detener MySQL (por ejemplo, al terminar el día) | `docker compose stop` | Sí |
+| Volver a arrancarlo | `docker compose start` (o `docker compose up -d`) | Sí |
+| Borrar el contenedor | `docker compose down` | Sí: quedan en el volumen |
+| Empezar de cero (borrar también los datos) | `docker compose down -v` | **No**: se borra el volumen y, al volver a hacer `up -d`, el script se ejecuta otra vez |
+
+### 🧯 Si algo falla
+
+| Lo que ves | Qué pasó | Qué hacer |
+|---|---|---|
+| `Cannot connect to the Docker daemon` o `error during connect` | Docker no está corriendo | Abrí Docker Desktop (Windows o macOS) o iniciá el servicio de Docker (Ubuntu) |
+| `Bind for 0.0.0.0:3306 failed: port is already allocated` | Ya hay otro MySQL usando el puerto `3306` | Detené ese MySQL, o cambiá la línea de `ports` a `"3307:3306"` y la URL de `ConexionBD` a `localhost:3307` |
+| `Unknown database 'medisalud'` | El script no se ejecutó | Cargalo a mano (paso E) |
+| `Table 'medisalud.pacientes' doesn't exist` | Igual que el anterior | Cargalo a mano (paso E) |
+| `Communications link failure` al ejecutar el programa | MySQL no terminó de arrancar o el contenedor está detenido | Esperá a `running (healthy)` (paso C) o ejecutá `docker compose start` |
+| `Access denied for user 'root'` | La clave no coincide | Revisá que `MYSQL_ROOT_PASSWORD` y la clave de `ConexionBD` sean iguales; si cambiaste la clave después del primer arranque, hacé `docker compose down -v` y `docker compose up -d` |
+| `No suitable driver found for jdbc:mysql://…` | El conector no está en el *classpath* | Revisá la ruta del `.jar` en el comando `java` (ver la sección siguiente) |
+
+---
+
+## 🚀 Compilar y ejecutar el proyecto
+
+Con MySQL corriendo, compilá y ejecutá el programa con el conector en el *classpath*.
+
+1. Descargá el conector **MySQL Connector/J** (`mysql-connector-j-8.3.0.jar`) desde
+   [Maven Central](https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.3.0/mysql-connector-j-8.3.0.jar)
+   y guardalo en la carpeta `lib` del proyecto.
+2. Desde la carpeta del proyecto, compilá:
+
+   - **Ubuntu, macOS o Git Bash:**
+
+     ```bash
+     javac -d out $(find src/main/java -name "*.java")
+     ```
+
+   - **Windows (PowerShell):**
+
+     ```powershell
+     javac -d out (Get-ChildItem -Recurse -Filter *.java src/main/java).FullName
+     ```
+
+3. Ejecutá:
+
+   - **Ubuntu, macOS o Git Bash:**
+
+     ```bash
+     java -cp "out:lib/mysql-connector-j-8.3.0.jar" com.medisalud.Principal
+     ```
+
+   - **Windows (PowerShell o `cmd`):** el separador del *classpath* es `;`:
+
+     ```powershell
+     java -cp "out;lib/mysql-connector-j-8.3.0.jar" com.medisalud.Principal
+     ```
+
+✅ Aparece el menú de 7 opciones. Registrá un paciente (opción 1), salí (opción 7) y
+comprobá que quedó guardado en MySQL:
+
+```bash
+docker compose exec mysql mysql -uroot -proot -e "SELECT * FROM medisalud.pacientes;"
+```
+
+> 💡 **En VS Code** también podés ejecutar `Principal` con el botón **Run**: agregá el
+> `.jar` del conector en la sección **Java Projects → Referenced Libraries** del panel
+> Explorador.
+
+---
+
 ## 🏁 Verificación final
 
+- [ ] `docker compose ps` muestra el contenedor `medisalud-mysql` en `running (healthy)`
+  y la base de datos `medisalud` tiene las tablas `pacientes`, `medicos` y `citas`.
 - [ ] El proyecto `SistemaMediSaludFinal` compila y ejecuta `Principal` sin errores, y
   muestra el menú interactivo de 7 opciones.
 - [ ] Desde el menú se puede registrar un paciente y un médico, y los datos quedan

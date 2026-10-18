@@ -69,45 +69,34 @@ vez de una excepción genérica de Java.
 
 ## Cómo ejecutar
 
-Requiere un servidor MySQL local y el conector `mysql-connector-j` en el *classpath*
-(el mismo requisito que ya exige el Módulo 18 del curso).
+Requiere Docker (para MySQL) y el conector `mysql-connector-j` en el *classpath* (el mismo
+requisito que ya exige el Módulo 18 del curso). La guía del estudiante explica cada paso
+en las secciones «Base de datos MySQL con Docker Compose» y «Compilar y ejecutar el
+proyecto».
 
-```sql
-CREATE DATABASE IF NOT EXISTS medisalud;
-USE medisalud;
-
-CREATE TABLE pacientes (
-    codigo VARCHAR(20) PRIMARY KEY,
-    nombre_completo VARCHAR(100) NOT NULL,
-    edad INT NOT NULL
-);
-
-CREATE TABLE medicos (
-    codigo VARCHAR(20) PRIMARY KEY,
-    nombre_completo VARCHAR(100) NOT NULL,
-    especialidad VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE citas (
-    codigo VARCHAR(20) PRIMARY KEY,
-    paciente_codigo VARCHAR(20) NOT NULL REFERENCES pacientes(codigo),
-    medico_codigo VARCHAR(20) NOT NULL REFERENCES medicos(codigo),
-    fecha DATE NOT NULL,
-    estado VARCHAR(20) NOT NULL
-);
-```
-
-Ajustar usuario/clave en `com.medisalud.persistencia.jdbc.ConexionBD` si no son `root`/`root`.
+- `docker-compose.yml`: servidor MySQL 8.0 (`root`/`root`, puerto `3306`, los mismos datos
+  que usa `ConexionBD`), con los datos en el volumen `medisalud-datos`.
+- `sql/medisalud.sql`: crea la base `medisalud` y las tablas `pacientes`, `medicos` y
+  `citas` (con claves foráneas declaradas con `CONSTRAINT … FOREIGN KEY`). Se ejecuta solo
+  en el primer arranque del contenedor, porque la carpeta `sql` se monta en
+  `/docker-entrypoint-initdb.d`.
 
 ```bash
 cd curso-java/proyecto-final/solucion
-javac -cp ".:mysql-connector-j.jar" -d /tmp/salida-medisalud $(find src/main/java -name "*.java")
-java -cp "/tmp/salida-medisalud:mysql-connector-j.jar" com.medisalud.Principal
+docker compose up -d                       # esperar a "running (healthy)" en: docker compose ps
+docker compose exec mysql mysql -uroot -proot -e "SHOW TABLES FROM medisalud;"
+
+# Solo si las tablas no aparecieron (o para volver a cargar el script):
+docker compose exec -T mysql mysql -uroot -proot < sql/medisalud.sql
+
+javac -d out $(find src/main/java -name "*.java")
+java -cp "out:lib/mysql-connector-j-8.3.0.jar" com.medisalud.Principal
 ```
 
 Se muestra el menú y queda esperando una opción por teclado (`1` a `7`) en un bucle real
 hasta elegir "Salir". Los datos quedan en las tablas `pacientes`/`medicos`/`citas` y se
-conservan entre ejecuciones.
+conservan entre ejecuciones (y aunque se borre el contenedor con `docker compose down`;
+`docker compose down -v` borra también los datos).
 
 ## Verificación mapeada a los Success Criteria de `spec.md`
 
@@ -130,7 +119,18 @@ conservan entre ejecuciones.
   inválida) conectado a tres repositorios en memoria equivalentes a los DAOs (mismas
   interfaces de `com.medisalud.repository`), confirmando que `VistaConsola` funciona
   correctamente — ver detalle en el historial de este proyecto.
-- La ejecución real contra un servidor MySQL no se pudo probar en este entorno por no
-  disponer de uno disponible; queda verificada por revisión manual del código (mismos
-  DAOs, mismas interfaces de repositorio ya probadas en memoria) y debe confirmarse en
-  un entorno con MySQL disponible antes de dar por cerrado el proyecto.
+- Ejecución real contra MySQL 8.0.39 en Docker (`docker compose up -d`, 2026-10-18): el
+  script se ejecutó solo en el primer arranque; la carga manual (`docker compose exec -T …
+  < sql/medisalud.sql` y `source /docker-entrypoint-initdb.d/medisalud.sql`) funciona y se
+  puede repetir sin errores. El programa, compilado con JDK 25 y `mysql-connector-j-8.3.0`,
+  registró un paciente, un médico y una cita, y los datos seguían en las tablas en la
+  segunda ejecución.
+- **Dos fallos encontrados en esa prueba (pendientes de corregir):**
+  1. Confirmar o atender una cita desde la opción 3 **no se guarda en MySQL**:
+     `ServicioCitas.cambiarEstado` cambia el estado de la `Cita` leída de la base de datos
+     pero no vuelve a llamar a `repositorioCitas.guardar(cita)`, y `VistaConsola` muestra
+     el estado de su propio objeto (`Estado actualizado: PENDIENTE`). Con los repositorios
+     en memoria funcionaba porque era el mismo objeto.
+  2. Registrar un paciente (o médico) con un código que ya existe **detiene el
+     programa**: el DAO convierte la `SQLException` de clave duplicada en una
+     `RuntimeException` que `VistaConsola` no captura.
