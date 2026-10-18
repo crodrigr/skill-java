@@ -18,7 +18,7 @@ del curso (State, Observer, excepciones propias, JDBC, Stream API).
   copiar código de otro estudiante ni usar asistentes de IA.
 - Sin librerías nuevas: solo Java del temario y el conector MySQL que ya usás.
 - MySQL debe estar corriendo con Docker Compose (`docker compose up -d`).
-- Entregás tu carpeta del proyecto comprimida + el archivo `ENTREGA.md` descrito al final.
+- Entregás **un repositorio en GitHub** con tu proyecto y el archivo `ENTREGA.md` descrito al final.
 
 ## 🧩 La funcionalidad: Cancelación de citas con motivo
 
@@ -58,7 +58,7 @@ cancelación no guarda por qué se canceló. MediSalud necesita:
 | 1:30 – 2:00 | Controlador y vista (opción 7, renumerar Salir). |
 | 2:00 – 2:25 | Reporte con Stream API. |
 | 2:25 – 2:50 | Pruebas manuales de la tabla de casos y corrección de errores. |
-| 2:50 – 3:00 | Completar `ENTREGA.md` y comprimir. |
+| 2:50 – 3:00 | Completar `ENTREGA.md`, hacer `push` y enviar la URL. |
 
 ## 🛠️ Requisitos técnicos
 
@@ -130,14 +130,27 @@ cualquier fecha). Preparación, con paciente `P001` y médico `M009`:
 
 ## 📦 Entrega
 
-Un `.zip` con el proyecto y, en la raíz, un archivo `ENTREGA.md` con:
+Entregás **la URL de un repositorio en GitHub**.
 
-1. **Lista de archivos** creados y modificados (una línea de por qué cada uno).
-2. **Decisión sobre `cancelarCita(String)`**: qué hiciste con el método viejo y por qué.
-3. **Dónde aplicaste cada concepto**, con archivo y método: State, Observer, excepción propia,
-   `PreparedStatement`, Stream API.
-4. **Resultado de los 12 casos de prueba**: ✅/❌ y, si fallaste alguno, qué creés que falta.
-5. **Un riesgo o mejora** que verías en esta funcionalidad (2–3 líneas).
+1. Creá un repositorio (nombre sugerido: `medisalud-prueba-<tu-apellido>`). Puede ser público, o
+   privado con acceso para el docente (usuario indicado por el docente).
+2. El repositorio contiene tu proyecto completo (`src/`, `sql/`, `docker-compose.yml`, `lib/`) y
+   un `.gitignore` que excluya `out/` y archivos del IDE. No subas contraseñas reales.
+3. Trabajá con **commits pequeños y con mensajes claros** durante la prueba (por ejemplo, uno por
+   requisito R1–R4). Se revisa el historial: un único commit gigante o commits posteriores al
+   tiempo límite restan puntos.
+4. Los cambios de la prueba van en la rama `main`, partiendo de un primer commit con tu proyecto
+   original sin modificar (para que se vea con claridad qué agregaste).
+5. Agregá en la raíz un `README.md` con cómo compilar y ejecutar, y un `ENTREGA.md` con:
+   1. **Lista de archivos** creados y modificados (una línea de por qué cada uno).
+   2. **Decisión sobre `cancelarCita(String)`**: qué hiciste con el método viejo y por qué.
+   3. **Dónde aplicaste cada concepto**, con archivo y método: State, Observer, excepción propia,
+      `PreparedStatement`, Stream API.
+   4. **Resultado de los 12 casos de prueba**: ✅/❌ y, si fallaste alguno, qué creés que falta.
+   5. **Un riesgo o mejora** que verías en esta funcionalidad (2–3 líneas).
+6. Al terminar, enviá la URL del repositorio antes de la hora límite. El docente clona el
+   repositorio en limpio y lo compila con el comando de la guía; si no compila, aplica el tope
+   indicado en la rúbrica.
 
 ## 📊 Rúbrica (100 puntos)
 
@@ -151,7 +164,7 @@ Un `.zip` con el proyecto y, en la raíz, un archivo `ENTREGA.md` con:
 | Reporte con Stream API (`groupingBy` + `counting`, orden descendente) | 10 |
 | Casos de prueba 1–12 ejecutados por el docente (su fallo se refleja aquí y no se descuenta de nuevo en los demás criterios) | 10 |
 | Calidad y estilo (R5), compila con el comando de la guía | 5 |
-| `ENTREGA.md` completo y coherente con el código | 5 |
+| Repositorio: historial de commits claro, `README.md`, `.gitignore` y `ENTREGA.md` coherente con el código | 5 |
 | **Total** | **100** |
 
 > Descuentos: proyecto que **no compila** → máximo 40 puntos. Lógica de negocio en la vista o SQL
