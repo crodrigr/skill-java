@@ -76,8 +76,8 @@ proyecto».
 
 - `docker-compose.yml`: servidor MySQL 8.0 (`root`/`root`, puerto `3306`, los mismos datos
   que usa `ConexionBD`), con los datos en el volumen `medisalud-datos`.
-- `sql/medisalud.sql`: crea la base `medisalud` y las tablas `pacientes`, `medicos` y
-  `citas` (con claves foráneas declaradas con `CONSTRAINT … FOREIGN KEY`). Se ejecuta solo
+- `sql/medisalud.sql`: crea la base `medisalud`, las tablas `pacientes`, `medicos` y
+  `citas` (con claves foráneas `CONSTRAINT … FOREIGN KEY`) y carga datos de ejemplo (10 pacientes, 10 médicos, 30 citas). Se ejecuta solo
   en el primer arranque del contenedor, porque la carpeta `sql` se monta en
   `/docker-entrypoint-initdb.d`.
 

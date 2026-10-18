@@ -200,25 +200,58 @@ public class VistaConsola {
     }
 
     private void generarReporte() {
-        System.out.println("-- Reportes --");
         try {
             System.out.print("Codigo del medico para ver sus citas: ");
             String codigoMedico = lector.nextLine();
             List<Cita> citas = controlador.generarReportePorMedico(codigoMedico);
-            System.out.println("Citas de " + codigoMedico + ": " + citas.size());
-            for (Cita cita : citas) {
-                System.out.println("- " + cita);
+            imprimirTitulo("Citas del medico " + codigoMedico + " (" + citas.size() + ")");
+            if (citas.isEmpty()) {
+                System.out.println("  Sin citas registradas.");
+            } else {
+                String formato = "  %-6s | %-24s | %-10s | %-10s%n";
+                System.out.printf(formato, "Cita", "Paciente", "Fecha", "Estado");
+                System.out.println("  " + "-".repeat(7) + "+" + "-".repeat(26) + "+" + "-".repeat(12) + "+" + "-".repeat(11));
+                for (Cita cita : citas) {
+                    System.out.printf(formato, cita.getCodigo(), cita.getPaciente().getNombreCompleto(),
+                            cita.getFecha(), cita.getEstado());
+                }
             }
 
             Map<String, Double> totalPorMedico = controlador.generarReporteFacturacionPorMedico();
-            System.out.println("Total facturado por medico: " + totalPorMedico);
+            imprimirTitulo("Total facturado por medico");
+            if (totalPorMedico.isEmpty()) {
+                System.out.println("  Sin facturas emitidas.");
+            } else {
+                double granTotal = 0;
+                for (Map.Entry<String, Double> fila : totalPorMedico.entrySet()) {
+                    System.out.printf("  %-10s | $%,12.2f%n", fila.getKey(), fila.getValue());
+                    granTotal += fila.getValue();
+                }
+                System.out.printf("  %-10s | $%,12.2f%n", "TOTAL", granTotal);
+            }
 
             System.out.print("Edad minima para el reporte de pacientes: ");
             int edadMinima = Integer.parseInt(lector.nextLine());
             List<Paciente> mayores = controlador.listarPacientesMayoresDeEdad(edadMinima);
-            System.out.println("Pacientes con " + edadMinima + " anios o mas: " + mayores);
+            imprimirTitulo("Pacientes de " + edadMinima + " anios o mas (" + mayores.size() + ")");
+            if (mayores.isEmpty()) {
+                System.out.println("  Ningun paciente cumple el criterio.");
+            } else {
+                String formato = "  %-8s | %-26s | %4s%n";
+                System.out.printf(formato, "Codigo", "Nombre", "Edad");
+                System.out.println("  " + "-".repeat(9) + "+" + "-".repeat(28) + "+" + "-".repeat(6));
+                for (Paciente paciente : mayores) {
+                    System.out.printf(formato, paciente.getCodigo(), paciente.getNombreCompleto(), paciente.getEdad());
+                }
+            }
+            System.out.println();
         } catch (NumberFormatException excepcion) {
             System.out.println("Edad invalida: " + excepcion.getMessage());
         }
+    }
+
+    private void imprimirTitulo(String titulo) {
+        System.out.println();
+        System.out.println("=== " + titulo + " ===");
     }
 }
