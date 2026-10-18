@@ -38,8 +38,7 @@ public class ServicioCitas {
 
     public void atenderCita(String codigo, String diagnostico)
             throws CitaNoEncontradaException, TransicionInvalidaException {
-        Cita cita = buscarPorCodigo(codigo);
-        cambiarEstado(codigo, EstadoCita.ATENDIDA);
+        Cita cita = cambiarEstado(codigo, EstadoCita.ATENDIDA);
         cita.getPaciente().getHistoriaClinica().agregarConsulta(diagnostico);
     }
 
@@ -51,12 +50,14 @@ public class ServicioCitas {
         return repositorioCitas.listarPorMedico(codigoMedico);
     }
 
-    private void cambiarEstado(String codigo, EstadoCita nuevoEstado)
+    private Cita cambiarEstado(String codigo, EstadoCita nuevoEstado)
             throws CitaNoEncontradaException, TransicionInvalidaException {
         Cita cita = buscarPorCodigo(codigo);
         if (!cita.getEstado().puedeTransicionarA(nuevoEstado)) {
             throw new TransicionInvalidaException(codigo, cita.getEstado(), nuevoEstado);
         }
         cita.cambiarEstado(nuevoEstado);
+        repositorioCitas.guardar(cita);
+        return cita;
     }
 }

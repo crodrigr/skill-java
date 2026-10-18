@@ -1078,8 +1078,7 @@ public class ServicioCitas {
 
     public void atenderCita(String codigo, String diagnostico)
             throws CitaNoEncontradaException, TransicionInvalidaException {
-        Cita cita = buscarPorCodigo(codigo);
-        cambiarEstado(codigo, EstadoCita.ATENDIDA);
+        Cita cita = cambiarEstado(codigo, EstadoCita.ATENDIDA);
         cita.getPaciente().getHistoriaClinica().agregarConsulta(diagnostico);
     }
 
@@ -1091,13 +1090,15 @@ public class ServicioCitas {
         return repositorioCitas.listarPorMedico(codigoMedico);
     }
 
-    private void cambiarEstado(String codigo, EstadoCita nuevoEstado)
+    private Cita cambiarEstado(String codigo, EstadoCita nuevoEstado)
             throws CitaNoEncontradaException, TransicionInvalidaException {
         Cita cita = buscarPorCodigo(codigo);
         if (!cita.getEstado().puedeTransicionarA(nuevoEstado)) {
             throw new TransicionInvalidaException(codigo, cita.getEstado(), nuevoEstado);
         }
         cita.cambiarEstado(nuevoEstado);
+        repositorioCitas.guardar(cita);
+        return cita;
     }
 }
 ```
@@ -1158,6 +1159,10 @@ código buscado. `ServicioPacientes.listarMayoresDeEdad` y
   aplica esa regla antes de cambiar el estado; `confirmarCita`/`atenderCita`/
   `cancelarCita` son la única forma pública de llegar ahí, así que es imposible
   cambiar el estado de una cita sin pasar por la validación.
+  Después de cambiar el estado, `cambiarEstado` llama a `repositorioCitas.guardar(cita)`:
+  con repositorios en memoria el objeto leído es siempre el mismo y el cambio ya
+  «quedaba guardado», pero con JDBC cada búsqueda crea un objeto `Cita` nuevo a partir
+  de la fila, y sin ese `guardar` el cambio de estado se perdería en MySQL.
 - **Dónde más aparece este mismo escenario**: cualquier entidad cuyo comportamiento
   válido depende de un estado actual y tiene transiciones permitidas y prohibidas — un
   pedido de e-commerce (`pendiente → pagado → enviado → entregado`, nunca al revés),
@@ -1774,6 +1779,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -1788,6 +1794,8 @@ public class PacienteDAO implements RepositorioPacientes {
             sentencia.setString(2, paciente.getNombreCompleto());
             sentencia.setInt(3, paciente.getEdad());
             sentencia.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException excepcion) {
+            throw new IllegalArgumentException("Ya existe un paciente con el codigo " + paciente.getCodigo());
         } catch (SQLException excepcion) {
             throw new RuntimeException("No se pudo guardar el paciente " + paciente.getCodigo(), excepcion);
         }
@@ -1846,6 +1854,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -1860,6 +1869,8 @@ public class MedicoDAO implements RepositorioMedicos {
             sentencia.setString(2, medico.getNombreCompleto());
             sentencia.setString(3, medico.getEspecialidad());
             sentencia.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException excepcion) {
+            throw new IllegalArgumentException("Ya existe un medico con el codigo " + medico.getCodigo());
         } catch (SQLException excepcion) {
             throw new RuntimeException("No se pudo guardar el medico " + medico.getCodigo(), excepcion);
         }
@@ -2143,6 +2154,10 @@ public class ControladorMediSalud {
         servicioCitas.atenderCita(codigoCita, diagnostico);
     }
 
+    public Cita buscarCita(String codigoCita) throws CitaNoEncontradaException {
+        return servicioCitas.buscarPorCodigo(codigoCita);
+    }
+
     public HistoriaClinica consultarHistoriaClinica(String codigoPaciente) throws PacienteNoEncontradoException {
         Paciente paciente = servicioPacientes.buscarPorCodigo(codigoPaciente);
         return paciente.getHistoriaClinica();
@@ -2319,7 +2334,7 @@ public class VistaConsola {
                     String diagnostico = lector.nextLine();
                     controlador.atenderCita(codigoCita, diagnostico);
                 }
-                System.out.println("Estado actualizado: " + cita.getEstado());
+                System.out.println("Estado actualizado: " + controlador.buscarCita(codigoCita).getEstado());
             }
         } catch (PacienteNoEncontradoException | MedicoNoEncontradoException
                 | CitaNoEncontradaException | TransicionInvalidaException | DateTimeParseException excepcion) {

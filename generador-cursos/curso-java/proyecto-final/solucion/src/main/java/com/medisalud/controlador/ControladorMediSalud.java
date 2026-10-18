@@ -61,6 +61,10 @@ public class ControladorMediSalud {
         servicioCitas.atenderCita(codigoCita, diagnostico);
     }
 
+    public Cita buscarCita(String codigoCita) throws CitaNoEncontradaException {
+        return servicioCitas.buscarPorCodigo(codigoCita);
+    }
+
     public HistoriaClinica consultarHistoriaClinica(String codigoPaciente) throws PacienteNoEncontradoException {
         Paciente paciente = servicioPacientes.buscarPorCodigo(codigoPaciente);
         return paciente.getHistoriaClinica();

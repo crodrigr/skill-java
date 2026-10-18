@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class MedicoDAO implements RepositorioMedicos {
             sentencia.setString(2, medico.getNombreCompleto());
             sentencia.setString(3, medico.getEspecialidad());
             sentencia.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException excepcion) {
+            throw new IllegalArgumentException("Ya existe un medico con el codigo " + medico.getCodigo());
         } catch (SQLException excepcion) {
             throw new RuntimeException("No se pudo guardar el medico " + medico.getCodigo(), excepcion);
         }

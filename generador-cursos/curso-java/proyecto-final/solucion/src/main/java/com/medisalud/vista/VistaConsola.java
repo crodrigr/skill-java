@@ -147,7 +147,7 @@ public class VistaConsola {
                     String diagnostico = lector.nextLine();
                     controlador.atenderCita(codigoCita, diagnostico);
                 }
-                System.out.println("Estado actualizado: " + cita.getEstado());
+                System.out.println("Estado actualizado: " + controlador.buscarCita(codigoCita).getEstado());
             }
         } catch (PacienteNoEncontradoException | MedicoNoEncontradoException
                 | CitaNoEncontradaException | TransicionInvalidaException | DateTimeParseException excepcion) {

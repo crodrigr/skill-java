@@ -125,12 +125,17 @@ conservan entre ejecuciones (y aunque se borre el contenedor con `docker compose
   puede repetir sin errores. El programa, compilado con JDK 25 y `mysql-connector-j-8.3.0`,
   registró un paciente, un médico y una cita, y los datos seguían en las tablas en la
   segunda ejecución.
-- **Dos fallos encontrados en esa prueba (pendientes de corregir):**
-  1. Confirmar o atender una cita desde la opción 3 **no se guarda en MySQL**:
-     `ServicioCitas.cambiarEstado` cambia el estado de la `Cita` leída de la base de datos
-     pero no vuelve a llamar a `repositorioCitas.guardar(cita)`, y `VistaConsola` muestra
-     el estado de su propio objeto (`Estado actualizado: PENDIENTE`). Con los repositorios
-     en memoria funcionaba porque era el mismo objeto.
-  2. Registrar un paciente (o médico) con un código que ya existe **detiene el
-     programa**: el DAO convierte la `SQLException` de clave duplicada en una
-     `RuntimeException` que `VistaConsola` no captura.
+- **Dos fallos encontrados en esa prueba (ya corregidos):**
+  1. Confirmar o atender una cita desde la opción 3 no se guardaba en MySQL, porque con
+     JDBC cada búsqueda crea un objeto `Cita` nuevo y `ServicioCitas.cambiarEstado` no
+     volvía a guardarlo. Ahora llama a `repositorioCitas.guardar(cita)` y `VistaConsola`
+     muestra el estado releído de la base (`ControladorMediSalud.buscarCita`).
+  2. Registrar un paciente (o médico) con un código repetido detenía el programa, porque
+     el DAO lanzaba una `RuntimeException` que la vista no captura. Ahora `PacienteDAO`/
+     `MedicoDAO` convierten la clave duplicada (`SQLIntegrityConstraintViolationException`)
+     en `IllegalArgumentException("Ya existe un … con el codigo …")`, que la vista ya
+     muestra como mensaje.
+- **Limitación conocida:** los diagnósticos de `atenderCita` se agregan a la historia
+  clínica en memoria; no hay tabla que los guarde, así que no persisten entre ejecuciones.
+- Si al ejecutar aparece `No suitable driver found for jdbc:mysql://...`, falta el
+  conector en el *classpath*: crear `lib/` y copiar allí `mysql-connector-j-8.3.0.jar`.

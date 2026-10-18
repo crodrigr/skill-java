@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class PacienteDAO implements RepositorioPacientes {
             sentencia.setString(2, paciente.getNombreCompleto());
             sentencia.setInt(3, paciente.getEdad());
             sentencia.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException excepcion) {
+            throw new IllegalArgumentException("Ya existe un paciente con el codigo " + paciente.getCodigo());
         } catch (SQLException excepcion) {
             throw new RuntimeException("No se pudo guardar el paciente " + paciente.getCodigo(), excepcion);
         }
