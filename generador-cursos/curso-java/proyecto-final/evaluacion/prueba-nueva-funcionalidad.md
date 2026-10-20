@@ -5,8 +5,7 @@
 ## 🎯 Objetivo
 
 El estudiante ya construyó el proyecto MediSalud siguiendo la [guía del proyecto final](../guia/guia-proyecto-final.md).
-En esta prueba se evalúa que **comprende el código que armó**, no solo que lo transcribió:
-debe agregar una funcionalidad nueva que atraviesa **todas las capas** (entidad, servicio,
+En esta prueba se evalúa que **comprende el código que armó**: debe agregar una funcionalidad nueva que atraviesa **todas las capas** (entidad, servicio,
 persistencia JDBC, controlador y vista) y que exige reutilizar los patrones y conceptos
 del curso (State, Observer, excepciones propias, JDBC, Stream API).
 
