@@ -44,6 +44,9 @@ La flecha que importa: el servicio apunta a la **interfaz**, nunca a una clase c
 Las implementaciones también apuntan a la interfaz (la implementan). Por eso se llama
 **inversión de dependencias**: el detalle depende del contrato, no al revés.
 
+> ▶️ **Todo el código de esta guía se puede ejecutar**: ver [ejemplo-capas/](ejemplo-capas/README.md)
+> (`./ejecutar.sh dao|memoria|log`, sin Docker ni MySQL).
+
 ## 1️⃣ Paso 1 — El contrato (la interfaz)
 
 Archivo: `repository/RepositorioPacientes.java`
