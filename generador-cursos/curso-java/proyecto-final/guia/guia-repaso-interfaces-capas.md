@@ -114,18 +114,63 @@ Fijate en dos detalles:
 
 ## 4️⃣ Paso 4 — Alguien lo conecta (la inyección)
 
-Archivo: `Principal.java`, el único lugar que sabe qué implementación se usa:
+Archivo: `Principal.java`, el único lugar que sabe qué implementación se usa. Esta es la
+clase **completa**, para ver cómo se integran todas las capas:
 
 ```java
-PacienteDAO pacienteDAO = new PacienteDAO();
-ServicioPacientes servicioPacientes = new ServicioPacientes(pacienteDAO);
+package com.medisalud;
+
+import com.medisalud.controlador.ControladorMediSalud;
+import com.medisalud.repository.AlmacenPacientesLog;
+import com.medisalud.repository.PacienteDAO;
+import com.medisalud.repository.RepositorioPacientes;
+import com.medisalud.repository.RepositorioPacientesMemoria;
+import com.medisalud.service.ServicioPacientes;
+import com.medisalud.vista.VistaConsola;
+
+/**
+ * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
+ *
+ * Uso: java com.medisalud.Principal [dao | memoria | log]      (por defecto: dao)
+ */
+public class Principal {
+
+    public static void main(String[] args) {
+        String modo = args.length > 0 ? args[0] : "dao";
+
+        RepositorioPacientes repositorio = switch (modo) {
+            case "memoria" -> new RepositorioPacientesMemoria();
+            case "log"     -> new AlmacenPacientesLog();
+            default        -> new PacienteDAO();
+        };
+        System.out.println("Repositorio en uso: " + repositorio.getClass().getSimpleName());
+
+        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorio);   // inyección
+        ControladorMediSalud controlador = new ControladorMediSalud(servicioPacientes, new VistaConsola());
+        controlador.iniciar();
+    }
+}
 ```
 
+### 🔍 Cómo se integra, línea por línea
+
+| Pieza | Qué hace | Qué sabe de las demás |
+|---|---|---|
+| `RepositorioPacientes repositorio = switch (modo) {...}` | Elige y **crea** la implementación | Es la única que nombra `PacienteDAO`, `RepositorioPacientesMemoria` y `AlmacenPacientesLog` |
+| `new ServicioPacientes(repositorio)` | **Inyecta**: entrega la dependencia al constructor | El servicio solo recibe un `RepositorioPacientes` |
+| `new ControladorMediSalud(servicioPacientes, new VistaConsola())` | Conecta el controlador con el servicio y la vista | El controlador no conoce el repositorio |
+| `controlador.iniciar()` | Arranca el menú | — |
+
+El orden de armado va **de abajo hacia arriba**: primero el repositorio, luego el
+servicio que lo recibe, luego el controlador que recibe el servicio. Las llamadas en
+tiempo de ejecución van en sentido contrario: vista → controlador → servicio → repositorio.
+
 **Eso es inyectar**: el `main` crea la dependencia y se la entrega al constructor.
-Para cambiar a memoria, se modifica una sola línea:
+Para cambiar a memoria, se modifica una sola línea (o se ejecuta con el argumento `memoria`):
 
 ```java
-ServicioPacientes servicioPacientes = new ServicioPacientes(new RepositorioPacientesMemoria());
+RepositorioPacientes repositorio = new RepositorioPacientesMemoria();
+ServicioPacientes servicioPacientes = new ServicioPacientes(repositorio);
 ```
 
 `ServicioPacientes` no se toca. No se recompila su lógica, no se vuelve a probar su
