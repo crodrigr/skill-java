@@ -36,6 +36,10 @@ Repositorio      «interface» RepositorioPacientes
 RepositorioPacientesMemoria     PacienteDAO (JDBC / MySQL)
 ```
 
+El mismo esquema como diagrama de clases:
+
+![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas.svg)
+
 La flecha que importa: el servicio apunta a la **interfaz**, nunca a una clase concreta.
 Las implementaciones también apuntan a la interfaz (la implementan). Por eso se llama
 **inversión de dependencias**: el detalle depende del contrato, no al revés.

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 640" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker>
+    <marker id="t" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto"><path d="M1,1 L11,6 L1,11 z" fill="#fff" stroke="#374151" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="860" height="640" fill="#fff"/>
+  <text x="430" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#1f2937">Las capas del proyecto — diagrama de clases</text>
+
+  <!-- layer labels -->
+  <text x="16" y="72" font-size="12" font-weight="bold" fill="#6b7280">VISTA</text>
+  <text x="16" y="172" font-size="12" font-weight="bold" fill="#6b7280">CONTROLADOR</text>
+  <text x="16" y="282" font-size="12" font-weight="bold" fill="#6b7280">SERVICIO</text>
+  <text x="16" y="412" font-size="12" font-weight="bold" fill="#6b7280">REPOSITORIO</text>
+
+  <!-- VistaConsola -->
+  <rect x="300" y="46" width="260" height="62" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="430" y="66" text-anchor="middle" font-size="14" font-weight="bold">VistaConsola</text>
+  <line x1="300" y1="74" x2="560" y2="74" stroke="#2563eb"/>
+  <text x="310" y="92" font-size="11">pide y muestra datos</text>
+
+  <!-- Controlador -->
+  <rect x="300" y="146" width="260" height="72" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="430" y="166" text-anchor="middle" font-size="14" font-weight="bold">ControladorMediSalud</text>
+  <line x1="300" y1="174" x2="560" y2="174" stroke="#4f46e5"/>
+  <text x="310" y="192" font-size="11">- servicioPacientes: ServicioPacientes</text>
+  <text x="310" y="208" font-size="11">traduce la acción del usuario</text>
+
+  <!-- Servicio -->
+  <rect x="270" y="256" width="320" height="110" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="430" y="276" text-anchor="middle" font-size="14" font-weight="bold">ServicioPacientes</text>
+  <line x1="270" y1="284" x2="590" y2="284" stroke="#16a34a"/>
+  <text x="280" y="302" font-size="11">- repositorioPacientes: RepositorioPacientes</text>
+  <line x1="270" y1="310" x2="590" y2="310" stroke="#16a34a"/>
+  <text x="280" y="328" font-size="11">+ ServicioPacientes(repositorioPacientes)</text>
+  <text x="280" y="344" font-size="11">+ registrarPaciente(paciente: Paciente): void</text>
+  <text x="280" y="358" font-size="10" fill="#6b7280">reglas de negocio · no hace new PacienteDAO()</text>
+
+  <!-- Interface -->
+  <rect x="270" y="404" width="320" height="100" fill="#fef9c3" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <text x="430" y="422" text-anchor="middle" font-size="12" font-style="italic">«interface»</text>
+  <text x="430" y="438" text-anchor="middle" font-size="14" font-weight="bold">RepositorioPacientes</text>
+  <line x1="270" y1="446" x2="590" y2="446" stroke="#d97706"/>
+  <text x="280" y="464" font-size="11">+ guardar(paciente: Paciente): void</text>
+  <text x="280" y="480" font-size="11">+ buscarPorCodigo(codigo: String): Paciente</text>
+  <text x="280" y="496" font-size="11">+ listarTodos(): List&lt;Paciente&gt;</text>
+
+  <!-- Implementations -->
+  <rect x="60" y="556" width="300" height="64" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="210" y="576" text-anchor="middle" font-size="14" font-weight="bold">RepositorioPacientesMemoria</text>
+  <line x1="60" y1="584" x2="360" y2="584" stroke="#7c3aed"/>
+  <text x="70" y="602" font-size="11">- pacientes: List&lt;Paciente&gt; (ArrayList)</text>
+  <text x="70" y="614" font-size="10" fill="#6b7280">sin base de datos, ideal para pruebas</text>
+
+  <rect x="500" y="556" width="300" height="64" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="650" y="576" text-anchor="middle" font-size="14" font-weight="bold">PacienteDAO</text>
+  <line x1="500" y1="584" x2="800" y2="584" stroke="#7c3aed"/>
+  <text x="510" y="602" font-size="11">JDBC · INSERT INTO pacientes (...)</text>
+  <text x="510" y="614" font-size="10" fill="#6b7280">persiste en MySQL</text>
+
+  <!-- Paciente -->
+  <rect x="660" y="290" width="170" height="60" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="745" y="310" text-anchor="middle" font-size="14" font-weight="bold">Paciente</text>
+  <line x1="660" y1="318" x2="830" y2="318" stroke="#dc2626"/>
+  <text x="670" y="336" font-size="11">codigo, nombreCompleto, edad</text>
+
+  <!-- Principal -->
+  <rect x="640" y="146" width="190" height="72" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="735" y="166" text-anchor="middle" font-size="14" font-weight="bold">Principal (main)</text>
+  <line x1="640" y1="174" x2="830" y2="174" stroke="#6b7280"/>
+  <text x="650" y="192" font-size="11">crea PacienteDAO y lo</text>
+  <text x="650" y="208" font-size="11">inyecta en el servicio</text>
+
+  <!-- relations -->
+  <line x1="430" y1="108" x2="430" y2="144" stroke="#374151" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="430" y1="218" x2="430" y2="254" stroke="#374151" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="430" y1="366" x2="430" y2="402" stroke="#374151" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="440" y="390" font-size="11" fill="#b91c1c" font-weight="bold">depende de la INTERFAZ</text>
+  <!-- implements -->
+  <path d="M210 556 L210 530 L370 530 L370 506" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#t)"/>
+  <path d="M650 556 L650 530 L490 530 L490 506" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#t)"/>
+  <text x="430" y="524" text-anchor="middle" font-size="11">implements</text>
+  <!-- Principal -> Servicio injection -->
+  <path d="M735 218 L735 236 L560 236 L560 254" fill="none" stroke="#374151" stroke-dasharray="3 3" marker-end="url(#a)"/>
+  <text x="650" y="230" font-size="10" fill="#6b7280">inyecta</text>
+  <!-- Interface uses Paciente -->
+  <path d="M590 440 L745 440 L745 352" fill="none" stroke="#374151" stroke-dasharray="3 3" marker-end="url(#a)"/>
+</svg>
