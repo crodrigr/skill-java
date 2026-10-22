@@ -1,19 +1,20 @@
 /**
  * ❌ El "antes": el servicio crea su propia dependencia con new.
- * Para cambiar de almacenamiento hay que EDITAR esta clase.
- * Ejecutar:  javac antes/ServicioAcoplado.java && java -cp antes ServicioAcoplado
+ * Para guardar en otro lugar hay que EDITAR esta clase.
+ *
+ * Ejecutar:  javac -d out0 antes/ServicioAcoplado.java && java -cp out0 ServicioAcoplado
  */
 public class ServicioAcoplado {
 
-    static class PacienteDAO {
-        void guardar(String nombre) { System.out.println("INSERT INTO pacientes ... " + nombre); }
+    static class AlmacenArchivo {
+        void guardar(String titulo) { System.out.println("Escribiendo en tareas.txt: " + titulo); }
     }
 
-    private final PacienteDAO repositorio = new PacienteDAO();   // atado a MySQL para siempre
+    private final AlmacenArchivo almacen = new AlmacenArchivo();   // atado al archivo para siempre
 
-    void registrar(String nombre) { repositorio.guardar(nombre); }
+    void crear(String titulo) { almacen.guardar(titulo); }
 
     public static void main(String[] args) {
-        new ServicioAcoplado().registrar("Ana Pérez");
+        new ServicioAcoplado().crear("Estudiar interfaces");
     }
 }

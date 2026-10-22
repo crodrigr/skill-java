@@ -2,38 +2,42 @@
 
 ## 🎯 Objetivo
 
-Reforzar, con ejemplos cortos, una idea que sostiene todo el proyecto MediSalud:
-**las capas no se conocen entre sí por su implementación, sino por una interfaz**, y
-alguien de afuera (el `main`) las conecta. Eso es la **inyección de dependencias**.
+Entender, con un programa pequeño y **completo que se puede ejecutar**, tres ideas que
+sostienen el proyecto final: **interfaz**, **separación en capas** e **inyección de
+dependencias**. Al terminar, deberías poder explicar por qué cambiar *dónde* se guardan
+los datos no obliga a tocar la lógica del programa.
 
 ## 🌍 Contexto
 
-En el proyecto final el servicio de pacientes necesita guardar pacientes, pero hoy
-pueden guardarse en memoria, en archivo o en MySQL. Si el servicio supiera *cómo* se
-guarda, cambiar el almacenamiento obligaría a reescribir el servicio. La interfaz
-resuelve eso: el servicio dice **qué** necesita, no **cómo** se hace.
+El ejemplo es una **lista de tareas por consola**: crear tareas, listarlas y marcarlas
+como completadas. Es deliberadamente simple para que el foco esté en la estructura, no
+en el problema.
+
+Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero en memoria
+(rápido, se pierde al cerrar) y después en un archivo (persiste). Si la lógica supiera
+*cómo* se guarda, cada cambio obligaría a reescribirla. La interfaz evita eso.
 
 ## 🧠 Las tres ideas en una frase
 
-| Idea | En una frase | En MediSalud |
+| Idea | En una frase | En el ejemplo |
 |---|---|---|
-| **Interfaz** | Un contrato: lista de operaciones, sin código | `RepositorioPacientes` |
-| **Separación de capas** | Cada capa habla solo con la de abajo, y a través de contratos | Controlador → Servicio → Repositorio |
-| **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioPacientes(pacienteDAO)` |
+| **Interfaz** | Un contrato: lista de operaciones, sin código | `RepositorioTareas` |
+| **Separación de capas** | Cada capa habla solo con la de abajo | Vista → Controlador → Servicio → Repositorio |
+| **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
 ## 🧱 Las capas del proyecto
 
 ```
-Vista            VistaConsola                 (pide y muestra datos)
+Vista            VistaConsola               (pide y muestra datos)
    │
-Controlador      ControladorMediSalud         (traduce la acción del usuario)
+Controlador      ControladorTareas          (traduce la acción del usuario)
    │
-Servicio         ServicioPacientes            (reglas de negocio)
+Servicio         ServicioTareas             (reglas de negocio)
    │  usa la INTERFAZ ▼
-Repositorio      «interface» RepositorioPacientes
+Repositorio      «interface» RepositorioTareas
    ▲                ▲
    │ implements     │ implements
-RepositorioPacientesMemoria     PacienteDAO (JDBC / MySQL)
+RepositorioTareasMemoria     RepositorioTareasArchivo
 ```
 
 El mismo esquema como diagrama de clases:
@@ -45,72 +49,194 @@ Las implementaciones también apuntan a la interfaz (la implementan). Por eso se
 **inversión de dependencias**: el detalle depende del contrato, no al revés.
 
 > ▶️ **Todo el código de esta guía se puede ejecutar**: ver [ejemplo-capas/](ejemplo-capas/README.md)
-> (`./ejecutar.sh dao|memoria|log`, sin Docker ni MySQL).
+> y la sección [📦 Proyecto completo](#-proyecto-completo-para-llevar-a-visual-studio-code).
 
-## 1️⃣ Paso 1 — El contrato (la interfaz)
-
-Archivo: `repository/RepositorioPacientes.java`
+## 0️⃣ Paso 0 — El problema: el servicio acoplado
 
 ```java
-public interface RepositorioPacientes {
-    void guardar(Paciente paciente);
-    Paciente buscarPorCodigo(String codigo);
-    List<Paciente> listarTodos();
+public class ServicioAcoplado {
+    private final AlmacenArchivo almacen = new AlmacenArchivo();   // ❌ new dentro del servicio
+
+    void crear(String titulo) { almacen.guardar(titulo); }
 }
 ```
 
-Solo firmas. Sin `{ }` de código, sin `ArrayList`, sin SQL. Dice **qué** se puede hacer.
+El servicio **crea** su dependencia. Queda atado al archivo: para guardar en memoria hay
+que editar el servicio, y para probarlo hay que tocar un archivo real.
+
+## 1️⃣ Paso 1 — El contrato (la interfaz)
+
+Archivo: `repository/RepositorioTareas.java`
+
+```java
+package com.tareas.repository;
+
+import com.tareas.entity.Tarea;
+import java.util.List;
+
+/** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */
+public interface RepositorioTareas {
+    void guardar(Tarea tarea);          // crea la tarea o reemplaza la que tenga el mismo id
+    Tarea buscarPorId(int id);          // null si no existe
+    List<Tarea> listarTodas();
+}
+```
+
+Solo firmas. Sin `{ }` de código, sin `Map`, sin archivos. Dice **qué** se puede hacer.
 
 ## 2️⃣ Paso 2 — Dos implementaciones del mismo contrato
 
 ```java
-// En memoria
-public class RepositorioPacientesMemoria implements RepositorioPacientes {
-    private final List<Paciente> pacientes = new ArrayList<>();
+package com.tareas.repository;
+
+import com.tareas.entity.Tarea;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/** Paso 2a — Guarda en memoria: al cerrar el programa se pierde todo. */
+public class RepositorioTareasMemoria implements RepositorioTareas {
+
+    private final Map<Integer, Tarea> tareas = new LinkedHashMap<>();
 
     @Override
-    public void guardar(Paciente paciente) { pacientes.add(paciente); }
-    // ...
-}
+    public void guardar(Tarea tarea) { tareas.put(tarea.getId(), tarea); }
 
-// En MySQL
-public class PacienteDAO implements RepositorioPacientes {
     @Override
-    public void guardar(Paciente paciente) {
-        String sql = "INSERT INTO pacientes (codigo, nombre_completo, edad) VALUES (?, ?, ?)";
-        // ... JDBC ...
-    }
-    // ...
+    public Tarea buscarPorId(int id) { return tareas.get(id); }
+
+    @Override
+    public List<Tarea> listarTodas() { return new ArrayList<>(tareas.values()); }
 }
 ```
 
-Mismo contrato, **cómo** distinto. El compilador exige que ambas cumplan todos los
-métodos de la interfaz.
+```java
+package com.tareas.repository;
+
+import com.tareas.entity.Tarea;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/** Paso 2b — Guarda en un archivo de texto: sobrevive entre ejecuciones. Formato: id;completada;titulo */
+public class RepositorioTareasArchivo implements RepositorioTareas {
+
+    private final Path archivo;
+
+    public RepositorioTareasArchivo(String rutaArchivo) {
+        this.archivo = Path.of(rutaArchivo);
+    }
+
+    @Override
+    public void guardar(Tarea tarea) {
+        Map<Integer, Tarea> todas = leer();
+        todas.put(tarea.getId(), tarea);
+        escribir(todas);
+    }
+
+    @Override
+    public Tarea buscarPorId(int id) { return leer().get(id); }
+
+    @Override
+    public List<Tarea> listarTodas() { return new ArrayList<>(leer().values()); }
+
+    private Map<Integer, Tarea> leer() {
+        Map<Integer, Tarea> tareas = new LinkedHashMap<>();
+        if (!Files.exists(archivo)) return tareas;
+        try {
+            for (String linea : Files.readAllLines(archivo, StandardCharsets.UTF_8)) {
+                String[] partes = linea.split(";", 3);
+                int id = Integer.parseInt(partes[0]);
+                tareas.put(id, new Tarea(id, partes[2], Boolean.parseBoolean(partes[1])));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return tareas;
+    }
+
+    private void escribir(Map<Integer, Tarea> tareas) {
+        List<String> lineas = new ArrayList<>();
+        for (Tarea t : tareas.values()) {
+            lineas.add(t.getId() + ";" + t.isCompletada() + ";" + t.getTitulo());
+        }
+        try {
+            Files.write(archivo, lineas, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+}
+```
+
+Mismo contrato, **cómo** distinto: una usa un `Map`, la otra lee y escribe `tareas.txt`.
+El compilador exige que ambas cumplan todos los métodos de la interfaz.
 
 ## 3️⃣ Paso 3 — El servicio depende de la interfaz
 
-Archivo: `service/ServicioPacientes.java`
+Archivo: `service/ServicioTareas.java`
 
 ```java
-public class ServicioPacientes {
+package com.tareas.service;
 
-    private final RepositorioPacientes repositorioPacientes;   // tipo = interfaz
+import com.tareas.entity.Tarea;
+import com.tareas.repository.RepositorioTareas;
+import java.util.List;
 
-    public ServicioPacientes(RepositorioPacientes repositorioPacientes) {
-        this.repositorioPacientes = repositorioPacientes;      // lo RECIBE
+/** Paso 3 — Reglas de negocio. Depende de la INTERFAZ y la recibe por constructor. */
+public class ServicioTareas {
+
+    private final RepositorioTareas repositorio;   // tipo = interfaz, nunca una clase concreta
+
+    public ServicioTareas(RepositorioTareas repositorio) {
+        this.repositorio = repositorio;            // lo RECIBE, no hace new
     }
 
-    public void registrarPaciente(Paciente paciente) {
-        repositorioPacientes.guardar(paciente);
+    public Tarea crear(String titulo) {
+        if (titulo == null || titulo.isBlank()) {
+            throw new IllegalArgumentException("El título no puede estar vacío");
+        }
+        Tarea tarea = new Tarea(siguienteId(), titulo.trim(), false);
+        repositorio.guardar(tarea);
+        return tarea;
+    }
+
+    public Tarea completar(int id) {
+        Tarea tarea = repositorio.buscarPorId(id);
+        if (tarea == null) {
+            throw new IllegalArgumentException("No existe la tarea " + id);
+        }
+        tarea.marcarCompletada();
+        repositorio.guardar(tarea);
+        return tarea;
+    }
+
+    public List<Tarea> listar() {
+        return repositorio.listarTodas();
+    }
+
+    private int siguienteId() {
+        int mayor = 0;
+        for (Tarea t : repositorio.listarTodas()) {
+            mayor = Math.max(mayor, t.getId());
+        }
+        return mayor + 1;
     }
 }
 ```
 
 Fijate en dos detalles:
 
-- El campo es de tipo `RepositorioPacientes`, **no** `PacienteDAO`.
-- No hay ningún `new PacienteDAO()` dentro del servicio. Si lo hubiera, quedaría
-  atado a MySQL para siempre.
+- El campo es de tipo `RepositorioTareas`, **no** `RepositorioTareasArchivo`.
+- No hay ningún `new RepositorioTareas...()` dentro del servicio. Si lo hubiera,
+  quedaría atado a esa implementación para siempre.
 
 ## 4️⃣ Paso 4 — Alguien lo conecta (la inyección)
 
@@ -118,76 +244,77 @@ Archivo: `Principal.java`, el único lugar que sabe qué implementación se usa.
 clase **completa**, para ver cómo se integran todas las capas:
 
 ```java
-package com.medisalud;
+package com.tareas;
 
-import com.medisalud.controlador.ControladorMediSalud;
-import com.medisalud.repository.AlmacenPacientesLog;
-import com.medisalud.repository.PacienteDAO;
-import com.medisalud.repository.RepositorioPacientes;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioPacientes;
-import com.medisalud.vista.VistaConsola;
+import com.tareas.controlador.ControladorTareas;
+import com.tareas.repository.RepositorioTareas;
+import com.tareas.repository.RepositorioTareasArchivo;
+import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.service.ServicioTareas;
+import com.tareas.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
  *
- * Uso: java com.medisalud.Principal [dao | memoria | log]      (por defecto: dao)
+ * Uso: java com.tareas.Principal [archivo | memoria]      (por defecto: archivo)
  */
 public class Principal {
 
     public static void main(String[] args) {
-        String modo = args.length > 0 ? args[0] : "dao";
+        String modo = args.length > 0 ? args[0] : "archivo";
 
-        RepositorioPacientes repositorio = switch (modo) {
-            case "memoria" -> new RepositorioPacientesMemoria();
-            case "log"     -> new AlmacenPacientesLog();
-            default        -> new PacienteDAO();
-        };
-        System.out.println("Repositorio en uso: " + repositorio.getClass().getSimpleName());
+        // 1) Se elige y se CREA la implementación (lo más profundo, primero)
+        RepositorioTareas repositorio = modo.equals("memoria")
+                ? new RepositorioTareasMemoria()
+                : new RepositorioTareasArchivo("tareas.txt");
+        System.out.println("Guardando con: " + repositorio.getClass().getSimpleName());
 
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorio);   // inyección
-        ControladorMediSalud controlador = new ControladorMediSalud(servicioPacientes, new VistaConsola());
+        // 2) Se INYECTA en el servicio (el servicio solo ve la interfaz)
+        ServicioTareas servicio = new ServicioTareas(repositorio);
+
+        // 3) Se inyecta el servicio en el controlador, junto con la vista
+        ControladorTareas controlador = new ControladorTareas(servicio, new VistaConsola());
+
+        // 4) Arranca la aplicación
         controlador.iniciar();
     }
 }
 ```
 
-### 🔍 Cómo se integra, línea por línea
+### 🔍 Cómo se integra
 
 | Pieza | Qué hace | Qué sabe de las demás |
 |---|---|---|
-| `RepositorioPacientes repositorio = switch (modo) {...}` | Elige y **crea** la implementación | Es la única que nombra `PacienteDAO`, `RepositorioPacientesMemoria` y `AlmacenPacientesLog` |
-| `new ServicioPacientes(repositorio)` | **Inyecta**: entrega la dependencia al constructor | El servicio solo recibe un `RepositorioPacientes` |
-| `new ControladorMediSalud(servicioPacientes, new VistaConsola())` | Conecta el controlador con el servicio y la vista | El controlador no conoce el repositorio |
+| `new RepositorioTareasArchivo(...)` / `Memoria()` | **Crea** la implementación | Es la única clase que las nombra |
+| `new ServicioTareas(repositorio)` | **Inyecta**: entrega la dependencia al constructor | El servicio solo ve la interfaz |
+| `new ControladorTareas(servicio, new VistaConsola())` | Conecta controlador, servicio y vista | El controlador no conoce el repositorio |
 | `controlador.iniciar()` | Arranca el menú | — |
 
-El orden de armado va **de abajo hacia arriba**: primero el repositorio, luego el
-servicio que lo recibe, luego el controlador que recibe el servicio. Las llamadas en
-tiempo de ejecución van en sentido contrario: vista → controlador → servicio → repositorio.
+El orden de armado va **de abajo hacia arriba** (repositorio → servicio → controlador).
+Las llamadas en ejecución van al revés: vista → controlador → servicio → repositorio.
 
 **Eso es inyectar**: el `main` crea la dependencia y se la entrega al constructor.
-Para cambiar a memoria, se modifica una sola línea (o se ejecuta con el argumento `memoria`):
+Para cambiar el almacenamiento solo cambia la creación del repositorio en `Principal`:
 
 ```java
-RepositorioPacientes repositorio = new RepositorioPacientesMemoria();
-ServicioPacientes servicioPacientes = new ServicioPacientes(repositorio);
+RepositorioTareas repositorio = new RepositorioTareasMemoria();   // antes: ...Archivo("tareas.txt")
+ServicioTareas servicio = new ServicioTareas(repositorio);        // esta línea no cambia
 ```
 
-`ServicioPacientes` no se toca. No se recompila su lógica, no se vuelve a probar su
-código: no se enteró del cambio.
+`ServicioTareas` no se toca. No se vuelve a probar su lógica: no se enteró del cambio.
 
 ## ❌ Antes y ✅ después
 
 ```java
 // ❌ Acoplado: el servicio crea su propia dependencia
-public class ServicioPacientes {
-    private final PacienteDAO repositorio = new PacienteDAO();
+public class ServicioTareas {
+    private final RepositorioTareasArchivo repositorio = new RepositorioTareasArchivo("tareas.txt");
 }
 
 // ✅ Desacoplado: el servicio recibe un contrato
-public class ServicioPacientes {
-    private final RepositorioPacientes repositorio;
-    public ServicioPacientes(RepositorioPacientes repositorio) {
+public class ServicioTareas {
+    private final RepositorioTareas repositorio;
+    public ServicioTareas(RepositorioTareas repositorio) {
         this.repositorio = repositorio;
     }
 }
@@ -195,59 +322,84 @@ public class ServicioPacientes {
 
 | | ❌ Acoplado | ✅ Con interfaz + inyección |
 |---|---|---|
-| Cambiar MySQL por memoria | Editar el servicio | Editar una línea del `main` |
-| Probar el servicio sin base de datos | Imposible | Inyectar la versión en memoria |
+| Cambiar archivo por memoria | Editar el servicio | Cambiar una línea del `main` |
+| Probar el servicio sin tocar archivos | Imposible | Inyectar la versión en memoria |
 | Quién decide la implementación | La propia clase | El que ensambla (`main`) |
 
-## 🧪 Beneficio práctico: probar sin MySQL
-
-Una tercera implementación, escrita solo para probar, cabe en pocas líneas:
+## 🧪 Beneficio práctico: probar sin archivos ni menú
 
 ```java
-RepositorioPacientes falso = new RepositorioPacientesMemoria();
-ServicioPacientes servicio = new ServicioPacientes(falso);
+import com.tareas.repository.RepositorioTareas;
+import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.service.ServicioTareas;
 
-servicio.registrarPaciente(new Paciente("Ana Pérez", "P-001", 30));
-System.out.println(servicio.listarTodos().size());   // 1, sin Docker ni base de datos
+/**
+ * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.
+ * Ejecutar:  ./ejecutar.sh memoria < /dev/null   (compila en out/)  y luego
+ *            javac -cp out -d out Prueba.java && java -cp out Prueba
+ */
+public class Prueba {
+
+    public static void main(String[] args) {
+        RepositorioTareas repositorio = new RepositorioTareasMemoria();
+        ServicioTareas servicio = new ServicioTareas(repositorio);
+
+        servicio.crear("Estudiar interfaces");
+        servicio.crear("Hacer el ejercicio");
+        servicio.completar(1);
+
+        servicio.listar().forEach(System.out::println);
+        System.out.println(servicio.listar().size() == 2 ? "OK: 2 tareas" : "FALLO");
+
+        try {
+            servicio.crear("   ");
+            System.out.println("FALLO: debió rechazar el título vacío");
+        } catch (IllegalArgumentException e) {
+            System.out.println("OK: " + e.getMessage());
+        }
+    }
+}
 ```
 
-## 🔗 Dónde más aparece el mismo patrón en el proyecto
+La prueba usa la versión en memoria: no crea `tareas.txt` y el servicio es el mismo que
+usa la aplicación real.
 
-> 🔗 **Ejemplos de este concepto en la solución**
+> 🔗 **Ejemplos de este concepto en el proyecto final**
 >
 > - `service/EstrategiaCosto.java` — la interfaz es el contrato de cálculo; hay dos
 >   implementaciones (`EstrategiaCostoConsultaGeneral`, `EstrategiaCostoConsultaEspecialista`).
-> - `repository/RepositorioCitas.java` y `RepositorioMedicos.java` — mismo esquema que
->   pacientes, con versión en memoria y versión DAO.
+> - `repository/RepositorioPacientes.java` — mismo esquema que `RepositorioTareas`, con
+>   versión en memoria y versión DAO (`PacienteDAO`).
 > - `notificacion/ObservadorCita.java` — el servicio avisa a "alguien" sin saber a quién.
 > - `Principal.java` — el ensamblado completo: crea los DAO y los inyecta en los servicios.
 
 ## 📦 Proyecto completo para llevar a Visual Studio Code
 
-Todo el código de la guía en un proyecto que compila y corre. No necesita Docker ni
-MySQL: `PacienteDAO` **simula** JDBC (imprime el SQL y guarda en un mapa). Existe también
-una copia lista en [ejemplo-capas/](ejemplo-capas/README.md).
+Todo el código de la guía en un proyecto que compila y corre, sin dependencias externas.
+Existe también una copia lista en [ejemplo-capas/](ejemplo-capas/README.md).
 
 ### 🌳 Árbol de archivos
 
 ```
 ejemplo-capas/
 ├── ejecutar.sh                                  ← compila y ejecuta (opcional)
+├── Prueba.java                                  ← prueba sin menú ni archivos
+├── antes/
+│   └── ServicioAcoplado.java                    ← Paso 0: el ❌ acoplado
 └── src/
     └── com/
-        └── medisalud/
+        └── tareas/
             ├── Principal.java                   ← Paso 4: ensambla e inyecta
             ├── entity/
-            │   └── Paciente.java
+            │   └── Tarea.java
             ├── repository/
-            │   ├── RepositorioPacientes.java        ← Paso 1: contrato «interface»
-            │   ├── RepositorioPacientesMemoria.java ← Paso 2a
-            │   ├── PacienteDAO.java                 ← Paso 2b
-            │   └── AlmacenPacientesLog.java         ← ejercicio corto
+            │   ├── RepositorioTareas.java           ← Paso 1: contrato «interface»
+            │   ├── RepositorioTareasMemoria.java    ← Paso 2a
+            │   └── RepositorioTareasArchivo.java    ← Paso 2b
             ├── service/
-            │   └── ServicioPacientes.java       ← Paso 3
+            │   └── ServicioTareas.java          ← Paso 3
             ├── controlador/
-            │   └── ControladorMediSalud.java
+            │   └── ControladorTareas.java
             └── vista/
                 └── VistaConsola.java
 ```
@@ -258,353 +410,400 @@ ejemplo-capas/
 2. Creá la carpeta `ejemplo-capas/` y abrila con *File → Open Folder*.
 3. Creá cada archivo con la **ruta exacta** del árbol (el `package` de cada archivo
    debe coincidir con su carpeta) y pegá el código de abajo.
-4. Ejecutá desde la terminal de VS Code, parado en `ejemplo-capas/`:
+4. Desde la terminal de VS Code, parado en `ejemplo-capas/`:
 
 ```bash
 mkdir out
 javac -encoding UTF-8 -d out $(find src -name '*.java')
-java -cp out com.medisalud.Principal dao        # dao | memoria | log
+java -cp out com.tareas.Principal archivo      # archivo | memoria
 ```
 
-   O abrí `Principal.java` y pulsá **▶ Run** sobre el `main`. Menú: `1` registrar,
-   `2` listar, `3` buscar, `0` salir.
+   O abrí `Principal.java` y pulsá **▶ Run** sobre el `main`. Menú: `1` crear,
+   `2` listar, `3` completar, `0` salir.
 
-> 🔎 Para analizarlo: poné un punto de interrupción en `ServicioPacientes.registrarPaciente`
-> y ejecutá con *Debug*. Verás que `repositorioPacientes` apunta a `PacienteDAO`, a
-> `RepositorioPacientesMemoria` o a `AlmacenPacientesLog` según el argumento, sin que el
-> servicio cambie.
+> 🔎 **Para analizarlo**
+> - Ejecutá con `archivo`, creá dos tareas, salí y volvé a entrar: siguen ahí
+>   (mirá el `tareas.txt` que aparece). Con `memoria` desaparecen.
+> - Poné un punto de interrupción en `ServicioTareas.crear` y usá *Debug*: verás que
+>   `repositorio` apunta a una clase u otra según el argumento, sin que el servicio cambie.
 
 ### 📄 Código de cada archivo
 
-#### `src/com/medisalud/entity/Paciente.java` — Entidad
+#### `src/com/tareas/entity/Tarea.java` — Entidad
 
 ```java
-package com.medisalud.entity;
+package com.tareas.entity;
 
-public class Paciente {
+public class Tarea {
 
-    private final String nombreCompleto;
-    private final String codigo;
-    private final int edad;
+    private final int id;
+    private final String titulo;
+    private boolean completada;
 
-    public Paciente(String nombreCompleto, String codigo, int edad) {
-        this.nombreCompleto = nombreCompleto;
-        this.codigo = codigo;
-        this.edad = edad;
+    public Tarea(int id, String titulo, boolean completada) {
+        this.id = id;
+        this.titulo = titulo;
+        this.completada = completada;
     }
 
-    public String getNombreCompleto() { return nombreCompleto; }
-    public String getCodigo() { return codigo; }
-    public int getEdad() { return edad; }
+    public int getId() { return id; }
+    public String getTitulo() { return titulo; }
+    public boolean isCompletada() { return completada; }
+
+    public void marcarCompletada() { this.completada = true; }
 
     @Override
     public String toString() {
-        return codigo + " | " + nombreCompleto + " | " + edad + " años";
+        return (completada ? "[x] " : "[ ] ") + id + " - " + titulo;
     }
 }
 ```
 
-#### `src/com/medisalud/repository/RepositorioPacientes.java` — Paso 1 — el contrato
+#### `src/com/tareas/repository/RepositorioTareas.java` — Paso 1 — el contrato
 
 ```java
-package com.medisalud.repository;
+package com.tareas.repository;
 
-import com.medisalud.entity.Paciente;
+import com.tareas.entity.Tarea;
 import java.util.List;
 
-/** Paso 1 — El contrato: solo firmas, sin código, sin ArrayList, sin SQL. */
-public interface RepositorioPacientes {
-    void guardar(Paciente paciente);
-    Paciente buscarPorCodigo(String codigo);
-    List<Paciente> listarTodos();
+/** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */
+public interface RepositorioTareas {
+    void guardar(Tarea tarea);          // crea la tarea o reemplaza la que tenga el mismo id
+    Tarea buscarPorId(int id);          // null si no existe
+    List<Tarea> listarTodas();
 }
 ```
 
-#### `src/com/medisalud/repository/RepositorioPacientesMemoria.java` — Paso 2a — en memoria
+#### `src/com/tareas/repository/RepositorioTareasMemoria.java` — Paso 2a — en memoria
 
 ```java
-package com.medisalud.repository;
+package com.tareas.repository;
 
-import com.medisalud.entity.Paciente;
-import java.util.ArrayList;
-import java.util.List;
-
-/** Paso 2a — Implementación en memoria. */
-public class RepositorioPacientesMemoria implements RepositorioPacientes {
-
-    private final List<Paciente> pacientes = new ArrayList<>();
-
-    @Override
-    public void guardar(Paciente paciente) { pacientes.add(paciente); }
-
-    @Override
-    public Paciente buscarPorCodigo(String codigo) {
-        for (Paciente p : pacientes) {
-            if (p.getCodigo().equals(codigo)) return p;
-        }
-        return null;
-    }
-
-    @Override
-    public List<Paciente> listarTodos() { return new ArrayList<>(pacientes); }
-}
-```
-
-#### `src/com/medisalud/repository/PacienteDAO.java` — Paso 2b — "base de datos" (JDBC simulado)
-
-```java
-package com.medisalud.repository;
-
-import com.medisalud.entity.Paciente;
+import com.tareas.entity.Tarea;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Paso 2b — Implementación "de base de datos".
- *
- * Para que el ejemplo se ejecute SIN Docker ni MySQL, la conexión JDBC está simulada:
- * se imprime el SQL que se ejecutaría y los datos se guardan en un mapa que hace de tabla.
- * En el proyecto final, cada método usa PreparedStatement sobre una Connection real.
- */
-public class PacienteDAO implements RepositorioPacientes {
+/** Paso 2a — Guarda en memoria: al cerrar el programa se pierde todo. */
+public class RepositorioTareasMemoria implements RepositorioTareas {
 
-    private final Map<String, Paciente> tablaPacientes = new LinkedHashMap<>();
+    private final Map<Integer, Tarea> tareas = new LinkedHashMap<>();
 
     @Override
-    public void guardar(Paciente paciente) {
-        String sql = "INSERT INTO pacientes (codigo, nombre_completo, edad) VALUES (?, ?, ?)";
-        System.out.println("   [SQL] " + sql + "  -- " + paciente.getCodigo() + ", "
-                + paciente.getNombreCompleto() + ", " + paciente.getEdad());
-        tablaPacientes.put(paciente.getCodigo(), paciente);
-    }
+    public void guardar(Tarea tarea) { tareas.put(tarea.getId(), tarea); }
 
     @Override
-    public Paciente buscarPorCodigo(String codigo) {
-        System.out.println("   [SQL] SELECT * FROM pacientes WHERE codigo = ?  -- " + codigo);
-        return tablaPacientes.get(codigo);
-    }
+    public Tarea buscarPorId(int id) { return tareas.get(id); }
 
     @Override
-    public List<Paciente> listarTodos() {
-        System.out.println("   [SQL] SELECT * FROM pacientes");
-        return new ArrayList<>(tablaPacientes.values());
-    }
+    public List<Tarea> listarTodas() { return new ArrayList<>(tareas.values()); }
 }
 ```
 
-#### `src/com/medisalud/repository/AlmacenPacientesLog.java` — Ejercicio corto resuelto
+#### `src/com/tareas/repository/RepositorioTareasArchivo.java` — Paso 2b — en archivo
 
 ```java
-package com.medisalud.repository;
+package com.tareas.repository;
 
-import com.medisalud.entity.Paciente;
+import com.tareas.entity.Tarea;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-/** Ejercicio corto resuelto — una tercera implementación; el servicio no cambia. */
-public class AlmacenPacientesLog implements RepositorioPacientes {
+/** Paso 2b — Guarda en un archivo de texto: sobrevive entre ejecuciones. Formato: id;completada;titulo */
+public class RepositorioTareasArchivo implements RepositorioTareas {
 
-    private final List<Paciente> pacientes = new ArrayList<>();
+    private final Path archivo;
 
-    @Override
-    public void guardar(Paciente paciente) {
-        pacientes.add(paciente);
-        System.out.println("   Guardado: " + paciente.getNombreCompleto());
+    public RepositorioTareasArchivo(String rutaArchivo) {
+        this.archivo = Path.of(rutaArchivo);
     }
 
     @Override
-    public Paciente buscarPorCodigo(String codigo) {
-        for (Paciente p : pacientes) {
-            if (p.getCodigo().equals(codigo)) return p;
-        }
-        return null;
+    public void guardar(Tarea tarea) {
+        Map<Integer, Tarea> todas = leer();
+        todas.put(tarea.getId(), tarea);
+        escribir(todas);
     }
 
     @Override
-    public List<Paciente> listarTodos() { return new ArrayList<>(pacientes); }
-}
-```
+    public Tarea buscarPorId(int id) { return leer().get(id); }
 
-#### `src/com/medisalud/service/ServicioPacientes.java` — Paso 3 — el servicio
+    @Override
+    public List<Tarea> listarTodas() { return new ArrayList<>(leer().values()); }
 
-```java
-package com.medisalud.service;
-
-import com.medisalud.entity.Paciente;
-import com.medisalud.repository.RepositorioPacientes;
-import java.util.List;
-
-/** Paso 3 — El servicio depende de la INTERFAZ y la recibe por constructor. */
-public class ServicioPacientes {
-
-    private final RepositorioPacientes repositorioPacientes;   // tipo = interfaz
-
-    public ServicioPacientes(RepositorioPacientes repositorioPacientes) {
-        this.repositorioPacientes = repositorioPacientes;      // lo RECIBE
-    }
-
-    public void registrarPaciente(Paciente paciente) {
-        if (paciente.getEdad() < 0) {
-            throw new IllegalArgumentException("La edad no puede ser negativa");
+    private Map<Integer, Tarea> leer() {
+        Map<Integer, Tarea> tareas = new LinkedHashMap<>();
+        if (!Files.exists(archivo)) return tareas;
+        try {
+            for (String linea : Files.readAllLines(archivo, StandardCharsets.UTF_8)) {
+                String[] partes = linea.split(";", 3);
+                int id = Integer.parseInt(partes[0]);
+                tareas.put(id, new Tarea(id, partes[2], Boolean.parseBoolean(partes[1])));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        if (repositorioPacientes.buscarPorCodigo(paciente.getCodigo()) != null) {
-            throw new IllegalArgumentException("Ya existe el paciente " + paciente.getCodigo());
+        return tareas;
+    }
+
+    private void escribir(Map<Integer, Tarea> tareas) {
+        List<String> lineas = new ArrayList<>();
+        for (Tarea t : tareas.values()) {
+            lineas.add(t.getId() + ";" + t.isCompletada() + ";" + t.getTitulo());
         }
-        repositorioPacientes.guardar(paciente);
-    }
-
-    public Paciente buscarPorCodigo(String codigo) {
-        return repositorioPacientes.buscarPorCodigo(codigo);
-    }
-
-    public List<Paciente> listarTodos() {
-        return repositorioPacientes.listarTodos();
+        try {
+            Files.write(archivo, lineas, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }
 ```
 
-#### `src/com/medisalud/vista/VistaConsola.java` — Vista
+#### `src/com/tareas/service/ServicioTareas.java` — Paso 3 — el servicio
 
 ```java
-package com.medisalud.vista;
+package com.tareas.service;
 
-import com.medisalud.entity.Paciente;
+import com.tareas.entity.Tarea;
+import com.tareas.repository.RepositorioTareas;
+import java.util.List;
+
+/** Paso 3 — Reglas de negocio. Depende de la INTERFAZ y la recibe por constructor. */
+public class ServicioTareas {
+
+    private final RepositorioTareas repositorio;   // tipo = interfaz, nunca una clase concreta
+
+    public ServicioTareas(RepositorioTareas repositorio) {
+        this.repositorio = repositorio;            // lo RECIBE, no hace new
+    }
+
+    public Tarea crear(String titulo) {
+        if (titulo == null || titulo.isBlank()) {
+            throw new IllegalArgumentException("El título no puede estar vacío");
+        }
+        Tarea tarea = new Tarea(siguienteId(), titulo.trim(), false);
+        repositorio.guardar(tarea);
+        return tarea;
+    }
+
+    public Tarea completar(int id) {
+        Tarea tarea = repositorio.buscarPorId(id);
+        if (tarea == null) {
+            throw new IllegalArgumentException("No existe la tarea " + id);
+        }
+        tarea.marcarCompletada();
+        repositorio.guardar(tarea);
+        return tarea;
+    }
+
+    public List<Tarea> listar() {
+        return repositorio.listarTodas();
+    }
+
+    private int siguienteId() {
+        int mayor = 0;
+        for (Tarea t : repositorio.listarTodas()) {
+            mayor = Math.max(mayor, t.getId());
+        }
+        return mayor + 1;
+    }
+}
+```
+
+#### `src/com/tareas/vista/VistaConsola.java` — Vista
+
+```java
+package com.tareas.vista;
+
+import com.tareas.entity.Tarea;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-/** Pide y muestra datos. No conoce el servicio ni el repositorio. */
+/** Capa de vista: solo pide y muestra datos. No conoce el servicio ni el repositorio. */
 public class VistaConsola {
 
     private final Scanner entrada = new Scanner(System.in);
 
     public int pedirOpcion() {
-        System.out.println("\n1) Registrar paciente  2) Listar  3) Buscar por código  0) Salir");
+        System.out.println("\n1) Crear tarea  2) Listar  3) Completar  0) Salir");
         System.out.print("> ");
         try {
             return Integer.parseInt(entrada.nextLine().trim());
         } catch (NumberFormatException e) {
             return -1;
         } catch (NoSuchElementException e) {
-            return 0;   // fin de la entrada
+            return 0;   // se acabó la entrada
         }
     }
 
-    public Paciente pedirDatosPaciente() {
-        System.out.print("Nombre completo: ");
-        String nombre = entrada.nextLine();
-        System.out.print("Código: ");
-        String codigo = entrada.nextLine();
-        System.out.print("Edad: ");
-        int edad;
-        try {
-            edad = Integer.parseInt(entrada.nextLine().trim());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("La edad debe ser un número");
-        }
-        return new Paciente(nombre, codigo, edad);
-    }
-
-    public String pedirCodigo() {
-        System.out.print("Código: ");
+    public String pedirTexto(String etiqueta) {
+        System.out.print(etiqueta + ": ");
         return entrada.nextLine();
     }
 
-    public void mostrarPacientes(List<Paciente> pacientes) {
-        if (pacientes.isEmpty()) System.out.println("(sin pacientes)");
-        pacientes.forEach(System.out::println);
+    public int pedirNumero(String etiqueta) {
+        try {
+            return Integer.parseInt(pedirTexto(etiqueta).trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Debe ser un número");
+        }
+    }
+
+    public void mostrarTareas(List<Tarea> tareas) {
+        if (tareas.isEmpty()) System.out.println("(no hay tareas)");
+        tareas.forEach(System.out::println);
     }
 
     public void mostrarMensaje(String mensaje) { System.out.println(mensaje); }
 }
 ```
 
-#### `src/com/medisalud/controlador/ControladorMediSalud.java` — Controlador
+#### `src/com/tareas/controlador/ControladorTareas.java` — Controlador
 
 ```java
-package com.medisalud.controlador;
+package com.tareas.controlador;
 
-import com.medisalud.entity.Paciente;
-import com.medisalud.service.ServicioPacientes;
-import com.medisalud.vista.VistaConsola;
+import com.tareas.service.ServicioTareas;
+import com.tareas.vista.VistaConsola;
 
-/** Traduce la acción del usuario en llamadas al servicio. */
-public class ControladorMediSalud {
+/** Capa de controlador: traduce lo que hace el usuario en llamadas al servicio. */
+public class ControladorTareas {
 
-    private final ServicioPacientes servicioPacientes;
+    private final ServicioTareas servicio;
     private final VistaConsola vista;
 
-    public ControladorMediSalud(ServicioPacientes servicioPacientes, VistaConsola vista) {
-        this.servicioPacientes = servicioPacientes;
+    public ControladorTareas(ServicioTareas servicio, VistaConsola vista) {
+        this.servicio = servicio;
         this.vista = vista;
     }
 
     public void iniciar() {
         boolean seguir = true;
         while (seguir) {
-            switch (vista.pedirOpcion()) {
-                case 1 -> registrar();
-                case 2 -> vista.mostrarPacientes(servicioPacientes.listarTodos());
-                case 3 -> buscar();
-                case 0 -> seguir = false;
-                default -> vista.mostrarMensaje("Opción no válida");
+            try {
+                switch (vista.pedirOpcion()) {
+                    case 1 -> vista.mostrarMensaje("Creada: " + servicio.crear(vista.pedirTexto("Título")));
+                    case 2 -> vista.mostrarTareas(servicio.listar());
+                    case 3 -> vista.mostrarMensaje("Completada: " + servicio.completar(vista.pedirNumero("Id")));
+                    case 0 -> seguir = false;
+                    default -> vista.mostrarMensaje("Opción no válida");
+                }
+            } catch (IllegalArgumentException e) {
+                vista.mostrarMensaje("Error: " + e.getMessage());
             }
         }
         vista.mostrarMensaje("Hasta luego");
     }
-
-    private void registrar() {
-        try {
-            Paciente p = vista.pedirDatosPaciente();
-            servicioPacientes.registrarPaciente(p);
-            vista.mostrarMensaje("Paciente registrado");
-        } catch (IllegalArgumentException e) {
-            vista.mostrarMensaje("Error: " + e.getMessage());
-        }
-    }
-
-    private void buscar() {
-        Paciente p = servicioPacientes.buscarPorCodigo(vista.pedirCodigo());
-        vista.mostrarMensaje(p == null ? "No encontrado" : p.toString());
-    }
 }
 ```
 
-#### `src/com/medisalud/Principal.java` — Paso 4 — la inyección
+#### `src/com/tareas/Principal.java` — Paso 4 — la inyección
 
 ```java
-package com.medisalud;
+package com.tareas;
 
-import com.medisalud.controlador.ControladorMediSalud;
-import com.medisalud.repository.AlmacenPacientesLog;
-import com.medisalud.repository.PacienteDAO;
-import com.medisalud.repository.RepositorioPacientes;
-import com.medisalud.repository.RepositorioPacientesMemoria;
-import com.medisalud.service.ServicioPacientes;
-import com.medisalud.vista.VistaConsola;
+import com.tareas.controlador.ControladorTareas;
+import com.tareas.repository.RepositorioTareas;
+import com.tareas.repository.RepositorioTareasArchivo;
+import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.service.ServicioTareas;
+import com.tareas.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
  *
- * Uso: java com.medisalud.Principal [dao | memoria | log]      (por defecto: dao)
+ * Uso: java com.tareas.Principal [archivo | memoria]      (por defecto: archivo)
  */
 public class Principal {
 
     public static void main(String[] args) {
-        String modo = args.length > 0 ? args[0] : "dao";
+        String modo = args.length > 0 ? args[0] : "archivo";
 
-        RepositorioPacientes repositorio = switch (modo) {
-            case "memoria" -> new RepositorioPacientesMemoria();
-            case "log"     -> new AlmacenPacientesLog();
-            default        -> new PacienteDAO();
-        };
-        System.out.println("Repositorio en uso: " + repositorio.getClass().getSimpleName());
+        // 1) Se elige y se CREA la implementación (lo más profundo, primero)
+        RepositorioTareas repositorio = modo.equals("memoria")
+                ? new RepositorioTareasMemoria()
+                : new RepositorioTareasArchivo("tareas.txt");
+        System.out.println("Guardando con: " + repositorio.getClass().getSimpleName());
 
-        ServicioPacientes servicioPacientes = new ServicioPacientes(repositorio);   // inyección
-        ControladorMediSalud controlador = new ControladorMediSalud(servicioPacientes, new VistaConsola());
+        // 2) Se INYECTA en el servicio (el servicio solo ve la interfaz)
+        ServicioTareas servicio = new ServicioTareas(repositorio);
+
+        // 3) Se inyecta el servicio en el controlador, junto con la vista
+        ControladorTareas controlador = new ControladorTareas(servicio, new VistaConsola());
+
+        // 4) Arranca la aplicación
         controlador.iniciar();
+    }
+}
+```
+
+#### `antes/ServicioAcoplado.java` — Paso 0 — el ❌ acoplado
+
+```java
+/**
+ * ❌ El "antes": el servicio crea su propia dependencia con new.
+ * Para guardar en otro lugar hay que EDITAR esta clase.
+ *
+ * Ejecutar:  javac -d out0 antes/ServicioAcoplado.java && java -cp out0 ServicioAcoplado
+ */
+public class ServicioAcoplado {
+
+    static class AlmacenArchivo {
+        void guardar(String titulo) { System.out.println("Escribiendo en tareas.txt: " + titulo); }
+    }
+
+    private final AlmacenArchivo almacen = new AlmacenArchivo();   // atado al archivo para siempre
+
+    void crear(String titulo) { almacen.guardar(titulo); }
+
+    public static void main(String[] args) {
+        new ServicioAcoplado().crear("Estudiar interfaces");
+    }
+}
+```
+
+#### `Prueba.java` — Prueba sin menú ni archivos
+
+```java
+import com.tareas.repository.RepositorioTareas;
+import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.service.ServicioTareas;
+
+/**
+ * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.
+ * Ejecutar:  ./ejecutar.sh memoria < /dev/null   (compila en out/)  y luego
+ *            javac -cp out -d out Prueba.java && java -cp out Prueba
+ */
+public class Prueba {
+
+    public static void main(String[] args) {
+        RepositorioTareas repositorio = new RepositorioTareasMemoria();
+        ServicioTareas servicio = new ServicioTareas(repositorio);
+
+        servicio.crear("Estudiar interfaces");
+        servicio.crear("Hacer el ejercicio");
+        servicio.completar(1);
+
+        servicio.listar().forEach(System.out::println);
+        System.out.println(servicio.listar().size() == 2 ? "OK: 2 tareas" : "FALLO");
+
+        try {
+            servicio.crear("   ");
+            System.out.println("FALLO: debió rechazar el título vacío");
+        } catch (IllegalArgumentException e) {
+            System.out.println("OK: " + e.getMessage());
+        }
     }
 }
 ```
@@ -613,21 +812,21 @@ public class Principal {
 
 ```bash
 #!/usr/bin/env bash
-# Uso: ./ejecutar.sh [dao|memoria|log]     (compila todo y ejecuta el menú)
+# Uso: ./ejecutar.sh [archivo|memoria]     (compila todo y ejecuta el menú)
 set -e
 cd "$(dirname "$0")"
 rm -rf out && mkdir out
 javac -encoding UTF-8 -d out $(find src -name '*.java')
-java -cp out com.medisalud.Principal "${1:-dao}"
+java -cp out com.tareas.Principal "${1:-archivo}"
 ```
 
 ## ⚠️ Errores comunes
 
-1. **Declarar el campo con la clase concreta** (`private PacienteDAO repo`). Aunque
-   inyectes por constructor, seguís acoplado.
+1. **Declarar el campo con la clase concreta** (`private RepositorioTareasArchivo repo`).
+   Aunque inyectes por constructor, seguís acoplado.
 2. **Hacer `new` de la implementación dentro del servicio.** Anula todo el beneficio.
-3. **Interfaz que filtra detalles** (`guardar(Connection c, Paciente p)`). Si el
-   contrato menciona SQL, la memoria no puede implementarlo.
+3. **Interfaz que filtra detalles** (`guardar(Path archivo, Tarea t)`). Si el contrato
+   menciona archivos, la versión en memoria no puede implementarlo.
 4. **Crear una interfaz por cada clase** sin necesidad. Se justifica cuando hay (o
    habrá) más de una implementación, o cuando separa una capa de otra.
 5. **Saltarse una capa**: que la vista llame directo al repositorio. Cada capa habla
@@ -636,22 +835,21 @@ java -cp out com.medisalud.Principal "${1:-dao}"
 ## 🧭 Regla de decisión rápida
 
 > ¿Esta clase necesita algo que pertenece a **otra capa** o que **podría cambiar**
-> (base de datos, archivo, cálculo, notificación)?
+> (dónde se guarda, un cálculo, un aviso)?
 > → Que dependa de una **interfaz** y que la **reciba por constructor**.
 
 ## ✅ Autoevaluación
 
-1. ¿Por qué `ServicioPacientes` no debe importar `PacienteDAO`?
-2. ¿Qué línea de `Principal.java` habría que cambiar para guardar en memoria?
-3. Si se agrega `RepositorioPacientesArchivo`, ¿qué clases existentes cambian?
+1. ¿Por qué `ServicioTareas` no debe importar `RepositorioTareasArchivo`?
+2. ¿Qué línea de `Principal.java` hay que cambiar para guardar en memoria?
+3. Si se agrega `RepositorioTareasBaseDatos`, ¿qué clases existentes cambian?
    *(Respuesta: ninguna; solo el `main` si se quiere usar.)*
 4. ¿Qué diferencia hay entre **implementar** una interfaz e **inyectarla**?
-5. Dibujá de memoria las flechas entre `ServicioPacientes`, `RepositorioPacientes` y
-   `PacienteDAO`. ¿Hacia dónde apuntan?
+5. Dibujá de memoria las flechas entre `ServicioTareas`, `RepositorioTareas` y
+   `RepositorioTareasArchivo`. ¿Hacia dónde apuntan?
 
 ## 🏋️ Ejercicio corto
 
-Creá `AlmacenPacientesLog implements RepositorioPacientes`, que además de guardar en
-una lista imprima `"Guardado: <nombre>"` en cada `guardar`. Inyectalo en
-`ServicioPacientes` desde un `main` de prueba y comprobá que el servicio **no
-necesitó ningún cambio**.
+Creá `RepositorioTareasLog implements RepositorioTareas`, que además de guardar en una
+lista imprima `"Guardada: <título>"` en cada `guardar`. Agregá un modo `log` en
+`Principal` y comprobá que `ServicioTareas` **no necesitó ningún cambio**.
