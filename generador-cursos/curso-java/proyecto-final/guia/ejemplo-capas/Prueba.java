@@ -4,8 +4,7 @@ import com.tareas.service.ServicioTareas;
 
 /**
  * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.
- * Ejecutar:  ./ejecutar.sh memoria < /dev/null   (compila en out/)  y luego
- *            javac -cp out -d out Prueba.java && java -cp out Prueba
+ * Ejecutar (con out/ ya compilado):  javac -cp out -d out Prueba.java && java -cp out Prueba
  */
 public class Prueba {
 

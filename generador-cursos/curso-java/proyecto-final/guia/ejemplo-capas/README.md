@@ -4,8 +4,10 @@ Código completo de la [guía de repaso](../guia-repaso-interfaces-capas.md): un
 tareas por consola. Sin dependencias externas. Requiere JDK 17 o superior.
 
 ```bash
-./ejecutar.sh            # guarda en tareas.txt (persiste entre ejecuciones)
-./ejecutar.sh memoria    # guarda en memoria (se pierde al salir)
+mkdir out
+javac -encoding UTF-8 -d out $(find src -name '*.java')
+java -cp out com.tareas.Principal archivo     # guarda en tareas.txt (persiste)
+java -cp out com.tareas.Principal memoria     # guarda en memoria (se pierde al salir)
 ```
 
 Menú: `1` crear, `2` listar, `3` completar, `0` salir.
@@ -40,9 +42,9 @@ javac -d out2 src/com/tareas/entity/*.java src/com/tareas/repository/*.java
 javac -d out3 src/com/tareas/entity/*.java src/com/tareas/repository/*.java src/com/tareas/service/*.java
 
 # Paso 4 — todo conectado
-./ejecutar.sh
+mkdir -p out && javac -encoding UTF-8 -d out $(find src -name '*.java') && java -cp out com.tareas.Principal
 
-# Prueba sin menú ni archivos (usa out/ generado por ejecutar.sh)
+# Prueba sin menú ni archivos (usa el out/ del paso 4)
 javac -cp out -d out Prueba.java && java -cp out Prueba
 ```
 

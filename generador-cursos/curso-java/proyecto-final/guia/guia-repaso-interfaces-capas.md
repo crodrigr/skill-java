@@ -335,8 +335,7 @@ import com.tareas.service.ServicioTareas;
 
 /**
  * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.
- * Ejecutar:  ./ejecutar.sh memoria < /dev/null   (compila en out/)  y luego
- *            javac -cp out -d out Prueba.java && java -cp out Prueba
+ * Ejecutar (con out/ ya compilado):  javac -cp out -d out Prueba.java && java -cp out Prueba
  */
 public class Prueba {
 
@@ -382,7 +381,6 @@ Existe también una copia lista en [ejemplo-capas/](ejemplo-capas/README.md).
 
 ```
 ejemplo-capas/
-├── ejecutar.sh                                  ← compila y ejecuta (opcional)
 ├── Prueba.java                                  ← prueba sin menú ni archivos
 ├── antes/
 │   └── ServicioAcoplado.java                    ← Paso 0: el ❌ acoplado
@@ -782,8 +780,7 @@ import com.tareas.service.ServicioTareas;
 
 /**
  * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.
- * Ejecutar:  ./ejecutar.sh memoria < /dev/null   (compila en out/)  y luego
- *            javac -cp out -d out Prueba.java && java -cp out Prueba
+ * Ejecutar (con out/ ya compilado):  javac -cp out -d out Prueba.java && java -cp out Prueba
  */
 public class Prueba {
 
@@ -806,18 +803,6 @@ public class Prueba {
         }
     }
 }
-```
-
-#### `ejecutar.sh` — Script de ejecución (opcional)
-
-```bash
-#!/usr/bin/env bash
-# Uso: ./ejecutar.sh [archivo|memoria]     (compila todo y ejecuta el menú)
-set -e
-cd "$(dirname "$0")"
-rm -rf out && mkdir out
-javac -encoding UTF-8 -d out $(find src -name '*.java')
-java -cp out com.tareas.Principal "${1:-archivo}"
 ```
 
 ## ⚠️ Errores comunes
