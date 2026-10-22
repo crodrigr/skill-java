@@ -1,4 +1,4 @@
-package com.tareas.entity;
+package com.tareas.model;
 
 public class Tarea {
 

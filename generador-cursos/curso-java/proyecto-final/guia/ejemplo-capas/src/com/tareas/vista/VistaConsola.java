@@ -1,6 +1,6 @@
 package com.tareas.vista;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;

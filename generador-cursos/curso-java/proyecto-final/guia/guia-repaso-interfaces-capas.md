@@ -14,7 +14,8 @@ como completadas. Es deliberadamente simple para que el foco esté en la estruct
 en el problema.
 
 Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero en memoria
-(rápido, se pierde al cerrar) y después en un archivo (persiste). Si la lógica supiera
+(rápido, se pierde al cerrar), después en un archivo (persiste) y por último en una
+base de datos MySQL. Si la lógica supiera
 *cómo* se guarda, cada cambio obligaría a reescribirla. La interfaz evita eso.
 
 ## 🧠 Las tres ideas en una frase
@@ -22,7 +23,7 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 | Idea | En una frase | En el ejemplo |
 |---|---|---|
 | **Interfaz** | Un contrato: lista de operaciones, sin código | `RepositorioTareas` |
-| **Separación de capas** | Cada capa conoce solo a la de abajo (el controlador usa la vista y el servicio) | Controlador → Servicio → Repositorio |
+| **Separación de capas** | Arquitectura **MVC con una capa de persistencia**: cada capa conoce solo a la de abajo | Controlador → Servicio → Repositorio → DAO |
 | **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
 ## 📚 Conceptos en lenguaje sencillo
@@ -76,7 +77,7 @@ forma, funciona.
 
 1. **Separar capas.** El servicio y el repositorio quedan conectados solo por el
    contrato. Cada capa puede cambiar por dentro sin romper a la otra.
-2. **Poder cambiar la implementación.** Memoria hoy, archivo mañana, base de datos
+2. **Poder cambiar la implementación.** Memoria hoy, archivo mañana, MySQL
    después: el servicio no se entera.
 3. **Poder probar sin cosas pesadas.** Se prueba el servicio con la versión en memoria,
    sin archivos ni bases de datos (ver `Prueba.java`).
@@ -107,6 +108,7 @@ La línea `repositorio.guardar(tarea)` es **la misma** siempre, pero lo que hace
 |---|---|
 | `RepositorioTareasMemoria` | Mete la tarea en un `Map` |
 | `RepositorioTareasArchivo` | Escribe una línea en `tareas.txt` |
+| `RepositorioTareasMySQL` | Delega en `TareaDAO`, que ejecuta un `INSERT` / `UPDATE` |
 
 Java decide **en tiempo de ejecución** cuál método llamar, según el objeto real. El
 servicio no pregunta "¿eres de memoria o de archivo?": simplemente llama al método y cada
@@ -131,6 +133,22 @@ implementación responde a su manera. Eso es polimorfismo.
 
 ## 🧱 Las capas del proyecto
 
+La arquitectura es **MVC con una capa de persistencia**:
+
+| Capa | Paquete | Clases | Responsabilidad |
+|---|---|---|---|
+| **M**odelo | `model` | `Tarea` | Los datos del dominio |
+| **V**ista | `vista` | `VistaConsola` | Pide y muestra datos |
+| **C**ontrolador | `controlador` | `ControladorTareas` | Traduce las acciones del usuario en llamadas al servicio |
+| Servicio | `service` | `ServicioTareas` | Reglas de negocio |
+| Persistencia · repositorio | `persistence.repository` | `RepositorioTareas` (interfaz) + `Memoria`, `Archivo`, `MySQL` | El contrato de guardado y sus formas de cumplirlo |
+| Persistencia · DAO | `persistence.dao` | `TareaDAO` | El acceso de bajo nivel a la base de datos (SQL / JDBC) |
+
+**¿Repositorio y DAO no son lo mismo?** No. El **repositorio** habla el idioma del
+negocio ("guardar una tarea") y es lo que ve el servicio. El **DAO** habla el idioma de la
+base de datos (`INSERT`, `ResultSet`, conexiones). `RepositorioTareasMySQL` cumple el
+contrato y le **delega** el SQL a `TareaDAO`; así el SQL vive en un solo lugar.
+
 ![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas-v2.svg)
 
 <details>
@@ -138,9 +156,9 @@ implementación responde a su manera. Eso es polimorfismo.
 
 | Línea | Qué significa | En el diagrama |
 |---|---|---|
-| **Continua con flecha** (→) | **Dependencia fuerte**: la clase de origen **guarda** a la otra como campo. | `ControladorTareas` → `VistaConsola` y `ServicioTareas`; `ServicioTareas` → `RepositorioTareas` |
-| **Punteada con flecha abierta** (⇢) | **Dependencia débil (uso)**: la clase **crea, recibe o usa** a la otra, pero no la guarda como campo. | `ServicioTareas` ⇢ `Tarea` (la crea); `Principal` ⇢ controlador, servicio y repositorio (los crea o inyecta) |
-| **Punteada con triángulo vacío** (⇢▷) | **Implementación** (`implements`): la clase cumple el contrato de la interfaz. | `RepositorioTareasMemoria` y `RepositorioTareasArchivo` ⇢▷ `RepositorioTareas` |
+| **Continua con flecha** (→) | **Dependencia fuerte**: la clase de origen **guarda** a la otra como campo. | `ControladorTareas` → `VistaConsola` y `ServicioTareas`; `ServicioTareas` → `RepositorioTareas`; `RepositorioTareasMySQL` → `TareaDAO` |
+| **Punteada con flecha abierta** (⇢) | **Dependencia débil (uso)**: la clase **crea, recibe o usa** a la otra, pero no la guarda como campo. | `ServicioTareas` ⇢ `Tarea` (la crea); `Principal` ⇢ controlador, servicio, repositorio y DAO (los crea o inyecta) |
+| **Punteada con triángulo vacío** (⇢▷) | **Implementación** (`implements`): la clase cumple el contrato de la interfaz. | `RepositorioTareasMemoria`, `RepositorioTareasArchivo` y `RepositorioTareasMySQL` ⇢▷ `RepositorioTareas` |
 
 La flecha siempre apunta **hacia la clase de la que se depende**: si `ControladorTareas`
 tiene un campo `VistaConsola`, la flecha sale del controlador y llega a la vista. La vista
@@ -170,12 +188,12 @@ que editar el servicio, y para probarlo hay que tocar un archivo real.
 
 ## 1️⃣ Paso 1 — El contrato (la interfaz)
 
-Archivo: `repository/RepositorioTareas.java`
+Archivo: `persistence/repository/RepositorioTareas.java`
 
 ```java
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.List;
 
 /** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */
@@ -188,12 +206,12 @@ public interface RepositorioTareas {
 
 Solo firmas. Sin `{ }` de código, sin `Map`, sin archivos. Dice **qué** se puede hacer.
 
-## 2️⃣ Paso 2 — Dos implementaciones del mismo contrato
+## 2️⃣ Paso 2 — Tres implementaciones del mismo contrato
 
 ```java
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -216,9 +234,9 @@ public class RepositorioTareasMemoria implements RepositorioTareas {
 ```
 
 ```java
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -281,7 +299,20 @@ public class RepositorioTareasArchivo implements RepositorioTareas {
 ```
 
 Mismo contrato, **cómo** distinto: una usa un `Map`, la otra lee y escribe `tareas.txt`.
-El compilador exige que ambas cumplan todos los métodos de la interfaz.
+El compilador exige que cumplan todos los métodos de la interfaz.
+
+**Paso 2c — MySQL con DAO.** La tercera implementación no escribe SQL: recibe un
+`TareaDAO` y le delega. El DAO es el único que conoce JDBC.
+
+```java
+public class RepositorioTareasMySQL implements RepositorioTareas {
+    private final TareaDAO dao;
+    public RepositorioTareasMySQL(TareaDAO dao) { this.dao = dao; }
+
+    @Override public void guardar(Tarea tarea) { dao.guardar(tarea); }
+    // buscarPorId y listarTodas delegan igual (código completo más abajo)
+}
+```
 
 ## 3️⃣ Paso 3 — El servicio depende de la interfaz
 
@@ -290,8 +321,8 @@ Archivo: `service/ServicioTareas.java`
 ```java
 package com.tareas.service;
 
-import com.tareas.entity.Tarea;
-import com.tareas.repository.RepositorioTareas;
+import com.tareas.model.Tarea;
+import com.tareas.persistence.repository.RepositorioTareas;
 import java.util.List;
 
 /** Paso 3 — Reglas de negocio. Depende de la INTERFAZ y la recibe por constructor. */
@@ -351,16 +382,20 @@ clase **completa**, para ver cómo se integran todas las capas:
 package com.tareas;
 
 import com.tareas.controlador.ControladorTareas;
-import com.tareas.repository.RepositorioTareas;
-import com.tareas.repository.RepositorioTareasArchivo;
-import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.dao.TareaDAO;
+import com.tareas.persistence.repository.RepositorioTareas;
+import com.tareas.persistence.repository.RepositorioTareasArchivo;
+import com.tareas.persistence.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.repository.RepositorioTareasMySQL;
 import com.tareas.service.ServicioTareas;
 import com.tareas.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
  *
- * Uso: java com.tareas.Principal [archivo | memoria]      (por defecto: archivo)
+ * Uso: java com.tareas.Principal [archivo | memoria | mysql]      (por defecto: archivo)
+ * Para mysql: variables de entorno TAREAS_DB_URL, TAREAS_DB_USER, TAREAS_DB_PASS
+ * y el conector de MySQL en el classpath.
  */
 public class Principal {
 
@@ -368,9 +403,14 @@ public class Principal {
         String modo = args.length > 0 ? args[0] : "archivo";
 
         // 1) Se elige y se CREA la implementación (lo más profundo, primero)
-        RepositorioTareas repositorio = modo.equals("memoria")
-                ? new RepositorioTareasMemoria()
-                : new RepositorioTareasArchivo("tareas.txt");
+        RepositorioTareas repositorio = switch (modo) {
+            case "memoria" -> new RepositorioTareasMemoria();
+            case "mysql" -> new RepositorioTareasMySQL(new TareaDAO(
+                    System.getenv().getOrDefault("TAREAS_DB_URL", "jdbc:mysql://localhost:3306/tareas"),
+                    System.getenv().getOrDefault("TAREAS_DB_USER", "root"),
+                    System.getenv().getOrDefault("TAREAS_DB_PASS", "")));
+            default -> new RepositorioTareasArchivo("tareas.txt");
+        };
         System.out.println("Guardando con: " + repositorio.getClass().getSimpleName());
 
         // 2) Se INYECTA en el servicio (el servicio solo ve la interfaz)
@@ -389,7 +429,7 @@ public class Principal {
 
 | Pieza | Qué hace | Qué sabe de las demás |
 |---|---|---|
-| `new RepositorioTareasArchivo(...)` / `Memoria()` | **Crea** la implementación | Es la única clase que las nombra |
+| `new RepositorioTareasArchivo(...)` / `Memoria()` / `MySQL(new TareaDAO(...))` | **Crea** la implementación (y el DAO, si hace falta) | Es la única clase que las nombra |
 | `new ServicioTareas(repositorio)` | **Inyecta**: entrega la dependencia al constructor | El servicio solo ve la interfaz |
 | `new ControladorTareas(servicio, new VistaConsola())` | Conecta controlador, servicio y vista | El controlador no conoce el repositorio |
 | `controlador.iniciar()` | Arranca el menú | — |
@@ -434,8 +474,8 @@ public class ServicioTareas {
 ## 🧪 Beneficio práctico: probar sin archivos ni menú
 
 ```java
-import com.tareas.repository.RepositorioTareas;
-import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.repository.RepositorioTareas;
+import com.tareas.persistence.repository.RepositorioTareasMemoria;
 import com.tareas.service.ServicioTareas;
 
 /**
@@ -493,18 +533,22 @@ ejemplo-capas/
     └── com/
         └── tareas/
             ├── Principal.java                   ← Paso 4: ensambla e inyecta
-            ├── entity/
-            │   └── Tarea.java
-            ├── repository/
-            │   ├── RepositorioTareas.java           ← Paso 1: contrato «interface»
-            │   ├── RepositorioTareasMemoria.java    ← Paso 2a
-            │   └── RepositorioTareasArchivo.java    ← Paso 2b
-            ├── service/
-            │   └── ServicioTareas.java          ← Paso 3
+            ├── model/
+            │   └── Tarea.java                   ← M: el modelo
+            ├── vista/
+            │   └── VistaConsola.java            ← V: pide y muestra
             ├── controlador/
-            │   └── ControladorTareas.java
-            └── vista/
-                └── VistaConsola.java
+            │   └── ControladorTareas.java       ← C: coordina vista y servicio
+            ├── service/
+            │   └── ServicioTareas.java          ← Paso 3: reglas de negocio
+            └── persistence/                     ← capa de persistencia
+                ├── dao/
+                │   └── TareaDAO.java            ← Paso 2c: el SQL (JDBC)
+                └── repository/
+                    ├── RepositorioTareas.java           ← Paso 1: contrato «interface»
+                    ├── RepositorioTareasMemoria.java    ← Paso 2a
+                    ├── RepositorioTareasArchivo.java    ← Paso 2b
+                    └── RepositorioTareasMySQL.java      ← Paso 2c (usa TareaDAO)
 ```
 
 ### 🛠️ Cómo armarlo en VS Code
@@ -532,10 +576,10 @@ java -cp out com.tareas.Principal archivo      # archivo | memoria
 
 ### 📄 Código de cada archivo
 
-#### `src/com/tareas/entity/Tarea.java` — Entidad
+#### `src/com/tareas/model/Tarea.java` — Modelo
 
 ```java
-package com.tareas.entity;
+package com.tareas.model;
 
 public class Tarea {
 
@@ -562,12 +606,12 @@ public class Tarea {
 }
 ```
 
-#### `src/com/tareas/repository/RepositorioTareas.java` — Paso 1 — el contrato
+#### `src/com/tareas/persistence/repository/RepositorioTareas.java` — Paso 1 — el contrato
 
 ```java
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.List;
 
 /** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */
@@ -578,12 +622,12 @@ public interface RepositorioTareas {
 }
 ```
 
-#### `src/com/tareas/repository/RepositorioTareasMemoria.java` — Paso 2a — en memoria
+#### `src/com/tareas/persistence/repository/RepositorioTareasMemoria.java` — Paso 2a — en memoria
 
 ```java
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -605,12 +649,12 @@ public class RepositorioTareasMemoria implements RepositorioTareas {
 }
 ```
 
-#### `src/com/tareas/repository/RepositorioTareasArchivo.java` — Paso 2b — en archivo
+#### `src/com/tareas/persistence/repository/RepositorioTareasArchivo.java` — Paso 2b — en archivo
 
 ```java
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -672,13 +716,134 @@ public class RepositorioTareasArchivo implements RepositorioTareas {
 }
 ```
 
+#### `src/com/tareas/persistence/repository/RepositorioTareasMySQL.java` — Paso 2c — en MySQL
+
+```java
+package com.tareas.persistence.repository;
+
+import com.tareas.model.Tarea;
+import com.tareas.persistence.dao.TareaDAO;
+import java.util.List;
+
+/** Paso 2c — Guarda en MySQL. Cumple el contrato y delega el SQL en el DAO. */
+public class RepositorioTareasMySQL implements RepositorioTareas {
+
+    private final TareaDAO dao;   // el repositorio NO tiene SQL: lo delega
+
+    public RepositorioTareasMySQL(TareaDAO dao) {
+        this.dao = dao;
+    }
+
+    @Override
+    public void guardar(Tarea tarea) { dao.guardar(tarea); }
+
+    @Override
+    public Tarea buscarPorId(int id) { return dao.buscarPorId(id); }
+
+    @Override
+    public List<Tarea> listarTodas() { return dao.listarTodas(); }
+}
+```
+
+#### `src/com/tareas/persistence/dao/TareaDAO.java` — Paso 2c — el DAO (SQL)
+
+```java
+package com.tareas.persistence.dao;
+
+import com.tareas.model.Tarea;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * DAO: el ÚNICO lugar con SQL y JDBC. Habla con la tabla `tarea` y nada más.
+ * No aplica reglas de negocio ni sabe del contrato RepositorioTareas.
+ *
+ * Tabla: tarea(id INT PRIMARY KEY, titulo VARCHAR(200), completada BOOLEAN)
+ */
+public class TareaDAO {
+
+    private final String url;
+    private final String usuario;
+    private final String clave;
+
+    public TareaDAO(String url, String usuario, String clave) {
+        this.url = url;
+        this.usuario = usuario;
+        this.clave = clave;
+        crearTablaSiNoExiste();
+    }
+
+    /** INSERT o UPDATE según exista el id. */
+    public void guardar(Tarea tarea) {
+        String sql = "INSERT INTO tarea (id, titulo, completada) VALUES (?, ?, ?) "
+                + "ON DUPLICATE KEY UPDATE titulo = VALUES(titulo), completada = VALUES(completada)";
+        try (Connection c = conectar(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, tarea.getId());
+            ps.setString(2, tarea.getTitulo());
+            ps.setBoolean(3, tarea.isCompletada());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo guardar la tarea", e);
+        }
+    }
+
+    /** null si no existe. */
+    public Tarea buscarPorId(int id) {
+        try (Connection c = conectar();
+             PreparedStatement ps = c.prepareStatement("SELECT id, titulo, completada FROM tarea WHERE id = ?")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? aTarea(rs) : null;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo buscar la tarea " + id, e);
+        }
+    }
+
+    public List<Tarea> listarTodas() {
+        List<Tarea> tareas = new ArrayList<>();
+        try (Connection c = conectar();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery("SELECT id, titulo, completada FROM tarea ORDER BY id")) {
+            while (rs.next()) tareas.add(aTarea(rs));
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo listar las tareas", e);
+        }
+        return tareas;
+    }
+
+    private Tarea aTarea(ResultSet rs) throws SQLException {
+        return new Tarea(rs.getInt("id"), rs.getString("titulo"), rs.getBoolean("completada"));
+    }
+
+    private Connection conectar() throws SQLException {
+        return DriverManager.getConnection(url, usuario, clave);
+    }
+
+    private void crearTablaSiNoExiste() {
+        try (Connection c = conectar(); Statement st = c.createStatement()) {
+            st.execute("CREATE TABLE IF NOT EXISTS tarea ("
+                    + "id INT PRIMARY KEY, titulo VARCHAR(200) NOT NULL, completada BOOLEAN NOT NULL)");
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo conectar a la base de datos", e);
+        }
+    }
+}
+```
+
 #### `src/com/tareas/service/ServicioTareas.java` — Paso 3 — el servicio
 
 ```java
 package com.tareas.service;
 
-import com.tareas.entity.Tarea;
-import com.tareas.repository.RepositorioTareas;
+import com.tareas.model.Tarea;
+import com.tareas.persistence.repository.RepositorioTareas;
 import java.util.List;
 
 /** Paso 3 — Reglas de negocio. Depende de la INTERFAZ y la recibe por constructor. */
@@ -728,7 +893,7 @@ public class ServicioTareas {
 ```java
 package com.tareas.vista;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -817,16 +982,20 @@ public class ControladorTareas {
 package com.tareas;
 
 import com.tareas.controlador.ControladorTareas;
-import com.tareas.repository.RepositorioTareas;
-import com.tareas.repository.RepositorioTareasArchivo;
-import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.dao.TareaDAO;
+import com.tareas.persistence.repository.RepositorioTareas;
+import com.tareas.persistence.repository.RepositorioTareasArchivo;
+import com.tareas.persistence.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.repository.RepositorioTareasMySQL;
 import com.tareas.service.ServicioTareas;
 import com.tareas.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
  *
- * Uso: java com.tareas.Principal [archivo | memoria]      (por defecto: archivo)
+ * Uso: java com.tareas.Principal [archivo | memoria | mysql]      (por defecto: archivo)
+ * Para mysql: variables de entorno TAREAS_DB_URL, TAREAS_DB_USER, TAREAS_DB_PASS
+ * y el conector de MySQL en el classpath.
  */
 public class Principal {
 
@@ -834,9 +1003,14 @@ public class Principal {
         String modo = args.length > 0 ? args[0] : "archivo";
 
         // 1) Se elige y se CREA la implementación (lo más profundo, primero)
-        RepositorioTareas repositorio = modo.equals("memoria")
-                ? new RepositorioTareasMemoria()
-                : new RepositorioTareasArchivo("tareas.txt");
+        RepositorioTareas repositorio = switch (modo) {
+            case "memoria" -> new RepositorioTareasMemoria();
+            case "mysql" -> new RepositorioTareasMySQL(new TareaDAO(
+                    System.getenv().getOrDefault("TAREAS_DB_URL", "jdbc:mysql://localhost:3306/tareas"),
+                    System.getenv().getOrDefault("TAREAS_DB_USER", "root"),
+                    System.getenv().getOrDefault("TAREAS_DB_PASS", "")));
+            default -> new RepositorioTareasArchivo("tareas.txt");
+        };
         System.out.println("Guardando con: " + repositorio.getClass().getSimpleName());
 
         // 2) Se INYECTA en el servicio (el servicio solo ve la interfaz)
@@ -879,8 +1053,8 @@ public class ServicioAcoplado {
 #### `Prueba.java` — Prueba sin menú ni archivos
 
 ```java
-import com.tareas.repository.RepositorioTareas;
-import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.repository.RepositorioTareas;
+import com.tareas.persistence.repository.RepositorioTareasMemoria;
 import com.tareas.service.ServicioTareas;
 
 /**
@@ -920,7 +1094,7 @@ public class Prueba {
 4. **Crear una interfaz por cada clase** sin necesidad. Se justifica cuando hay (o
    habrá) más de una implementación, o cuando separa una capa de otra.
 5. **Saltarse una capa**: que el controlador llame directo al repositorio. Cada capa habla
-   solo con la inmediata.
+   solo con la inmediata (y el servicio nunca debe llamar al DAO: pasa por el repositorio).
 
 ## 🧭 Regla de decisión rápida
 
@@ -932,10 +1106,11 @@ public class Prueba {
 
 1. ¿Por qué `ServicioTareas` no debe importar `RepositorioTareasArchivo`?
 2. ¿Qué línea de `Principal.java` hay que cambiar para guardar en memoria?
-3. Si se agrega `RepositorioTareasBaseDatos`, ¿qué clases existentes cambian?
+3. Si se agrega otra implementación (p. ej. `RepositorioTareasMongo`), ¿qué clases existentes cambian?
    *(Respuesta: ninguna; solo el `main` si se quiere usar.)*
-4. ¿Qué diferencia hay entre **implementar** una interfaz e **inyectarla**?
-5. Dibujá de memoria las flechas entre `ServicioTareas`, `RepositorioTareas` y
+4. ¿Qué diferencia hay entre `RepositorioTareasMySQL` y `TareaDAO`? ¿Dónde está el SQL?
+5. ¿Qué diferencia hay entre **implementar** una interfaz e **inyectarla**?
+6. Dibujá de memoria las flechas entre `ServicioTareas`, `RepositorioTareas` y
    `RepositorioTareasArchivo`. ¿Hacia dónde apuntan?
 
 ## 🏋️ Ejercicio corto

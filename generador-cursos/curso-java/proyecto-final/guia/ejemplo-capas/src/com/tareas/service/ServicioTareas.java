@@ -1,7 +1,7 @@
 package com.tareas.service;
 
-import com.tareas.entity.Tarea;
-import com.tareas.repository.RepositorioTareas;
+import com.tareas.model.Tarea;
+import com.tareas.persistence.repository.RepositorioTareas;
 import java.util.List;
 
 /** Paso 3 — Reglas de negocio. Depende de la INTERFAZ y la recibe por constructor. */

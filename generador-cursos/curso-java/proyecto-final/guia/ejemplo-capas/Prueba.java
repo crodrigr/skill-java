@@ -1,5 +1,5 @@
-import com.tareas.repository.RepositorioTareas;
-import com.tareas.repository.RepositorioTareasMemoria;
+import com.tareas.persistence.repository.RepositorioTareas;
+import com.tareas.persistence.repository.RepositorioTareasMemoria;
 import com.tareas.service.ServicioTareas;
 
 /**

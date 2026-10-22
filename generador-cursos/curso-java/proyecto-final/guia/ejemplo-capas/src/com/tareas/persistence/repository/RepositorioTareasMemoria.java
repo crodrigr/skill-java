@@ -1,6 +1,6 @@
-package com.tareas.repository;
+package com.tareas.persistence.repository;
 
-import com.tareas.entity.Tarea;
+import com.tareas.model.Tarea;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

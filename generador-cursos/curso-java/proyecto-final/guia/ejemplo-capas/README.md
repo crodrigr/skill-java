@@ -8,25 +8,39 @@ mkdir out
 javac -encoding UTF-8 -d out $(find src -name '*.java')
 java -cp out com.tareas.Principal archivo     # guarda en tareas.txt (persiste)
 java -cp out com.tareas.Principal memoria     # guarda en memoria (se pierde al salir)
+java -cp out:mysql-connector-j.jar com.tareas.Principal mysql   # MySQL (ver abajo)
 ```
 
 Menú: `1` crear, `2` listar, `3` completar, `0` salir.
 
-## 🗂️ Estructura
+## 🗂️ Estructura — MVC con capa de persistencia
 
 ```
 src/com/tareas/
 ├── Principal.java                       ← Paso 4: ensambla e inyecta
-├── vista/VistaConsola.java
-├── controlador/ControladorTareas.java
+├── model/Tarea.java                     ← M
+├── vista/VistaConsola.java              ← V
+├── controlador/ControladorTareas.java   ← C
 ├── service/ServicioTareas.java          ← Paso 3
-├── repository/
-│   ├── RepositorioTareas.java           ← Paso 1: contrato
-│   ├── RepositorioTareasMemoria.java    ← Paso 2a
-│   └── RepositorioTareasArchivo.java    ← Paso 2b
-└── entity/Tarea.java
+└── persistence/
+    ├── dao/TareaDAO.java                ← Paso 2c: el SQL (JDBC)
+    └── repository/
+        ├── RepositorioTareas.java           ← Paso 1: contrato
+        ├── RepositorioTareasMemoria.java    ← Paso 2a
+        ├── RepositorioTareasArchivo.java    ← Paso 2b
+        └── RepositorioTareasMySQL.java      ← Paso 2c (delega en TareaDAO)
 antes/ServicioAcoplado.java              ← Paso 0: el ❌ acoplado
 Prueba.java                              ← prueba del servicio sin archivos
+```
+
+## 🐬 Modo MySQL (opcional)
+
+Compila sin dependencias (usa `java.sql`), pero para **ejecutarlo** hace falta el conector
+MySQL en el classpath y una base creada (`CREATE DATABASE tareas;`; la tabla la crea el DAO).
+
+```bash
+export TAREAS_DB_URL=jdbc:mysql://localhost:3306/tareas TAREAS_DB_USER=root TAREAS_DB_PASS=secreto
+java -cp out:mysql-connector-j.jar com.tareas.Principal mysql
 ```
 
 ## 🪜 Paso a paso
@@ -36,10 +50,10 @@ Prueba.java                              ← prueba del servicio sin archivos
 javac -d out0 antes/ServicioAcoplado.java && java -cp out0 ServicioAcoplado
 
 # Paso 1 y 2 — contrato e implementaciones (compilan; aún no hay nada que ejecutar)
-javac -d out2 src/com/tareas/entity/*.java src/com/tareas/repository/*.java
+javac -d out2 src/com/tareas/model/*.java src/com/tareas/persistence/dao/*.java src/com/tareas/persistence/repository/*.java
 
 # Paso 3 — el servicio
-javac -d out3 src/com/tareas/entity/*.java src/com/tareas/repository/*.java src/com/tareas/service/*.java
+javac -d out3 src/com/tareas/model/*.java src/com/tareas/persistence/dao/*.java src/com/tareas/persistence/repository/*.java src/com/tareas/service/*.java
 
 # Paso 4 — todo conectado
 mkdir -p out && javac -encoding UTF-8 -d out $(find src -name '*.java') && java -cp out com.tareas.Principal
