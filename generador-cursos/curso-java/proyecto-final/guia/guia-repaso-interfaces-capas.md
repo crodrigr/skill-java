@@ -27,21 +27,6 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 
 ## 🧱 Las capas del proyecto
 
-```
-Vista            VistaConsola               (pide y muestra datos)
-   │
-Controlador      ControladorTareas          (traduce la acción del usuario)
-   │
-Servicio         ServicioTareas             (reglas de negocio)
-   │  usa la INTERFAZ ▼
-Repositorio      «interface» RepositorioTareas
-   ▲                ▲
-   │ implements     │ implements
-RepositorioTareasMemoria     RepositorioTareasArchivo
-```
-
-El mismo esquema como diagrama de clases:
-
 ![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas.svg)
 
 La flecha que importa: el servicio apunta a la **interfaz**, nunca a una clase concreta.
