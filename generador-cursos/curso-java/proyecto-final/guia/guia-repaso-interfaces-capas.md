@@ -25,6 +25,110 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 | **Separación de capas** | Cada capa conoce solo a la de abajo (el controlador usa la vista y el servicio) | Controlador → Servicio → Repositorio |
 | **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
+## 📚 Conceptos en lenguaje sencillo
+
+<details>
+<summary><strong>📖 Ver los conceptos: inyección de dependencias, interfaces y polimorfismo</strong> (clic para desplegar)</summary>
+
+### 💉 Inyección de dependencias
+
+**Dependencia** es cualquier objeto que una clase necesita para hacer su trabajo. El
+`ServicioTareas` necesita algo que guarde tareas: esa es su dependencia.
+
+Hay dos formas de conseguirla:
+
+| | Cómo la consigue | Ejemplo |
+|---|---|---|
+| ❌ **Crearla ella misma** | La clase hace `new` por dentro | `private final RepositorioTareasArchivo repo = new RepositorioTareasArchivo("tareas.txt");` |
+| ✅ **Recibirla** (inyección) | Alguien de afuera se la entrega por el constructor | `public ServicioTareas(RepositorioTareas repositorio)` |
+
+**Inyectar es "recibir en vez de crear".** Pensalo como un enchufe: el electrodoméstico
+(el servicio) no fabrica su propia electricidad; se conecta a lo que le den. Quien lo
+conecta (`Principal`) decide si es una fuente u otra.
+
+En el ejemplo, la inyección pasa en una sola línea de `Principal`:
+
+```java
+ServicioTareas servicio = new ServicioTareas(repositorio);   // aquí se inyecta
+```
+
+**¿Por qué sirve?** Porque la clase deja de decidir con *quién* trabaja. Eso permite
+cambiar la dependencia (o usar una de prueba) sin modificar la clase.
+
+### 📜 Interfaces: para qué se usan
+
+Una **interfaz** es un contrato: una lista de operaciones **sin código**. Dice *qué* se
+puede hacer, no *cómo*.
+
+```java
+public interface RepositorioTareas {
+    void guardar(Tarea tarea);
+    Tarea buscarPorId(int id);
+    List<Tarea> listarTodas();
+}
+```
+
+Analogía: un enchufe de pared. Define la forma (dos clavijas), pero no le importa si
+detrás hay una central hidroeléctrica o un panel solar. Cualquier aparato que respete la
+forma, funciona.
+
+**Para qué se usa:**
+
+1. **Separar capas.** El servicio y el repositorio quedan conectados solo por el
+   contrato. Cada capa puede cambiar por dentro sin romper a la otra.
+2. **Poder cambiar la implementación.** Memoria hoy, archivo mañana, base de datos
+   después: el servicio no se entera.
+3. **Poder probar sin cosas pesadas.** Se prueba el servicio con la versión en memoria,
+   sin archivos ni bases de datos (ver `Prueba.java`).
+4. **Trabajar en equipo.** Una persona escribe el servicio contra el contrato mientras
+   otra escribe el repositorio; se juntan al final.
+5. **Dejar claro qué se espera.** Si una clase dice `implements RepositorioTareas`, el
+   compilador la obliga a tener los tres métodos.
+
+**Regla práctica:** creá una interfaz cuando hay (o habrá) **más de una forma** de hacer
+algo, o cuando querés **separar una capa de otra**. No hace falta una interfaz por cada clase.
+
+### 🎭 ¿Se usa polimorfismo en este ejemplo? Sí
+
+**Polimorfismo** significa "muchas formas": usar una referencia del tipo del contrato y
+que el comportamiento real dependa del objeto que haya detrás.
+
+En `ServicioTareas`:
+
+```java
+private final RepositorioTareas repositorio;   // tipo = interfaz
+
+repositorio.guardar(tarea);                    // ¿qué guardar() se ejecuta?
+```
+
+La línea `repositorio.guardar(tarea)` es **la misma** siempre, pero lo que hace cambia:
+
+| `repositorio` apunta a… | `guardar(tarea)` hace… |
+|---|---|
+| `RepositorioTareasMemoria` | Mete la tarea en un `Map` |
+| `RepositorioTareasArchivo` | Escribe una línea en `tareas.txt` |
+
+Java decide **en tiempo de ejecución** cuál método llamar, según el objeto real. El
+servicio no pregunta "¿eres de memoria o de archivo?": simplemente llama al método y cada
+implementación responde a su manera. Eso es polimorfismo.
+
+> 🧩 **Cómo se relacionan los tres conceptos**
+>
+> - La **interfaz** crea el contrato.
+> - El **polimorfismo** permite que distintas clases cumplan ese contrato de distinta forma.
+> - La **inyección de dependencias** es lo que decide, desde afuera, cuál de esas clases
+>   recibe el servicio.
+
+**Otras cosas que se ven en el ejemplo:**
+
+- **Encapsulamiento:** los campos son `private` y se accede por métodos.
+- **Responsabilidad única:** cada clase hace una sola cosa (la vista muestra, el
+  servicio aplica reglas, el repositorio guarda).
+- **Inversión de dependencias:** el servicio depende de la interfaz (abstracción), no
+  de la clase concreta.
+
+</details>
+
 ## 🧱 Las capas del proyecto
 
 ![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas-v2.svg)
