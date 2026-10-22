@@ -1,4 +1,4 @@
-package com.tareas.model;
+package com.tareas.negocio.model;
 
 public class Tarea {
 

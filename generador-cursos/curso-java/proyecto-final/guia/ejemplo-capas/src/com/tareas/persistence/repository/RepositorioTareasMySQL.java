@@ -1,6 +1,6 @@
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import com.tareas.persistence.dao.TareaDAO;
 import java.util.List;
 

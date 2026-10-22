@@ -1,6 +1,6 @@
 package com.tareas.persistence.dao;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

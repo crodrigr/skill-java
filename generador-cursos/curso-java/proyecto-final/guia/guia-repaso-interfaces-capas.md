@@ -23,7 +23,7 @@ base de datos MySQL. Si la lógica supiera
 | Idea | En una frase | En el ejemplo |
 |---|---|---|
 | **Interfaz** | Un contrato: lista de operaciones, sin código | `RepositorioTareas` |
-| **Separación de capas** | Tres capas (presentación, negocio, persistencia) más un modelo transversal: cada capa conoce solo a la de abajo | Controlador → Servicio → Repositorio → DAO |
+| **Separación de capas** | Tres capas (presentación, negocio, persistencia), con el modelo dentro de negocio: cada capa conoce solo a la de abajo | Controlador → Servicio → Repositorio → DAO |
 | **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
 ## 📚 Conceptos
@@ -242,21 +242,22 @@ ServicioTareas servicio = new ServicioTareas(repositorio);
 
 ## 🧱 Las capas del proyecto
 
-La arquitectura es una **arquitectura en capas**: tres capas apiladas y un modelo que las
-atraviesa. Cada capa solo habla con la de abajo.
+La arquitectura es una **arquitectura en capas**: tres capas apiladas. Cada capa solo
+habla con la de abajo. El modelo (`Tarea`) vive dentro de la capa de negocio.
 
 | Capa | Paquete | Clases | Responsabilidad |
 |---|---|---|---|
 | **1 · Presentación** | `presentacion.vista` | `VistaConsola` | Pide y muestra datos |
 | | `presentacion.controlador` | `ControladorTareas` | Traduce las acciones del usuario en llamadas al servicio |
 | **2 · Negocio** | `negocio.service` | `ServicioTareas` | Reglas de negocio |
+| | `negocio.model` | `Tarea` | Los datos del dominio; las otras capas también la usan |
 | **3 · Persistencia** | `persistence.repository` | `RepositorioTareas` (interfaz) + `Memoria`, `Archivo`, `MySQL` | El contrato de guardado y sus formas de cumplirlo |
 | | `persistence.dao` | `TareaDAO` | El acceso de bajo nivel a la base de datos (SQL / JDBC) |
-| **Modelo** (transversal) | `model` | `Tarea` | Los datos del dominio; lo usan las tres capas |
 
 > 🧭 **¿Es MVC?** No del todo. MVC separa Modelo, Vista y Controlador; aquí esa tríada vive
 > **dentro** de la capa de presentación, y además hay negocio y persistencia por debajo. El
-> modelo no es una capa más: es el dato que viaja por todas.
+> modelo forma parte del negocio (es el corazón del dominio), aunque la presentación y la
+> persistencia también importan `Tarea` para mostrarla y guardarla.
 
 **¿Repositorio y DAO no son lo mismo?** No. El **repositorio** habla el idioma del
 negocio ("guardar una tarea") y es lo que ve el servicio. El **DAO** habla el idioma de la
@@ -307,7 +308,7 @@ Archivo: `persistence/repository/RepositorioTareas.java`
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.util.List;
 
 /** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */
@@ -325,7 +326,7 @@ Solo firmas. Sin `{ }` de código, sin `Map`, sin archivos. Dice **qué** se pue
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -350,7 +351,7 @@ public class RepositorioTareasMemoria implements RepositorioTareas {
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -435,7 +436,7 @@ Archivo: `negocio/service/ServicioTareas.java`
 ```java
 package com.tareas.negocio.service;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import com.tareas.persistence.repository.RepositorioTareas;
 import java.util.List;
 
@@ -647,14 +648,14 @@ ejemplo-capas/
     └── com/
         └── tareas/
             ├── Principal.java                   ← Paso 4: ensambla e inyecta
-            ├── model/                           ← modelo (transversal)
-            │   └── Tarea.java
             ├── presentacion/                    ← 1 · capa de presentación
             │   ├── vista/
             │   │   └── VistaConsola.java        ← pide y muestra
             │   └── controlador/
             │       └── ControladorTareas.java   ← coordina vista y servicio
             ├── negocio/                         ← 2 · capa de negocio
+            │   ├── model/
+            │   │   └── Tarea.java               ← el modelo
             │   └── service/
             │       └── ServicioTareas.java      ← Paso 3: reglas de negocio
             └── persistence/                     ← 3 · capa de persistencia
@@ -692,10 +693,10 @@ java -cp out com.tareas.Principal archivo      # archivo | memoria
 
 ### 📄 Código de cada archivo
 
-#### `src/com/tareas/model/Tarea.java` — Modelo
+#### `src/com/tareas/negocio/model/Tarea.java` — Modelo
 
 ```java
-package com.tareas.model;
+package com.tareas.negocio.model;
 
 public class Tarea {
 
@@ -727,7 +728,7 @@ public class Tarea {
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.util.List;
 
 /** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */
@@ -743,7 +744,7 @@ public interface RepositorioTareas {
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -770,7 +771,7 @@ public class RepositorioTareasMemoria implements RepositorioTareas {
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -837,7 +838,7 @@ public class RepositorioTareasArchivo implements RepositorioTareas {
 ```java
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import com.tareas.persistence.dao.TareaDAO;
 import java.util.List;
 
@@ -866,7 +867,7 @@ public class RepositorioTareasMySQL implements RepositorioTareas {
 ```java
 package com.tareas.persistence.dao;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -958,7 +959,7 @@ public class TareaDAO {
 ```java
 package com.tareas.negocio.service;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import com.tareas.persistence.repository.RepositorioTareas;
 import java.util.List;
 
@@ -1009,7 +1010,7 @@ public class ServicioTareas {
 ```java
 package com.tareas.presentacion.vista;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;

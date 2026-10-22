@@ -18,11 +18,11 @@ Menú: `1` crear, `2` listar, `3` completar, `0` salir.
 ```
 src/com/tareas/
 ├── Principal.java                           ← Paso 4: ensambla e inyecta
-├── model/Tarea.java                         ← modelo (transversal)
 ├── presentacion/                            ← 1 · capa de presentación
 │   ├── vista/VistaConsola.java
 │   └── controlador/ControladorTareas.java
 ├── negocio/                                 ← 2 · capa de negocio
+│   ├── model/Tarea.java                     ← el modelo
 │   └── service/ServicioTareas.java          ← Paso 3
 └── persistence/                             ← 3 · capa de persistencia
     ├── dao/TareaDAO.java                    ← Paso 2c: el SQL (JDBC)
@@ -52,10 +52,10 @@ java -cp out:mysql-connector-j.jar com.tareas.Principal mysql
 javac -d out0 antes/ServicioAcoplado.java && java -cp out0 ServicioAcoplado
 
 # Paso 1 y 2 — contrato e implementaciones (compilan; aún no hay nada que ejecutar)
-javac -d out2 src/com/tareas/model/*.java src/com/tareas/persistence/dao/*.java src/com/tareas/persistence/repository/*.java
+javac -d out2 src/com/tareas/negocio/model/*.java src/com/tareas/persistence/dao/*.java src/com/tareas/persistence/repository/*.java
 
 # Paso 3 — el servicio
-javac -d out3 src/com/tareas/model/*.java src/com/tareas/persistence/dao/*.java src/com/tareas/persistence/repository/*.java src/com/tareas/negocio/service/*.java
+javac -d out3 src/com/tareas/negocio/model/*.java src/com/tareas/persistence/dao/*.java src/com/tareas/persistence/repository/*.java src/com/tareas/negocio/service/*.java
 
 # Paso 4 — todo conectado
 mkdir -p out && javac -encoding UTF-8 -d out $(find src -name '*.java') && java -cp out com.tareas.Principal

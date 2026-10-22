@@ -1,6 +1,6 @@
 package com.tareas.persistence.repository;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import java.util.List;
 
 /** Paso 1 — El contrato: solo firmas. Dice QUÉ se puede hacer, no CÓMO. */

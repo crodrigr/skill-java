@@ -1,6 +1,6 @@
 package com.tareas.negocio.service;
 
-import com.tareas.model.Tarea;
+import com.tareas.negocio.model.Tarea;
 import com.tareas.persistence.repository.RepositorioTareas;
 import java.util.List;
 
