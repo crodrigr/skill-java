@@ -23,7 +23,7 @@ base de datos MySQL. Si la lógica supiera
 | Idea | En una frase | En el ejemplo |
 |---|---|---|
 | **Interfaz** | Un contrato: lista de operaciones, sin código | `RepositorioTareas` |
-| **Separación de capas** | Arquitectura **MVC con una capa de persistencia**: cada capa conoce solo a la de abajo | Controlador → Servicio → Repositorio → DAO |
+| **Separación de capas** | Tres capas (presentación, negocio, persistencia) más un modelo transversal: cada capa conoce solo a la de abajo | Controlador → Servicio → Repositorio → DAO |
 | **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
 ## 📚 Conceptos
@@ -242,16 +242,21 @@ ServicioTareas servicio = new ServicioTareas(repositorio);
 
 ## 🧱 Las capas del proyecto
 
-La arquitectura es **MVC con una capa de persistencia**:
+La arquitectura es una **arquitectura en capas**: tres capas apiladas y un modelo que las
+atraviesa. Cada capa solo habla con la de abajo.
 
 | Capa | Paquete | Clases | Responsabilidad |
 |---|---|---|---|
-| **M**odelo | `model` | `Tarea` | Los datos del dominio |
-| **V**ista | `vista` | `VistaConsola` | Pide y muestra datos |
-| **C**ontrolador | `controlador` | `ControladorTareas` | Traduce las acciones del usuario en llamadas al servicio |
-| Servicio | `service` | `ServicioTareas` | Reglas de negocio |
-| Persistencia · repositorio | `persistence.repository` | `RepositorioTareas` (interfaz) + `Memoria`, `Archivo`, `MySQL` | El contrato de guardado y sus formas de cumplirlo |
-| Persistencia · DAO | `persistence.dao` | `TareaDAO` | El acceso de bajo nivel a la base de datos (SQL / JDBC) |
+| **1 · Presentación** | `vista` | `VistaConsola` | Pide y muestra datos |
+| | `controlador` | `ControladorTareas` | Traduce las acciones del usuario en llamadas al servicio |
+| **2 · Negocio** | `service` | `ServicioTareas` | Reglas de negocio |
+| **3 · Persistencia** | `persistence.repository` | `RepositorioTareas` (interfaz) + `Memoria`, `Archivo`, `MySQL` | El contrato de guardado y sus formas de cumplirlo |
+| | `persistence.dao` | `TareaDAO` | El acceso de bajo nivel a la base de datos (SQL / JDBC) |
+| **Modelo** (transversal) | `model` | `Tarea` | Los datos del dominio; lo usan las tres capas |
+
+> 🧭 **¿Es MVC?** No del todo. MVC separa Modelo, Vista y Controlador; aquí esa tríada vive
+> **dentro** de la capa de presentación, y además hay negocio y persistencia por debajo. El
+> modelo no es una capa más: es el dato que viaja por todas.
 
 **¿Repositorio y DAO no son lo mismo?** No. El **repositorio** habla el idioma del
 negocio ("guardar una tarea") y es lo que ve el servicio. El **DAO** habla el idioma de la
@@ -643,11 +648,11 @@ ejemplo-capas/
         └── tareas/
             ├── Principal.java                   ← Paso 4: ensambla e inyecta
             ├── model/
-            │   └── Tarea.java                   ← M: el modelo
+            │   └── Tarea.java                   ← modelo (transversal)
             ├── vista/
-            │   └── VistaConsola.java            ← V: pide y muestra
+            │   └── VistaConsola.java            ← presentación: pide y muestra
             ├── controlador/
-            │   └── ControladorTareas.java       ← C: coordina vista y servicio
+            │   └── ControladorTareas.java       ← presentación: coordina
             ├── service/
             │   └── ServicioTareas.java          ← Paso 3: reglas de negocio
             └── persistence/                     ← capa de persistencia

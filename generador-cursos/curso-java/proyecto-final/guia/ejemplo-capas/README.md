@@ -13,14 +13,14 @@ java -cp out:mysql-connector-j.jar com.tareas.Principal mysql   # MySQL (ver aba
 
 Menú: `1` crear, `2` listar, `3` completar, `0` salir.
 
-## 🗂️ Estructura — MVC con capa de persistencia
+## 🗂️ Estructura — capas: presentación, negocio y persistencia
 
 ```
 src/com/tareas/
 ├── Principal.java                       ← Paso 4: ensambla e inyecta
-├── model/Tarea.java                     ← M
-├── vista/VistaConsola.java              ← V
-├── controlador/ControladorTareas.java   ← C
+├── model/Tarea.java                     ← modelo (transversal)
+├── vista/VistaConsola.java              ← presentación
+├── controlador/ControladorTareas.java   ← presentación
 ├── service/ServicioTareas.java          ← Paso 3
 └── persistence/
     ├── dao/TareaDAO.java                ← Paso 2c: el SQL (JDBC)
