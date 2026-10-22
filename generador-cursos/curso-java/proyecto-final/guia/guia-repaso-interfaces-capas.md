@@ -28,6 +28,9 @@ base de datos MySQL. Si la lógica supiera
 
 ## 📚 Conceptos
 
+<details>
+<summary><strong>📖 Ver los conceptos: inyección de dependencias, interfaces y polimorfismo</strong> (clic para desplegar)</summary>
+
 Cada concepto se despliega por separado (clic en el título).
 
 <details>
@@ -137,6 +140,8 @@ implementación responde a su manera. Eso es polimorfismo.
   servicio aplica reglas, el repositorio guarda).
 - **Inversión de dependencias:** el servicio depende de la interfaz (abstracción), no
   de la clase concreta.
+
+</details>
 
 </details>
 
