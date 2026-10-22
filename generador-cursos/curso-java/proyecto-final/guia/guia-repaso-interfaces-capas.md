@@ -26,12 +26,12 @@ base de datos MySQL. Si la lógica supiera
 | **Separación de capas** | Arquitectura **MVC con una capa de persistencia**: cada capa conoce solo a la de abajo | Controlador → Servicio → Repositorio → DAO |
 | **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
-## 📚 Conceptos en lenguaje sencillo
+## 📚 Conceptos
+
+Cada concepto se despliega por separado (clic en el título).
 
 <details>
-<summary><strong>📖 Ver los conceptos: inyección de dependencias, interfaces y polimorfismo</strong> (clic para desplegar)</summary>
-
-### 💉 Inyección de dependencias
+<summary><strong>💉 Inyección de dependencias</strong> (clic para desplegar)</summary>
 
 **Dependencia** es cualquier objeto que una clase necesita para hacer su trabajo. El
 `ServicioTareas` necesita algo que guarde tareas: esa es su dependencia.
@@ -56,7 +56,10 @@ ServicioTareas servicio = new ServicioTareas(repositorio);   // aquí se inyecta
 **¿Por qué sirve?** Porque la clase deja de decidir con *quién* trabaja. Eso permite
 cambiar la dependencia (o usar una de prueba) sin modificar la clase.
 
-### 📜 Interfaces: para qué se usan
+</details>
+
+<details>
+<summary><strong>📜 Interfaces: para qué se usan</strong> (clic para desplegar)</summary>
 
 Una **interfaz** es un contrato: una lista de operaciones **sin código**. Dice *qué* se
 puede hacer, no *cómo*.
@@ -89,7 +92,10 @@ forma, funciona.
 **Regla práctica:** creá una interfaz cuando hay (o habrá) **más de una forma** de hacer
 algo, o cuando querés **separar una capa de otra**. No hace falta una interfaz por cada clase.
 
-### 🎭 ¿Se usa polimorfismo en este ejemplo? Sí
+</details>
+
+<details>
+<summary><strong>🎭 Polimorfismo: ¿se usa en este ejemplo? Sí</strong> (clic para desplegar)</summary>
 
 **Polimorfismo** significa "muchas formas": usar una referencia del tipo del contrato y
 que el comportamiento real dependa del objeto que haya detrás.
@@ -121,7 +127,10 @@ implementación responde a su manera. Eso es polimorfismo.
 > - La **inyección de dependencias** es lo que decide, desde afuera, cuál de esas clases
 >   recibe el servicio.
 
-**Otras cosas que se ven en el ejemplo:**
+</details>
+
+<details>
+<summary><strong>🧩 Otros conceptos que se ven en el ejemplo</strong> (clic para desplegar)</summary>
 
 - **Encapsulamiento:** los campos son `private` y se accede por métodos.
 - **Responsabilidad única:** cada clase hace una sola cosa (la vista muestra, el
