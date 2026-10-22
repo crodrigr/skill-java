@@ -27,7 +27,7 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 
 ## 🧱 Las capas del proyecto
 
-![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas.svg)
+![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas-v2.svg)
 
 La flecha que importa: el servicio apunta a la **interfaz**, nunca a una clase concreta.
 Las implementaciones también apuntan a la interfaz (la implementan). Por eso se llama
