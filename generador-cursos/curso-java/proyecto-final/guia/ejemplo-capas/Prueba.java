@@ -1,6 +1,6 @@
 import com.tareas.persistence.repository.RepositorioTareas;
 import com.tareas.persistence.repository.RepositorioTareasMemoria;
-import com.tareas.service.ServicioTareas;
+import com.tareas.negocio.service.ServicioTareas;
 
 /**
  * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.

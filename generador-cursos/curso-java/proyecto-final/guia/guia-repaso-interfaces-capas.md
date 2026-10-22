@@ -221,7 +221,7 @@ ServicioTareas servicio = new ServicioTareas(repositorio);
 
 > 🔗 **Dónde verlo en el ejemplo**
 >
-> - [`ServicioTareas`](ejemplo-capas/src/com/tareas/service/ServicioTareas.java) — campo de tipo interfaz, sin imports concretos.
+> - [`ServicioTareas`](ejemplo-capas/src/com/tareas/negocio/service/ServicioTareas.java) — campo de tipo interfaz, sin imports concretos.
 > - [`RepositorioTareasMySQL`](ejemplo-capas/src/com/tareas/persistence/repository/RepositorioTareasMySQL.java) — el detalle que implementa el contrato.
 > - [`Principal`](ejemplo-capas/src/com/tareas/Principal.java) — la inyección.
 > - [Paso 0](ejemplo-capas/antes/ServicioAcoplado.java) — el caso sin inversión.
@@ -247,9 +247,9 @@ atraviesa. Cada capa solo habla con la de abajo.
 
 | Capa | Paquete | Clases | Responsabilidad |
 |---|---|---|---|
-| **1 · Presentación** | `vista` | `VistaConsola` | Pide y muestra datos |
-| | `controlador` | `ControladorTareas` | Traduce las acciones del usuario en llamadas al servicio |
-| **2 · Negocio** | `service` | `ServicioTareas` | Reglas de negocio |
+| **1 · Presentación** | `presentacion.vista` | `VistaConsola` | Pide y muestra datos |
+| | `presentacion.controlador` | `ControladorTareas` | Traduce las acciones del usuario en llamadas al servicio |
+| **2 · Negocio** | `negocio.service` | `ServicioTareas` | Reglas de negocio |
 | **3 · Persistencia** | `persistence.repository` | `RepositorioTareas` (interfaz) + `Memoria`, `Archivo`, `MySQL` | El contrato de guardado y sus formas de cumplirlo |
 | | `persistence.dao` | `TareaDAO` | El acceso de bajo nivel a la base de datos (SQL / JDBC) |
 | **Modelo** (transversal) | `model` | `Tarea` | Los datos del dominio; lo usan las tres capas |
@@ -430,10 +430,10 @@ public class RepositorioTareasMySQL implements RepositorioTareas {
 
 ## 3️⃣ Paso 3 — El servicio depende de la interfaz
 
-Archivo: `service/ServicioTareas.java`
+Archivo: `negocio/service/ServicioTareas.java`
 
 ```java
-package com.tareas.service;
+package com.tareas.negocio.service;
 
 import com.tareas.model.Tarea;
 import com.tareas.persistence.repository.RepositorioTareas;
@@ -495,14 +495,14 @@ clase **completa**, para ver cómo se integran todas las capas:
 ```java
 package com.tareas;
 
-import com.tareas.controlador.ControladorTareas;
+import com.tareas.presentacion.controlador.ControladorTareas;
 import com.tareas.persistence.dao.TareaDAO;
 import com.tareas.persistence.repository.RepositorioTareas;
 import com.tareas.persistence.repository.RepositorioTareasArchivo;
 import com.tareas.persistence.repository.RepositorioTareasMemoria;
 import com.tareas.persistence.repository.RepositorioTareasMySQL;
-import com.tareas.service.ServicioTareas;
-import com.tareas.vista.VistaConsola;
+import com.tareas.negocio.service.ServicioTareas;
+import com.tareas.presentacion.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
@@ -590,7 +590,7 @@ public class ServicioTareas {
 ```java
 import com.tareas.persistence.repository.RepositorioTareas;
 import com.tareas.persistence.repository.RepositorioTareasMemoria;
-import com.tareas.service.ServicioTareas;
+import com.tareas.negocio.service.ServicioTareas;
 
 /**
  * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.
@@ -647,15 +647,17 @@ ejemplo-capas/
     └── com/
         └── tareas/
             ├── Principal.java                   ← Paso 4: ensambla e inyecta
-            ├── model/
-            │   └── Tarea.java                   ← modelo (transversal)
-            ├── vista/
-            │   └── VistaConsola.java            ← presentación: pide y muestra
-            ├── controlador/
-            │   └── ControladorTareas.java       ← presentación: coordina
-            ├── service/
-            │   └── ServicioTareas.java          ← Paso 3: reglas de negocio
-            └── persistence/                     ← capa de persistencia
+            ├── model/                           ← modelo (transversal)
+            │   └── Tarea.java
+            ├── presentacion/                    ← 1 · capa de presentación
+            │   ├── vista/
+            │   │   └── VistaConsola.java        ← pide y muestra
+            │   └── controlador/
+            │       └── ControladorTareas.java   ← coordina vista y servicio
+            ├── negocio/                         ← 2 · capa de negocio
+            │   └── service/
+            │       └── ServicioTareas.java      ← Paso 3: reglas de negocio
+            └── persistence/                     ← 3 · capa de persistencia
                 ├── dao/
                 │   └── TareaDAO.java            ← Paso 2c: el SQL (JDBC)
                 └── repository/
@@ -951,10 +953,10 @@ public class TareaDAO {
 }
 ```
 
-#### `src/com/tareas/service/ServicioTareas.java` — Paso 3 — el servicio
+#### `src/com/tareas/negocio/service/ServicioTareas.java` — Paso 3 — el servicio
 
 ```java
-package com.tareas.service;
+package com.tareas.negocio.service;
 
 import com.tareas.model.Tarea;
 import com.tareas.persistence.repository.RepositorioTareas;
@@ -1002,10 +1004,10 @@ public class ServicioTareas {
 }
 ```
 
-#### `src/com/tareas/vista/VistaConsola.java` — Vista
+#### `src/com/tareas/presentacion/vista/VistaConsola.java` — Vista
 
 ```java
-package com.tareas.vista;
+package com.tareas.presentacion.vista;
 
 import com.tareas.model.Tarea;
 import java.util.List;
@@ -1051,13 +1053,13 @@ public class VistaConsola {
 }
 ```
 
-#### `src/com/tareas/controlador/ControladorTareas.java` — Controlador
+#### `src/com/tareas/presentacion/controlador/ControladorTareas.java` — Controlador
 
 ```java
-package com.tareas.controlador;
+package com.tareas.presentacion.controlador;
 
-import com.tareas.service.ServicioTareas;
-import com.tareas.vista.VistaConsola;
+import com.tareas.negocio.service.ServicioTareas;
+import com.tareas.presentacion.vista.VistaConsola;
 
 /** Capa de controlador: traduce lo que hace el usuario en llamadas al servicio. */
 public class ControladorTareas {
@@ -1095,14 +1097,14 @@ public class ControladorTareas {
 ```java
 package com.tareas;
 
-import com.tareas.controlador.ControladorTareas;
+import com.tareas.presentacion.controlador.ControladorTareas;
 import com.tareas.persistence.dao.TareaDAO;
 import com.tareas.persistence.repository.RepositorioTareas;
 import com.tareas.persistence.repository.RepositorioTareasArchivo;
 import com.tareas.persistence.repository.RepositorioTareasMemoria;
 import com.tareas.persistence.repository.RepositorioTareasMySQL;
-import com.tareas.service.ServicioTareas;
-import com.tareas.vista.VistaConsola;
+import com.tareas.negocio.service.ServicioTareas;
+import com.tareas.presentacion.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).
@@ -1169,7 +1171,7 @@ public class ServicioAcoplado {
 ```java
 import com.tareas.persistence.repository.RepositorioTareas;
 import com.tareas.persistence.repository.RepositorioTareasMemoria;
-import com.tareas.service.ServicioTareas;
+import com.tareas.negocio.service.ServicioTareas;
 
 /**
  * Prueba del servicio SIN archivos ni menú: se inyecta la versión en memoria.

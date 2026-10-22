@@ -1,13 +1,13 @@
 package com.tareas;
 
-import com.tareas.controlador.ControladorTareas;
+import com.tareas.presentacion.controlador.ControladorTareas;
 import com.tareas.persistence.dao.TareaDAO;
 import com.tareas.persistence.repository.RepositorioTareas;
 import com.tareas.persistence.repository.RepositorioTareasArchivo;
 import com.tareas.persistence.repository.RepositorioTareasMemoria;
 import com.tareas.persistence.repository.RepositorioTareasMySQL;
-import com.tareas.service.ServicioTareas;
-import com.tareas.vista.VistaConsola;
+import com.tareas.negocio.service.ServicioTareas;
+import com.tareas.presentacion.vista.VistaConsola;
 
 /**
  * Paso 4 — El ÚNICO lugar que sabe qué implementación se usa (la inyección).

@@ -1,7 +1,7 @@
-package com.tareas.controlador;
+package com.tareas.presentacion.controlador;
 
-import com.tareas.service.ServicioTareas;
-import com.tareas.vista.VistaConsola;
+import com.tareas.negocio.service.ServicioTareas;
+import com.tareas.presentacion.vista.VistaConsola;
 
 /** Capa de controlador: traduce lo que hace el usuario en llamadas al servicio. */
 public class ControladorTareas {

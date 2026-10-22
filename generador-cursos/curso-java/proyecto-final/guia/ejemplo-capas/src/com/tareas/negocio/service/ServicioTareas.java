@@ -1,4 +1,4 @@
-package com.tareas.service;
+package com.tareas.negocio.service;
 
 import com.tareas.model.Tarea;
 import com.tareas.persistence.repository.RepositorioTareas;

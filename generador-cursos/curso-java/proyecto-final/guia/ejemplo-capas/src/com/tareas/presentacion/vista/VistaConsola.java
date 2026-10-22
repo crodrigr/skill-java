@@ -1,4 +1,4 @@
-package com.tareas.vista;
+package com.tareas.presentacion.vista;
 
 import com.tareas.model.Tarea;
 import java.util.List;
