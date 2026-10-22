@@ -22,7 +22,7 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 | Idea | En una frase | En el ejemplo |
 |---|---|---|
 | **Interfaz** | Un contrato: lista de operaciones, sin código | `RepositorioTareas` |
-| **Separación de capas** | Cada capa habla solo con la de abajo | Vista → Controlador → Servicio → Repositorio |
+| **Separación de capas** | Cada capa conoce solo a la de abajo (el controlador usa la vista y el servicio) | Controlador → Servicio → Repositorio |
 | **Inyección de dependencias** | Una clase **recibe** lo que necesita; no lo crea con `new` | `new ServicioTareas(repositorio)` |
 
 ## 🧱 Las capas del proyecto
@@ -291,7 +291,8 @@ public class Principal {
 | `controlador.iniciar()` | Arranca el menú | — |
 
 El orden de armado va **de abajo hacia arriba** (repositorio → servicio → controlador).
-Las llamadas en ejecución van al revés: vista → controlador → servicio → repositorio.
+En ejecución, el controlador es quien dirige: pide datos a la vista, llama al servicio y
+este al repositorio. La vista nunca conoce al controlador.
 
 **Eso es inyectar**: el `main` crea la dependencia y se la entrega al constructor.
 Para cambiar el almacenamiento solo cambia la creación del repositorio en `Principal`:
@@ -814,7 +815,7 @@ public class Prueba {
    menciona archivos, la versión en memoria no puede implementarlo.
 4. **Crear una interfaz por cada clase** sin necesidad. Se justifica cuando hay (o
    habrá) más de una implementación, o cuando separa una capa de otra.
-5. **Saltarse una capa**: que la vista llame directo al repositorio. Cada capa habla
+5. **Saltarse una capa**: que el controlador llame directo al repositorio. Cada capa habla
    solo con la inmediata.
 
 ## 🧭 Regla de decisión rápida
