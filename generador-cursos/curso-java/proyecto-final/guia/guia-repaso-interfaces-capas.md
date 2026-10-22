@@ -91,6 +91,10 @@ forma, funciona.
    otra escribe el repositorio; se juntan al final.
 5. **Dejar claro qué se espera.** Si una clase dice `implements RepositorioTareas`, el
    compilador la obliga a tener los tres métodos.
+6. **Aplicar la inversión de dependencias.** Es una de sus funciones principales: el
+   servicio (alto nivel) y las implementaciones (bajo nivel) dependen de la **interfaz**, no
+   unos de otros. Así el detalle técnico se adapta al contrato y no al revés (ver el
+   desplegable *Inversión de dependencias*).
 
 **Regla práctica:** creá una interfaz cuando hay (o habrá) **más de una forma** de hacer
 algo, o cuando querés **separar una capa de otra**. No hace falta una interfaz por cada clase.
