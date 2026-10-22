@@ -29,6 +29,18 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 
 ![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas-v2.svg)
 
+### 🧭 Cómo leer las líneas del diagrama
+
+| Línea | Qué significa | En el diagrama |
+|---|---|---|
+| **Continua con flecha** (→) | **Dependencia fuerte**: la clase de origen **guarda** a la otra como campo. | `ControladorTareas` → `VistaConsola` y `ServicioTareas`; `ServicioTareas` → `RepositorioTareas` |
+| **Punteada con flecha abierta** (⇢) | **Dependencia débil (uso)**: la clase **crea, recibe o usa** a la otra, pero no la guarda como campo. | `ServicioTareas` ⇢ `Tarea` (la crea); `Principal` ⇢ controlador, servicio y repositorio (los crea o inyecta) |
+| **Punteada con triángulo vacío** (⇢▷) | **Implementación** (`implements`): la clase cumple el contrato de la interfaz. | `RepositorioTareasMemoria` y `RepositorioTareasArchivo` ⇢▷ `RepositorioTareas` |
+
+La flecha siempre apunta **hacia la clase de la que se depende**: si `ControladorTareas`
+tiene un campo `VistaConsola`, la flecha sale del controlador y llega a la vista. La vista
+no sabe que el controlador existe, por eso no hay flecha en el otro sentido.
+
 La flecha que importa: el servicio apunta a la **interfaz**, nunca a una clase concreta.
 Las implementaciones también apuntan a la interfaz (la implementan). Por eso se llama
 **inversión de dependencias**: el detalle depende del contrato, no al revés.
