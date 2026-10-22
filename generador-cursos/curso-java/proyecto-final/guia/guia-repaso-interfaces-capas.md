@@ -29,7 +29,7 @@ base de datos MySQL. Si la lógica supiera
 ## 📚 Conceptos
 
 <details>
-<summary><strong>📖 Ver los conceptos: inyección de dependencias, interfaces y polimorfismo</strong> (clic para desplegar)</summary>
+<summary><strong>📖 Ver los conceptos: inyección de dependencias, interfaces, polimorfismo e inversión de dependencias</strong> (clic para desplegar)</summary>
 
 Cada concepto se despliega por separado (clic en el título).
 
@@ -133,13 +133,104 @@ implementación responde a su manera. Eso es polimorfismo.
 </details>
 
 <details>
+<summary><strong>🔄 Inversión de dependencias (DIP)</strong> (clic para desplegar)</summary>
+
+### 🧠 La idea
+
+Es la **D** de SOLID: *los módulos de alto nivel no deben depender de los de bajo nivel;
+ambos deben depender de abstracciones*.
+
+- **Alto nivel** = lo que contiene las reglas del negocio (`ServicioTareas`).
+- **Bajo nivel** = los detalles técnicos (archivo, memoria, MySQL).
+- **Abstracción** = la interfaz (`RepositorioTareas`).
+
+Lo "invertido" es la **flecha**. Sin la regla, lo natural es que el servicio dependa de lo
+que usa; con la regla, el detalle pasa a depender del contrato que define el servicio.
+
+```
+❌ Sin inversión                          ✅ Con inversión
+
+ServicioTareas                            ServicioTareas
+      │ depende de                              │ depende de
+      ▼                                         ▼
+RepositorioTareasArchivo                  «interface» RepositorioTareas
+                                                ▲ implements
+                                                │
+                                          RepositorioTareasArchivo
+```
+
+### ❌ Antes: el servicio depende del detalle
+
+```java
+import com.tareas.persistence.repository.RepositorioTareasArchivo;   // 👈 importa la clase concreta
+
+public class ServicioTareas {
+    private final RepositorioTareasArchivo repositorio = new RepositorioTareasArchivo("tareas.txt");
+}
+```
+
+Si mañana se guarda en MySQL, hay que **editar el servicio**: la regla de negocio cambió
+solo porque cambió un detalle técnico.
+
+### ✅ Después: ambos dependen de la interfaz
+
+```java
+// Alto nivel: depende de la abstracción
+public class ServicioTareas {
+    private final RepositorioTareas repositorio;          // 👈 interfaz, sin import de ninguna clase concreta
+    public ServicioTareas(RepositorioTareas repositorio) { this.repositorio = repositorio; }
+}
+
+// Bajo nivel: también depende de la abstracción (la implementa)
+public class RepositorioTareasMySQL implements RepositorioTareas { /* ... */ }
+```
+
+Mirá los `import` de `ServicioTareas`: **no aparece ninguna clase concreta**. Esa es la
+señal de que la dependencia está invertida.
+
+### 🤝 ¿Y la inyección de dependencias? No son lo mismo
+
+| | Inversión de dependencias | Inyección de dependencias |
+|---|---|---|
+| **Qué es** | Un **principio de diseño** (la D de SOLID) | Una **técnica** para aplicarlo |
+| **Responde a** | ¿De **qué** debe depender una clase? → de una abstracción | ¿**Cómo** consigue esa clase su dependencia? → se la entregan |
+| **Dónde se ve** | El **tipo** del campo: `RepositorioTareas` | El **constructor** y `new ServicioTareas(repositorio)` |
+| **Sin la otra** | La clase no sabe qué objeto usar | La clase recibe un objeto pero sigue atada a una clase concreta |
+
+Las dos juntas, en este ejemplo:
+
+```java
+// Principal.java
+RepositorioTareas repositorio = new RepositorioTareasMySQL(new TareaDAO(url, usuario, clave));
+//  └─ tipo = INTERFAZ   → Inversión: nadie queda atado a MySQL
+
+ServicioTareas servicio = new ServicioTareas(repositorio);
+//                                           └─ se ENTREGA por constructor → Inyección
+```
+
+- **Inversión** → `ServicioTareas` declara que necesita un `RepositorioTareas` (abstracción).
+- **Inyección** → `Principal` es quien decide cuál y se lo entrega.
+
+> 💡 Se puede **inyectar sin invertir** (`new ServicioTareas(new RepositorioTareasArchivo(...))`
+> con un constructor que pide la clase concreta) e **invertir sin inyectar** (usar la
+> interfaz pero con un `new` dentro). Solo juntas dan el desacoplamiento completo.
+
+> 🔗 **Dónde verlo en el ejemplo**
+>
+> - [`ServicioTareas`](ejemplo-capas/src/com/tareas/service/ServicioTareas.java) — campo de tipo interfaz, sin imports concretos.
+> - [`RepositorioTareasMySQL`](ejemplo-capas/src/com/tareas/persistence/repository/RepositorioTareasMySQL.java) — el detalle que implementa el contrato.
+> - [`Principal`](ejemplo-capas/src/com/tareas/Principal.java) — la inyección.
+> - [Paso 0](ejemplo-capas/antes/ServicioAcoplado.java) — el caso sin inversión.
+
+</details>
+
+<details>
 <summary><strong>🧩 Otros conceptos que se ven en el ejemplo</strong> (clic para desplegar)</summary>
 
 - **Encapsulamiento:** los campos son `private` y se accede por métodos.
 - **Responsabilidad única:** cada clase hace una sola cosa (la vista muestra, el
   servicio aplica reglas, el repositorio guarda).
-- **Inversión de dependencias:** el servicio depende de la interfaz (abstracción), no
-  de la clase concreta.
+- **Inversión de dependencias:** tiene su propio desplegable, arriba.
 
 </details>
 
