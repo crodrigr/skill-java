@@ -29,7 +29,8 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 
 ![Diagrama de clases de las capas del proyecto](img/diagrama-clases-capas-v2.svg)
 
-### 🧭 Cómo leer las líneas del diagrama
+<details>
+<summary><strong>🧭 Cómo leer las líneas del diagrama</strong> (clic para desplegar)</summary>
 
 | Línea | Qué significa | En el diagrama |
 |---|---|---|
@@ -40,6 +41,8 @@ Hay una decisión que puede cambiar: **dónde se guardan las tareas**. Primero e
 La flecha siempre apunta **hacia la clase de la que se depende**: si `ControladorTareas`
 tiene un campo `VistaConsola`, la flecha sale del controlador y llega a la vista. La vista
 no sabe que el controlador existe, por eso no hay flecha en el otro sentido.
+
+</details>
 
 La flecha que importa: el servicio apunta a la **interfaz**, nunca a una clase concreta.
 Las implementaciones también apuntan a la interfaz (la implementan). Por eso se llama
