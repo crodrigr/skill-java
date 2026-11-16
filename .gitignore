@@ -1,9 +1,3 @@
-# Solo se publica el material del curso. Todo lo demas
-# (specs, herramientas del generador, scripts sueltos) queda fuera de GitHub.
-/*
-!/.gitignore
-!/curso-java
-
 # Artefactos de build y ejecucion de Java usados en ejemplos y ejercicios
 target/
 build/
@@ -12,5 +6,5 @@ nbproject/private/
 *.class
 
 # Artefactos de ejecucion del Proyecto final (persistencia en archivo)
-curso-java/proyecto-final/solucion/pacientes.txt
-curso-java/proyecto-final/solucion/citas.ser
+/proyecto-final/solucion/pacientes.txt
+/proyecto-final/solucion/citas.ser
